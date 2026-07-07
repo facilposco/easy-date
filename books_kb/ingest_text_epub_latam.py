@@ -52,6 +52,7 @@ CONCEPT_PATTERNS = {
     "cortejo": ["cortejo", "coqueteo", "seduc", "atraccion"],
     "timing": ["timing", "momento", "ritmo", "despacio", "intensidad"],
     "cierre": ["cita", "salir", "invitar", "plan", "quedar"],
+    "psicologia_femenina": ["mujer", "mujeres", "femenina", "femenino", "deseo", "atraccion"],
 }
 
 SENSITIVE_TERMS = [
@@ -64,6 +65,16 @@ SENSITIVE_TERMS = [
     "tocar",
     "sexual",
     "llevar a la cama",
+    "psicologia oscura",
+    "oscura",
+    "control",
+    "controlar",
+    "persuasion",
+    "persuasión",
+    "hipnosis",
+    "subliminal",
+    "picante",
+    "adulto",
 ]
 
 
@@ -192,6 +203,32 @@ def split_for_translation(text: str, max_chars: int = 1800) -> list[str]:
     if current:
         chunks.append("\n\n".join(current))
     return chunks
+
+
+def looks_like_spanish(text: str) -> bool:
+    sample = text[:12000].lower()
+    spanish_markers = [
+        " que ",
+        " de ",
+        " la ",
+        " el ",
+        " una ",
+        " los ",
+        " las ",
+        " para ",
+        " mujer",
+        " mujeres",
+        " atracci",
+        " psicolog",
+        " coraz",
+        " también",
+        " qué ",
+        " cómo ",
+    ]
+    english_markers = [" the ", " and ", " women", " woman", " attraction", " psychology", " chapter "]
+    spanish_score = sum(sample.count(marker) for marker in spanish_markers)
+    english_score = sum(sample.count(marker) for marker in english_markers)
+    return spanish_score >= max(12, english_score * 2)
 
 
 def load_env_lenient(path: Path) -> None:
@@ -367,7 +404,26 @@ def translation_quality_flags(text: str) -> list[str]:
 
 def infer_book_category(title: str, source_name: str) -> str:
     lower = f"{title} {source_name}".lower()
-    if any(word in lower for word in ["women", "woman", "female", "femenina", "psicologia femenina"]):
+    if any(
+        word in lower
+        for word in [
+            "women",
+            "woman",
+            "female",
+            "mujer",
+            "mujeres",
+            "femenina",
+            "femenino",
+            "psicologia femenina",
+            "psicología femenina",
+            "cerebro femenino",
+            "deseo",
+            "atraccion",
+            "atracción",
+            "pildora roja",
+            "píldora roja",
+        ]
+    ):
         return "psicologia_femenina"
     if any(word in lower for word in ["text", "tinder", "swipe", "sms"]):
         return "text_game"
@@ -578,7 +634,8 @@ def main() -> int:
     if extract_stats["native_words"] < 500:
         raise RuntimeError(f"EPUB text extraction looks too small: {extract_stats['native_words']} words")
 
-    translation_blocks = split_for_translation(native_text, max_chars=args.translation_chars)
+    source_looks_spanish = looks_like_spanish(native_text)
+    translation_blocks = [] if source_looks_spanish else split_for_translation(native_text, max_chars=args.translation_chars)
 
     with sqlite3.connect(pb.DB_PATH) as conn:
         pb.init_db(conn)
@@ -596,12 +653,25 @@ def main() -> int:
 
         book = pb.BookFile(id=book_id, path=source_target, slug=slug, title=args.title, author=args.author, md5=md5)
 
-        translated_text, translation_audit = translate_latam(
-            translation_blocks,
-            cache_dir=BASE_DIR / "docs" / "translation_cache" / book.slug,
-            allow_google_fallback=args.allow_google_fallback,
-            provider=args.translation_provider,
-        )
+        if source_looks_spanish:
+            translated_text = native_text
+            translation_audit = [
+                {
+                    "block": 0,
+                    "source_chars": len(native_text),
+                    "translated_chars": len(native_text),
+                    "seconds": 0,
+                    "provider": "skipped_source_spanish",
+                    "cached": False,
+                }
+            ]
+        else:
+            translated_text, translation_audit = translate_latam(
+                translation_blocks,
+                cache_dir=BASE_DIR / "docs" / "translation_cache" / book.slug,
+                allow_google_fallback=args.allow_google_fallback,
+                provider=args.translation_provider,
+            )
         translated_text = clean_translated_text(translated_text)
         book_translation_flags = translation_quality_flags(translated_text)
 
@@ -662,6 +732,7 @@ def main() -> int:
         "images_seen_not_processed": extract_stats["images_seen_not_processed"],
         "images_processed": 0,
         "translation_blocks": len(translation_blocks),
+        "source_looks_spanish": source_looks_spanish,
         "translation_quality_flags": book_translation_flags,
         "translation_audit": translation_audit,
         "chunks": len(chunks),
