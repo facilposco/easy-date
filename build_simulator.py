@@ -479,6 +479,14 @@ def main():
         chatArea.appendChild(userMsg);
     }
 
+    function removeLastUserMessageFromChat() {
+        const chatArea = document.getElementById('chat-area');
+        if (!chatArea) return;
+        const messages = Array.from(chatArea.querySelectorAll('.message.user'));
+        const last = messages[messages.length - 1];
+        if (last) last.remove();
+    }
+
     function appendNataliaMessage(text, timeText) {
         const level = gameData.levels[gameState.level_index];
         const chatArea = document.getElementById('chat-area');
@@ -739,6 +747,35 @@ def main():
             simulation = await localEmergencySimulationTurn(payload, error);
         } finally {
             if (btnSend) btnSend.innerText = originalSendText;
+        }
+
+        const isMaximusRoute = simulation
+            && simulation.retrieval_summary
+            && simulation.retrieval_summary.route === 'maximus';
+        if (isMaximusRoute) {
+            const lastTurn = gameState.history[gameState.history.length - 1];
+            if (lastTurn && lastTurn.sender === 'user' && lastTurn.text === opt.text) {
+                gameState.history.pop();
+            }
+            removeLastUserMessageFromChat();
+            saveState();
+            showCoachModal(
+                simulation.coach_title || 'Maximus Coach',
+                {
+                    raw: simulation.coach_feedback || 'Maximus no devolvió respuesta.',
+                    metrics: null,
+                    suggestions: Array.isArray(simulation.suggestions) ? simulation.suggestions : [],
+                    step,
+                    chosenTime
+                },
+                'warning',
+                () => {
+                    setInputLocked(false);
+                    if (freeInput) freeInput.focus();
+                    renderStep();
+                }
+            );
+            return;
         }
 
         const score = Number(simulation.score || 5);

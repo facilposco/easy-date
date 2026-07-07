@@ -375,7 +375,9 @@
                 <p><strong>Regla de seguridad RAG:</strong> Natalia puede usar casos exitosos y libros para responder como mujer/persona del simulador. Maximus Coach puede usar tambien casos negativos para explicar errores. Ningun agente debe afirmar que una tecnica consigue WhatsApp, cita o Instagram si ese resultado no esta en el contexto recuperado o en el estado visible del juego.</p>
                 <p><strong>Verificacion 2026-07-06:</strong> <code>natalia_success_cases</code> quedo con 1.895 documentos y <code>natalia_negative_cases</code> con 1.000. Reporte de reindexacion: <code>docs/natalia_rag_reindex_confidence_negative_20260706.json</code>. Grafo inicial: <code>docs/natalia_objective_graph_20260706_200116.json/html</code> con 1.895 casos, 1.914 nodos y 6.025 relaciones. QA de 20 preguntas: <code>docs/natalia_rag_qa_20_20260706_200231.*</code>, resultado 20/20 OK. Automatizacion diaria activa: <code>qa-diaria-rag-natalia</code>.</p>
                 <p><strong>Verificacion extendida 2026-07-07:</strong> se genero el catalogo etiquetado <code>docs/natalia_rag_eval_catalog_v1.csv/json/html</code> con 120 preguntas por categoria, intencion, perfil y objetivo. La corrida <code>docs/natalia_rag_eval_catalog_run_20260706_210358.*</code> recupero evidencia en 120/120 preguntas y 0 quedaron como <code>FALTA_EVIDENCIA</code>. El mantenimiento completo <code>docs/natalia_rag_daily_maintenance_20260706_210023.json</code> termino OK: traduccion pendiente 0, indexacion incremental OK, negativos OK, grafo actualizado, QA 20 OK y QA catalogo 120 OK.</p>
-                <p><strong>Runtime Gemini 2026-07-06:</strong> el archivo <code>.env</code> quedo parseable por <code>python-dotenv</code>; Decodo se guarda como <code>DECODO_PROXY_TEST_URL</code> y <code>DECODO_API_AUTH</code>, y <code>GEMINI_LIVE_ENABLED=1</code>. Prueba controlada de <code>/api/simulate-turn</code>: <code>coach_live_used=true</code>, <code>natalia_live_used=true</code>, <code>fallback=false</code>, respuesta UTF-8 correcta. Backup previo: <code>.env.bak_20260706_201411</code>.</p>
+                <p><strong>Actualizacion de entrenamiento silencioso 2026-07-07:</strong> Natalia-persona consulta libros de text game como <code>strategy_context</code> en el prompt, pero solo para razonar en silencio. La respuesta visible debe sonar como mujer real, sin citar libros ni explicar teoria. Los conceptos se etiquetan como <code>opener</code>, <code>tension</code>, <code>inversion</code>, <code>cierre</code>, <code>timing</code>, <code>humor</code> y <code>frame</code>. La QA extendida fue regenerada a 225 preguntas y la corrida <code>docs/natalia_rag_eval_catalog_run_20260706_224719.*</code> dio 225/225 OK y 0 <code>FALTA_EVIDENCIA</code>. Nuevo grafo pedagogico: <code>docs/natalia_learning_graph_20260706_224330.json/html</code>, 79 nodos y 112 relaciones libro -> principio -> caso real -> patron de respuesta Natalia.</p>
+                <p><strong>Router Natalia/Maximus 2026-07-07:</strong> <code>route_turn_request()</code> ahora decide por destinatario. Mensajes dirigidos a ella como "nuestra primera cita" siguen en Natalia aunque mencionen cita; mensajes con prefijo <code>Maximus</code>/<code>coach</code>, etapas de estudio/game over o preguntas de consejo en tercera persona van a Maximus. Si la ruta es Maximus, el backend usa <code>build_maximus_prompt()</code>, no llama a Natalia, no pierde vida, no cambia atraccion y no avanza el nivel. El frontend quita ese mensaje del historial de Natalia y lo muestra como modal de coach.</p>
+                <p><strong>Runtime Gemini 2026-07-07:</strong> el archivo <code>.env</code> quedo parseable por <code>python-dotenv</code>; Decodo se guarda como <code>DECODO_PROXY_TEST_URL</code> y <code>DECODO_API_AUTH</code>, y <code>GEMINI_LIVE_ENABLED=1</code>. Se corrigieron nombres locales de claves <code>GEMINI_API_KEY_4..7</code> y la verificacion cargo 7 claves sin warnings. <code>.env</code> no se versiona en GitHub. Backup previo: <code>.env.bak_20260706_201411</code>.</p>
                 <h3>Arquitectura RAG consolidada 2026-07-07</h3>
                 <table>
                     <thead>
@@ -418,6 +420,24 @@
                             <td>Base teorica staged. Usar como apoyo metodologico, no como evidencia de chat real.</td>
                         </tr>
                         <tr>
+                            <td>Strategy context Natalia</td>
+                            <td><code>retrieve_persona_strategy_cases()</code> + <code>build_natalia_prompt()</code></td>
+                            <td>Activo</td>
+                            <td>Libros entran como razonamiento silencioso para calibrar estrategia; Natalia no cita teoria ni suena a coach.</td>
+                        </tr>
+                        <tr>
+                            <td>Router Natalia/Maximus</td>
+                            <td><code>route_turn_request()</code></td>
+                            <td>Activo</td>
+                            <td>Clasifica por destinatario: chat dirigido a ella va a Natalia; consejo, estudio, game over o prefijo Maximus va a Coach.</td>
+                        </tr>
+                        <tr>
+                            <td>Maximus Coach Q&amp;A</td>
+                            <td><code>build_maximus_prompt()</code> + modal coach</td>
+                            <td>Activo</td>
+                            <td>Responde consejos sin tocar vidas, atraccion, paso ni historial de Natalia.</td>
+                        </tr>
+                        <tr>
                             <td>Conversaciones libros</td>
                             <td><code>books_kb/chroma_books</code> / <code>natalia_conversations</code></td>
                             <td>74 documentos</td>
@@ -444,8 +464,14 @@
                         <tr>
                             <td>Evaluacion catalogo</td>
                             <td><code>scratch/qa_natalia_rag_catalog.py</code> + <code>docs/natalia_rag_eval_catalog_v1.*</code></td>
-                            <td>120/120 OK</td>
-                            <td>Benchmark etiquetado por categoria, intencion, perfil, objetivo, colecciones esperadas y criterio de fallo.</td>
+                            <td>225/225 OK</td>
+                            <td>Benchmark etiquetado por categoria, intencion, perfil, objetivo, routing, voz persona, groundedness y criterio de fallo.</td>
+                        </tr>
+                        <tr>
+                            <td>Grafo pedagogico</td>
+                            <td><code>scratch/build_natalia_learning_graph.py</code></td>
+                            <td>79 nodos / 112 relaciones</td>
+                            <td>Conecta libro -> principio -> caso real -> patron de respuesta Natalia para QA y organizacion.</td>
                         </tr>
                         <tr>
                             <td>Runtime</td>

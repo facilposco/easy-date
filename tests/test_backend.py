@@ -69,6 +69,90 @@ def test_route_turn_request_keeps_normal_chat_with_natalia(monkeypatch):
     assert route["reasons"] == []
 
 
+def test_route_turn_request_does_not_steal_direct_cita_chat(monkeypatch):
+    server = load_server(monkeypatch)
+    request = server.SimulateTurnRequest(
+        user_message="Jaja entonces cuando es nuestra primera cita?",
+        visible_context={"last_natalia_message": "me gusta como piensas"},
+    )
+
+    route = server.route_turn_request(request)
+
+    assert route["route"] == "natalia"
+    assert route["addressed_to_her"] is True
+
+
+def test_natalia_prompt_uses_books_as_silent_strategy(monkeypatch):
+    server = load_server(monkeypatch)
+    request = server.SimulateTurnRequest(
+        user_message="Me gusta esa energia, deberiamos tomar algo pronto",
+        visible_context={"last_natalia_message": "jaja me dio curiosidad"},
+    )
+
+    prompt = server.build_natalia_prompt(
+        request,
+        server.level_behavior(1),
+        "CASO real hombre-mujer",
+        "Fuente libro: Text Game\nConceptos: cierre, timing\nPrincipio de inversion y cierre suave.",
+        {"score": 8, "natalia_stance": "open"},
+        {"response_directive": "Responde al ultimo mensaje visible."},
+    )
+
+    assert "PRINCIPIOS TEXT GAME PARA RAZONAR EN SILENCIO" in prompt
+    assert "No los cites" in prompt
+    assert "no respondas como coach" in prompt
+
+
+def test_simulate_turn_reports_strategy_context(monkeypatch):
+    monkeypatch.setenv("GEMINI_COACH_ENABLED", "0")
+    server = load_server(monkeypatch)
+
+    monkeypatch.setattr(server, "retrieve_persona_cases", lambda request, behavior: [])
+    monkeypatch.setattr(
+        server,
+        "retrieve_persona_strategy_cases",
+        lambda request, behavior: [
+            {
+                "source": "books_chroma",
+                "profile": "teoria_libros",
+                "concepts": "cierre, timing",
+                "text": "Fuente libro: Text Game\nConceptos: cierre, timing\nCierre suave.",
+            }
+        ],
+    )
+    monkeypatch.setattr(server, "retrieve_coach_cases", lambda request, behavior, persona_cases: [])
+
+    prompts = []
+
+    def fake_generate_content(prompt):
+        prompts.append(prompt)
+        return '{"message": "Jaja eso suena peligroso, pero me dio curiosidad.", "reply_time": "Tardo: 15 min"}'
+
+    monkeypatch.setattr(server.rotator, "generate_content", fake_generate_content)
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/api/simulate-turn",
+        json={
+            "level": 1,
+            "step_index": 1,
+            "evaluated_step_id": 2,
+            "lives": 4,
+            "attraction": 50,
+            "history": [{"sender": "her", "text": "jaja me dio curiosidad"}],
+            "user_message": "Me gusta esa energia, deberiamos tomar algo pronto",
+            "chosen_time": "15m",
+            "visible_context": {"last_natalia_message": "jaja me dio curiosidad"},
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["retrieval_summary"]["strategy_context_cases"] == 1
+    assert data["retrieval_summary"]["strategy_sources"]["books_chroma"] == 1
+    assert any("PRINCIPIOS TEXT GAME PARA RAZONAR EN SILENCIO" in prompt for prompt in prompts)
+
+
 def test_simulate_turn_maximus_route_does_not_spend_life(monkeypatch):
     monkeypatch.setenv("GEMINI_COACH_ENABLED", "0")
     server = load_server(monkeypatch)
@@ -2088,8 +2172,9 @@ def test_retrieve_persona_cases_filters_unrelated_direct_question_pairs(monkeypa
     )
 
     filtered = server.retrieve_persona_cases(request, server.level_behavior(1))
+    filtered_pairs = [case for case in filtered if case.get("source") == "sqlite_reddit_pair"]
 
-    assert [case["man_message"] for case in filtered] == [
+    assert [case["man_message"] for case in filtered_pairs] == [
         "Yo trabajo en algo creativo, pero me gusta mas hablar de planes."
     ]
 

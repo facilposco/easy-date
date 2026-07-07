@@ -1155,6 +1155,26 @@ def retrieve_success_sqlite_cases(query: str, limit: int = 3) -> List[Dict[str, 
     ]
 
 
+TEXTGAME_CONCEPT_PATTERNS = {
+    "opener": ["opener", "abridor", "opening", "primer mensaje", "first message", "icebreaker"],
+    "tension": ["tension", "tensión", "sexual", "flirt", "coqueteo", "banter", "tease"],
+    "inversion": ["investment", "inversion", "inversión", "chase", "perseguir", "needy", "necesitado"],
+    "cierre": ["number", "numero", "número", "whatsapp", "phone", "date", "cita", "meet", "cerrar"],
+    "timing": ["timing", "tiempo", "wait", "espera", "reply", "responder", "demora"],
+    "humor": ["humor", "funny", "gracioso", "joke", "broma", "jaja", "laugh"],
+    "frame": ["frame", "marco", "liderazgo", "lead", "dominant", "calibrar", "calibration"],
+}
+
+
+def infer_textgame_concepts(text: str) -> List[str]:
+    lowered = clean_ui_text(text).lower()
+    return [
+        concept
+        for concept, tokens in TEXTGAME_CONCEPT_PATTERNS.items()
+        if any(token in lowered for token in tokens)
+    ][:5]
+
+
 def retrieve_books_chroma_cases(query: str, limit: int = 2) -> List[Dict[str, str]]:
     if not chroma_query_enabled():
         return []
@@ -1176,12 +1196,15 @@ def retrieve_books_chroma_cases(query: str, limit: int = 2) -> List[Dict[str, st
         for index, doc in enumerate(docs):
             meta = metadatas[index] if index < len(metadatas) else {}
             label = str(meta.get("titulo_libro") or meta.get("libro") or meta.get("book_slug") or "")
+            text = clean_ui_text(doc)
+            concepts = infer_textgame_concepts(text)
             cases.append(
                 {
                     "source": source,
                     "post_id": str(meta.get("conversation_id") or meta.get("book_id") or ""),
                     "profile": "teoria_libros",
-                    "text": f"Fuente libro: {label}\n{clean_ui_text(doc)[:1800]}",
+                    "concepts": ", ".join(concepts),
+                    "text": f"Fuente libro: {label}\nConceptos: {', '.join(concepts) or 'general'}\n{text[:1800]}",
                 }
             )
     return cases[:limit]
@@ -2162,11 +2185,20 @@ def retrieval_summary_for_cases(
             result[source] = result.get(source, 0) + 1
         return dict(sorted(result.items(), key=lambda item: item[0]))
 
+    persona_pair_cases = [
+        case for case in persona_cases if case.get("source") in {"sqlite_chat_pair", "sqlite_reddit_pair"}
+    ]
+    persona_support_cases = [
+        case for case in persona_cases if case.get("source") not in {"sqlite_chat_pair", "sqlite_reddit_pair"}
+    ]
+
     return {
-        "persona_pair_cases": len(persona_cases),
+        "persona_pair_cases": len(persona_pair_cases),
+        "persona_support_cases": len(persona_support_cases),
         "coach_context_cases": len(coach_cases),
         "strategy_context_cases": len(strategy_cases or []),
-        "persona_sources": counts(persona_cases),
+        "persona_sources": counts(persona_pair_cases),
+        "persona_support_sources": counts(persona_support_cases),
         "coach_sources": counts(coach_cases),
         "strategy_sources": counts(strategy_cases or []),
         "gemini_live_enabled": gemini_live_enabled(),
@@ -2330,6 +2362,8 @@ def cases_to_prompt(
         extra = ""
         if case.get("intent") or case.get("woman_signal"):
             extra = f" intent={case.get('intent','')} signal={case.get('woman_signal','')} success={case.get('success_score','')}"
+        if case.get("concepts"):
+            extra += f" concepts={case.get('concepts')}"
         label = f"CASO {index} [{case.get('source','')}/{case.get('profile','')}{extra}]"
         case_text = clean_ui_text(case.get("text", ""))
         if max_text_chars is not None and len(case_text) > max_text_chars:
@@ -3489,20 +3523,92 @@ def route_turn_request(request: SimulateTurnRequest) -> Dict[str, Any]:
     reasons: List[str] = []
     if stage in MAXIMUS_STAGE_HINTS:
         reasons.append(f"stage:{stage}")
-    for pattern in MAXIMUS_ROUTE_PATTERNS:
-        if re.search(pattern, message, re.IGNORECASE):
-            reasons.append(f"pattern:{pattern}")
-            break
+    explicit_prefix = re.search(r"^\s*(maximus|coach)\b", message, re.IGNORECASE)
+    if explicit_prefix:
+        reasons.append("explicit_prefix")
+    addressed_to_her = bool(
+        re.search(
+            r"\b(te|tu|tus|eres|estas|estás|vamos|salgamos|pasame|pásame|dame tu|te invito|nuestra\s+(primera\s+)?cita|me gustas|me encanta)\b",
+            message,
+            re.IGNORECASE,
+        )
+    )
+    advice_patterns = [
+        r"\bqu[eé]\s+(le\s+)?(respondo|digo)\b",
+        r"\bc[oó]mo\s+(le\s+)?(respondo|digo|pido|cierro)\b",
+        r"\b(dame|necesito|quiero)\s+(un\s+)?(consejo|tip|ejemplo|abridor|opener)\b",
+        r"\b(aconsej|estrategia|tecnica|t[eé]cnica|explicame|expl[ií]came|analiza|evalua|eval[uú]a)\b",
+        r"\b(foto|fotos|perfil)\b.*\b(recomiendas|mejorar|consejo|tip)\b",
+        r"\b(primera cita|cita)\b.*\b(lugar|tema|consejo|recomiendas|tip|estrategia)\b",
+    ]
+    if not explicit_prefix and not addressed_to_her:
+        for pattern in advice_patterns:
+            if re.search(pattern, message, re.IGNORECASE):
+                reasons.append(f"advice:{pattern}")
+                break
     route = "maximus" if reasons else "natalia"
     return {
         "route": route,
         "reasons": reasons,
         "stage": stage or "chat",
+        "addressed_to_her": addressed_to_her,
     }
 
 
 def maximus_intercept_message() -> str:
     return "Te contesta Maximus abajo; no voy a mezclar esto con el chat."
+
+
+def build_maximus_prompt(request: SimulateTurnRequest, behavior: Dict[str, Any], cases_prompt: str) -> str:
+    return f"""Eres Maximus, coach de text game del simulador Easy Date.
+El usuario te esta pidiendo consejo; NO esta hablando con Natalia.
+Responde en espanol latino, claro y accionable, sin inventar resultados no demostrados.
+
+NIVEL ACTUAL:
+- Perfil femenino: {behavior.get('profile_label', behavior.get('profile'))}
+- Dificultad: {behavior.get('difficulty')}
+- Estilo de Natalia: {behavior.get('style')}
+
+CONTEXTO VISIBLE DEL CHAT:
+{visible_context_text(request)}
+
+HISTORIAL VISIBLE:
+{compact_history(request.history)}
+
+PREGUNTA DEL USUARIO:
+"{request.user_message}"
+
+EVIDENCIA RAG DISPONIBLE:
+{cases_prompt}
+
+REGLAS:
+- Si no hay evidencia exacta, dilo con prudencia y da una recomendacion general.
+- Separa: que pasa en el contexto, que conviene hacer, y 3 respuestas sugeridas.
+- Puedes usar libros, Reddit, YouTube y casos negativos, pero no inventes citas, numeros ni WhatsApp.
+- Maximo 7 frases antes de las opciones.
+
+Devuelve SOLO JSON valido:
+{{
+  "answer": "respuesta breve de Maximus",
+  "suggestions": ["opcion A concreta", "opcion B concreta", "opcion C concreta"]
+}}"""
+
+
+def fallback_maximus_answer(request: SimulateTurnRequest, coach_cases: List[Dict[str, str]]) -> Dict[str, Any]:
+    suggestions = case_based_suggestions(coach_cases, analyze_visible_turn(request.user_message, authoritative_last_natalia(request), request.chosen_time))
+    if not suggestions:
+        suggestions = [
+            "Jaja me gusta eso, pero tengo que ver si lo sostienes en persona.",
+            "Eso suena peligroso... en el buen sentido.",
+            "Me dio curiosidad, sigue.",
+        ]
+    return {
+        "answer": (
+            "Maximus: por el contexto, responde corto, con calma y sin explicar de mas. "
+            "Mantén el tono juguetón y avanza solo si ella ya mostró receptividad."
+        ),
+        "suggestions": suggestions[:3],
+    }
 
 
 def build_natalia_prompt(
@@ -3673,6 +3779,73 @@ def simulate_turn(request: SimulateTurnRequest):
     natalia_fallback_category = ""
     natalia_fallback_reason = ""
 
+    if route_info["route"] == "maximus":
+        maximus_live_used = False
+        maximus_fallback_category = ""
+        try:
+            if not gemini_live_enabled():
+                raise RuntimeError("Gemini live disabled")
+            maximus_raw = rotator.generate_content(build_maximus_prompt(request, behavior, cases_prompt))
+            maximus = json_from_model(maximus_raw)
+            maximus_live_used = True
+        except Exception as exc:
+            print(f"WARNING: maximus fallback: {exc}")
+            maximus_fallback_category = fallback_category(exc)
+            maximus = fallback_maximus_answer(request, coach_cases)
+            fallback = True
+
+        suggestions = [
+            clean_ui_text(item)
+            for item in maximus.get("suggestions", [])
+            if clean_ui_text(item)
+        ][:3]
+        answer = clean_ui_text(maximus.get("answer")) or fallback_maximus_answer(request, coach_cases)["answer"]
+        if suggestions:
+            answer += "\n\nOpciones mejores:\n" + "\n".join(
+                f"{chr(65 + index)}. {item}" for index, item in enumerate(suggestions)
+            )
+        returned_cases = [
+            {
+                "source": case.get("source", ""),
+                "post_id": case.get("post_id", ""),
+                "profile": case.get("profile", ""),
+                "intent": case.get("intent", ""),
+                "woman_signal": case.get("woman_signal", ""),
+                "success_score": case.get("success_score", ""),
+            }
+            for case in coach_cases[:10]
+        ]
+        retrieval_summary = retrieval_summary_for_cases(coach_cases, persona_cases, strategy_cases)
+        retrieval_summary.update(
+            {
+                "gemini_coach_enabled": gemini_coach_enabled(),
+                "coach_live_used": maximus_live_used,
+                "natalia_live_used": False,
+                "maximus_live_used": maximus_live_used,
+                "maximus_fallback_category": maximus_fallback_category,
+                "passing_score": passing_score_for_behavior(behavior),
+                "route": route_info["route"],
+                "route_reasons": route_info["reasons"],
+                "route_stage": route_info["stage"],
+                "addressed_to_her": route_info.get("addressed_to_her", False),
+            }
+        )
+        return SimulateTurnResponse(
+            natalia_message="",
+            natalia_time="Maximus",
+            coach_title="Maximus Coach",
+            coach_feedback=answer,
+            score=10,
+            lose_life=False,
+            attraction_delta=0,
+            suggestions=suggestions,
+            retrieved_cases=returned_cases,
+            retrieval_summary=retrieval_summary,
+            fallback=fallback,
+            turn_analysis=turn_analysis,
+            turn_metrics=turn_metrics,
+        )
+
     if gemini_live_enabled() and gemini_coach_enabled():
         try:
             coach_raw = rotator.generate_content(build_coach_prompt(request, behavior, cases_prompt, turn_analysis))
@@ -3755,7 +3928,7 @@ def simulate_turn(request: SimulateTurnRequest):
         }
         for case in coach_cases[:10]
     ]
-    retrieval_summary = retrieval_summary_for_cases(coach_cases, persona_cases)
+    retrieval_summary = retrieval_summary_for_cases(coach_cases, persona_cases, strategy_cases)
     retrieval_summary.update(
         {
             "gemini_coach_enabled": gemini_coach_enabled(),
@@ -3767,6 +3940,7 @@ def simulate_turn(request: SimulateTurnRequest):
             "route": route_info["route"],
             "route_reasons": route_info["reasons"],
             "route_stage": route_info["stage"],
+            "addressed_to_her": route_info.get("addressed_to_her", False),
         }
     )
 
