@@ -175,6 +175,11 @@ def main() -> int:
                         "section_title": m.get("section_title"),
                         "page_estimate": m.get("page_estimate"),
                         "reference_quality": m.get("reference_quality"),
+                        "concept_tags": m.get("concept_tags"),
+                        "voice_policy": m.get("voice_policy"),
+                        "natalia_use": m.get("natalia_use"),
+                        "maximus_use": m.get("maximus_use"),
+                        "book_category": m.get("book_category"),
                     }
                     for m in metas
                 ],
@@ -211,6 +216,8 @@ def main() -> int:
         f"<td>{html.escape(str(row['top_source']))}</td>"
         f"<td>{html.escape(str(row['sources'][0].get('section_title') or ''))}</td>"
         f"<td>{html.escape(str(row['sources'][0].get('page_estimate') or ''))}</td>"
+        f"<td>{html.escape(str(row['sources'][0].get('concept_tags') or ''))}</td>"
+        f"<td>{html.escape(str(row['sources'][0].get('voice_policy') or ''))}</td>"
         f"<td>{row['target_hits_in_top5']}/5</td>"
         "</tr>"
         for idx, row in enumerate(rows, start=1)
@@ -228,7 +235,7 @@ def main() -> int:
 <b>Hit target top5:</b> <span class="ok">{payload['target_hits']}/10</span> · <b>Top1:</b> {payload['target_top1']}/10</div>
 <div class="card"><h2>Resumen</h2><p>{html.escape(summary['resumen'])}</p><p>{html.escape(summary['como_ayuda'])}</p></div>
 <h2>10 preguntas indirectas</h2>
-<table><thead><tr><th>#</th><th>Pregunta</th><th>Respuesta grounded</th><th>Hit</th><th>Top source</th><th>Seccion</th><th>Pag. est.</th><th>Top5</th></tr></thead><tbody>{qa_rows}</tbody></table>
+<table><thead><tr><th>#</th><th>Pregunta</th><th>Respuesta grounded</th><th>Hit</th><th>Top source</th><th>Seccion</th><th>Pag. est.</th><th>Conceptos</th><th>Politica</th><th>Top5</th></tr></thead><tbody>{qa_rows}</tbody></table>
 <h2>Temas detectados</h2>
 <table><thead><tr><th>Tema</th><th>Frecuencia aproximada</th></tr></thead><tbody>{theme_rows}</tbody></table>
 </body></html>"""

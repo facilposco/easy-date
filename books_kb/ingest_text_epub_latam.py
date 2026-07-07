@@ -43,6 +43,29 @@ BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
 SOURCE_BOOKS_DIR = BASE_DIR / "source_books"
 
+CONCEPT_PATTERNS = {
+    "confianza": ["confianza", "seguridad", "arrogancia", "necesitado", "aprobacion"],
+    "escucha": ["escuchar", "escucha", "preguntas", "conversacion", "responder"],
+    "rechazo": ["rechazo", "rechazar", "compostura", "timidez"],
+    "limites": ["limite", "limites", "respeto", "presion", "consentimiento"],
+    "presentacion": ["higiene", "presentacion", "perfil", "fotos", "vestir"],
+    "cortejo": ["cortejo", "coqueteo", "seduc", "atraccion"],
+    "timing": ["timing", "momento", "ritmo", "despacio", "intensidad"],
+    "cierre": ["cita", "salir", "invitar", "plan", "quedar"],
+}
+
+SENSITIVE_TERMS = [
+    "kino",
+    "kinoescalada",
+    "alpha",
+    "alfa",
+    "dominio",
+    "manipul",
+    "tocar",
+    "sexual",
+    "llevar a la cama",
+]
+
 
 def now_iso() -> str:
     return datetime.now().replace(microsecond=0).isoformat()
@@ -331,6 +354,60 @@ def clean_translated_text(text: str) -> str:
     return pb.clean_text(text)
 
 
+def translation_quality_flags(text: str) -> list[str]:
+    flags: list[str] = []
+    if any(marker in text for marker in ["Ã", "â€", "Â"]):
+        flags.append("mojibake")
+    if re.search(r"Aqu[ií] tienes la traducci[oó]n|Traducci[oó]n fiel", text, flags=re.IGNORECASE):
+        flags.append("prompt_leakage")
+    if len(text.split()) < 500:
+        flags.append("too_short")
+    return flags
+
+
+def infer_book_category(title: str, source_name: str) -> str:
+    lower = f"{title} {source_name}".lower()
+    if any(word in lower for word in ["women", "woman", "female", "femenina", "psicologia femenina"]):
+        return "psicologia_femenina"
+    if any(word in lower for word in ["text", "tinder", "swipe", "sms"]):
+        return "text_game"
+    if any(word in lower for word in ["daygame", "approach", "pick-up", "seduction"]):
+        return "seduccion_general"
+    if "psychology" in lower or "psicologia" in lower:
+        return "ciencia_conductual"
+    return "comunicacion"
+
+
+def detect_concepts(text: str) -> list[str]:
+    lower = text.lower()
+    return [
+        concept
+        for concept, patterns in CONCEPT_PATTERNS.items()
+        if any(pattern in lower for pattern in patterns)
+    ]
+
+
+def voice_policy(text: str, content_type: str) -> dict[str, str]:
+    lower = text.lower()
+    if any(term in lower for term in SENSITIVE_TERMS):
+        return {
+            "voice_policy": "maximus_only_review",
+            "natalia_use": "do_not_imitate",
+            "maximus_use": "teaching_with_consent_filter",
+        }
+    if content_type in {"principio", "tecnica", "ejercicio"}:
+        return {
+            "voice_policy": "silent_strategy",
+            "natalia_use": "silent_reasoning_only",
+            "maximus_use": "teaching_context",
+        }
+    return {
+        "voice_policy": "grounded_context",
+        "natalia_use": "contextual_tone_only",
+        "maximus_use": "teaching_context",
+    }
+
+
 def chroma_upsert(rows: list[dict], collection_name: str, document_key: str) -> None:
     if not rows:
         return
@@ -391,6 +468,11 @@ def ensure_chunk_reference_columns(conn: sqlite3.Connection) -> None:
     add_column(conn, "chunks", "page_estimate INTEGER")
     add_column(conn, "chunks", "reference_quality TEXT")
     add_column(conn, "chunks", "reference_updated_at TEXT")
+    add_column(conn, "chunks", "concept_tags TEXT")
+    add_column(conn, "chunks", "voice_policy TEXT")
+    add_column(conn, "chunks", "natalia_use TEXT")
+    add_column(conn, "chunks", "maximus_use TEXT")
+    add_column(conn, "chunks", "translation_quality_flags TEXT")
     conn.commit()
 
 
@@ -423,6 +505,16 @@ def apply_chunk_references(
             "page_estimate": page,
             "reference_quality": "estimated_from_epub_spine_and_chunk_position",
         }
+        chunk_text = str(chunk.get("texto", ""))
+        content_type = pb.classify_content(chunk_text)
+        concepts = detect_concepts(chunk_text)
+        policy = voice_policy(chunk_text, content_type)
+        reference.update(
+            {
+                "concept_tags": json.dumps(concepts, ensure_ascii=False),
+                **policy,
+            }
+        )
         references[index] = reference
         conn.execute(
             """
@@ -435,7 +527,11 @@ def apply_chunk_references(
                    reference_updated_at = ?,
                    capitulo = COALESCE(NULLIF(capitulo, ''), ?),
                    pagina_inicio = COALESCE(pagina_inicio, ?),
-                   pagina_fin = COALESCE(pagina_fin, ?)
+                   pagina_fin = COALESCE(pagina_fin, ?),
+                   concept_tags = ?,
+                   voice_policy = ?,
+                   natalia_use = ?,
+                   maximus_use = ?
              WHERE book_id = ? AND chunk_index = ?
             """,
             (
@@ -448,6 +544,10 @@ def apply_chunk_references(
                 reference["section_title"],
                 reference["page_estimate"],
                 reference["page_estimate"],
+                reference["concept_tags"],
+                reference["voice_policy"],
+                reference["natalia_use"],
+                reference["maximus_use"],
                 book_id,
                 index,
             ),
@@ -503,6 +603,7 @@ def main() -> int:
             provider=args.translation_provider,
         )
         translated_text = clean_translated_text(translated_text)
+        book_translation_flags = translation_quality_flags(translated_text)
 
         (pb.RAW_DIR / f"libro_{book.id:02d}_original_en.txt").write_text(native_text, encoding="utf-8")
         raw_path = pb.RAW_DIR / f"libro_{book.id:02d}_raw.txt"
@@ -520,11 +621,21 @@ def main() -> int:
             "images": 0,
         }
         pb.insert_book(conn, book, stats, len(chunks), len(conversations))
+        conn.execute(
+            "UPDATE books SET categoria = ? WHERE id = ?",
+            (infer_book_category(args.title, args.epub.name), book.id),
+        )
         pb.reset_book_rows(conn, book.id)
         chunk_rows = pb.insert_chunks(conn, book, chunks)
         references = apply_chunk_references(conn, book.id, chunks, doc_records)
+        conn.execute(
+            "UPDATE chunks SET translation_quality_flags = ? WHERE book_id = ?",
+            (json.dumps(book_translation_flags, ensure_ascii=False), book.id),
+        )
         for row in chunk_rows:
-            row["metadata"].update(references.get(int(row["metadata"]["chunk_index"]), {}))
+            reference = references.get(int(row["metadata"]["chunk_index"]), {})
+            row["metadata"].update(reference)
+            row["metadata"]["translation_quality_flags"] = json.dumps(book_translation_flags, ensure_ascii=False)
         conn.execute("DELETE FROM ocr_image_texts WHERE book_id = ?", (book.id,))
         score = pb.write_quality(conn, book.id, stats["words"], 0)
         conn.execute("UPDATE books SET procesado_pct = 100.0 WHERE id = ?", (book.id,))
@@ -551,6 +662,7 @@ def main() -> int:
         "images_seen_not_processed": extract_stats["images_seen_not_processed"],
         "images_processed": 0,
         "translation_blocks": len(translation_blocks),
+        "translation_quality_flags": book_translation_flags,
         "translation_audit": translation_audit,
         "chunks": len(chunks),
         "conversations": 0,

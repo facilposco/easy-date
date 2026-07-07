@@ -9,6 +9,7 @@ import json
 import math
 import re
 import sqlite3
+import sys
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
@@ -22,6 +23,14 @@ BOOKS_DIR = ROOT / "books_kb"
 DB_PATH = BOOKS_DIR / "books_index.sqlite"
 CHROMA_PATH = BOOKS_DIR / "chroma_books"
 DOCS_DIR = ROOT / "docs"
+
+sys.path.insert(0, str(BOOKS_DIR))
+from ingest_text_epub_latam import (  # noqa: E402
+    detect_concepts,
+    infer_book_category,
+    translation_quality_flags,
+    voice_policy,
+)
 
 
 def now_iso() -> str:
@@ -42,6 +51,11 @@ def ensure_chunk_reference_columns(conn: sqlite3.Connection) -> None:
     add_column(conn, "chunks", "page_estimate INTEGER")
     add_column(conn, "chunks", "reference_quality TEXT")
     add_column(conn, "chunks", "reference_updated_at TEXT")
+    add_column(conn, "chunks", "concept_tags TEXT")
+    add_column(conn, "chunks", "voice_policy TEXT")
+    add_column(conn, "chunks", "natalia_use TEXT")
+    add_column(conn, "chunks", "maximus_use TEXT")
+    add_column(conn, "chunks", "translation_quality_flags TEXT")
     conn.commit()
 
 
@@ -110,6 +124,10 @@ def backfill(book_slug: str, words_per_page: int, apply_chroma: bool) -> dict[st
         "SELECT id, chunk_index, texto, palabras, embedding_id, tipo_contenido, temas FROM chunks WHERE book_id = ? ORDER BY chunk_index",
         (book["id"],),
     ).fetchall()
+    raw_path = BOOKS_DIR / "raw_texts" / f"libro_{int(book['id']):02d}_translated_latam.txt"
+    book_flags = translation_quality_flags(raw_path.read_text(encoding="utf-8", errors="replace")) if raw_path.exists() else []
+    category = infer_book_category(str(book["titulo"]), str(book["archivo_original"]))
+    conn.execute("UPDATE books SET categoria = ? WHERE id = ?", (category, book["id"]))
     page_by_chunk = chunk_page_estimates(chunks, words_per_page)
 
     updated_rows: list[dict[str, object]] = []
@@ -118,6 +136,8 @@ def backfill(book_slug: str, words_per_page: int, apply_chroma: bool) -> dict[st
         doc = doc_for_chunk(chunk_index, len(chunks), docs)
         page = page_by_chunk[chunk_index]
         section_title = str(doc.get("title") or "")
+        concepts = detect_concepts(str(row["texto"] or ""))
+        policy = voice_policy(str(row["texto"] or ""), str(row["tipo_contenido"] or ""))
         conn.execute(
             """
             UPDATE chunks
@@ -129,7 +149,12 @@ def backfill(book_slug: str, words_per_page: int, apply_chroma: bool) -> dict[st
                    reference_updated_at = ?,
                    capitulo = COALESCE(NULLIF(capitulo, ''), ?),
                    pagina_inicio = COALESCE(pagina_inicio, ?),
-                   pagina_fin = COALESCE(pagina_fin, ?)
+                   pagina_fin = COALESCE(pagina_fin, ?),
+                   concept_tags = ?,
+                   voice_policy = ?,
+                   natalia_use = ?,
+                   maximus_use = ?,
+                   translation_quality_flags = ?
              WHERE id = ?
             """,
             (
@@ -142,6 +167,11 @@ def backfill(book_slug: str, words_per_page: int, apply_chroma: bool) -> dict[st
                 section_title,
                 page,
                 page,
+                json.dumps(concepts, ensure_ascii=False),
+                policy["voice_policy"],
+                policy["natalia_use"],
+                policy["maximus_use"],
+                json.dumps(book_flags, ensure_ascii=False),
                 row["id"],
             ),
         )
@@ -163,6 +193,12 @@ def backfill(book_slug: str, words_per_page: int, apply_chroma: bool) -> dict[st
                     "section_title": section_title,
                     "page_estimate": page,
                     "reference_quality": "estimated_from_epub_spine_and_chunk_position",
+                    "concept_tags": json.dumps(concepts, ensure_ascii=False),
+                    "voice_policy": policy["voice_policy"],
+                    "natalia_use": policy["natalia_use"],
+                    "maximus_use": policy["maximus_use"],
+                    "translation_quality_flags": json.dumps(book_flags, ensure_ascii=False),
+                    "book_category": category,
                 },
             }
         )
@@ -192,12 +228,16 @@ def backfill(book_slug: str, words_per_page: int, apply_chroma: bool) -> dict[st
         "chroma_updated": chroma_updated,
         "words_per_page": words_per_page,
         "reference_quality": "estimated_from_epub_spine_and_chunk_position",
+        "book_category": category,
+        "translation_quality_flags": book_flags,
         "sample": [
             {
                 "chunk_index": row["metadata"]["chunk_index"],
                 "epub_doc_index": row["metadata"]["epub_doc_index"],
                 "section_title": row["metadata"]["section_title"],
                 "page_estimate": row["metadata"]["page_estimate"],
+                "concept_tags": row["metadata"]["concept_tags"],
+                "voice_policy": row["metadata"]["voice_policy"],
             }
             for row in updated_rows[:5]
         ],
