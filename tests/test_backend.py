@@ -82,6 +82,29 @@ def test_route_turn_request_does_not_steal_direct_cita_chat(monkeypatch):
     assert route["addressed_to_her"] is True
 
 
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Analiza mi mensaje: hola hermosa, pasame tu numero",
+        "Dame 3 opciones para responderle si ella dijo jajaja no se",
+        "Que abridor uso con una mujer defensiva?",
+        "Que lugares son mejores para primera cita?",
+        "Que errores debo evitar al pedir Instagram?",
+    ],
+)
+def test_route_turn_request_strong_advice_wins_over_embedded_chat(monkeypatch, message):
+    server = load_server(monkeypatch)
+    request = server.SimulateTurnRequest(
+        user_message=message,
+        visible_context={"last_natalia_message": "jaja no se"},
+    )
+
+    route = server.route_turn_request(request)
+
+    assert route["route"] == "maximus"
+    assert route["reasons"]
+
+
 def test_natalia_prompt_uses_books_as_silent_strategy(monkeypatch):
     server = load_server(monkeypatch)
     request = server.SimulateTurnRequest(

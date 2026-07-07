@@ -150,6 +150,15 @@ def optional_table_count(table_name: str) -> Optional[int]:
     except Exception:
         return None
 
+
+def safe_collection_count(collection: Any) -> Optional[int]:
+    if collection is None:
+        return None
+    try:
+        return int(collection.count())
+    except Exception:
+        return None
+
 LEVEL_BEHAVIOR = {
     1: {
         "name": "Natalia",
@@ -762,13 +771,11 @@ async def training_status():
         "woman_signals": dict(sorted(signals.items(), key=lambda item: item[0])),
         "profile_training": dict(sorted(profile_training.items(), key=lambda item: item[0])),
         "profile_intent_gaps": dict(sorted(profile_intent_gaps.items(), key=lambda item: item[0])),
-        "chroma_documents": chroma_collection.count() if chroma_collection is not None else None,
-        "success_chroma_documents": success_collection.count() if success_collection is not None else None,
-        "books_chroma_documents": books_collection.count() if books_collection is not None else None,
-        "book_conversations_chroma_documents": (
-            book_conversations_collection.count() if book_conversations_collection is not None else None
-        ),
-        "negative_chroma_documents": negative_collection.count() if negative_collection is not None else None,
+        "chroma_documents": safe_collection_count(chroma_collection),
+        "success_chroma_documents": safe_collection_count(success_collection),
+        "books_chroma_documents": safe_collection_count(books_collection),
+        "book_conversations_chroma_documents": safe_collection_count(book_conversations_collection),
+        "negative_chroma_documents": safe_collection_count(negative_collection),
         "turn_audit_log_rows": optional_table_count("turn_audit_log"),
     }
 
@@ -3658,6 +3665,18 @@ def route_turn_request(request: SimulateTurnRequest) -> Dict[str, Any]:
     explicit_prefix = re.search(r"^\s*(maximus|coach)\b", message, re.IGNORECASE)
     if explicit_prefix:
         reasons.append("explicit_prefix")
+    strong_advice_patterns = [
+        r"\b(analiza|evalua|eval[uú]a)\b",
+        r"\bdame\s+(\d+|uno|dos|tres|cuatro|cinco)\s+(opciones|ejemplos|respuestas|sugerencias)\b",
+        r"\bqu[eé]\s+abridor\s+uso\b",
+        r"\bqu[eé]\s+errores\s+debo\s+evitar\b",
+        r"\bqu[eé]\s+lugares?\s+son\s+mejores?\s+para\s+primera\s+cita\b",
+    ]
+    if not explicit_prefix:
+        for pattern in strong_advice_patterns:
+            if re.search(pattern, message, re.IGNORECASE):
+                reasons.append(f"strong_advice:{pattern}")
+                break
     addressed_to_her = bool(
         re.search(
             r"\b(te|tu|tus|eres|estas|estás|vamos|salgamos|pasame|pásame|dame tu|te invito|nuestra\s+(primera\s+)?cita|me gustas|me encanta)\b",
