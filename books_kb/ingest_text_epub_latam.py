@@ -128,6 +128,31 @@ def extract_epub_native_text(epub_path: Path) -> tuple[str, dict[str, int]]:
     return native_text, stats
 
 
+def clean_label(value: str) -> str:
+    value = html.unescape(value or "")
+    value = re.sub(r"\s+", " ", value).strip()
+    return value[:140]
+
+
+def epub_doc_records(epub_path: Path) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    html_names = epub_spine_html_names(epub_path)
+    with ZipFile(epub_path) as zf:
+        for index, name in enumerate(html_names, start=1):
+            soup = BeautifulSoup(zf.read(name), "html.parser")
+            title = ""
+            for selector in ["h1", "h2", "h3", "title"]:
+                tag = soup.find(selector)
+                if tag:
+                    title = clean_label(tag.get_text(" "))
+                    if title:
+                        break
+            if not title:
+                title = clean_label(soup.get_text(" "))[:80] or f"Documento EPUB {index}"
+            records.append({"index": index, "name": name, "title": title})
+    return records
+
+
 def split_for_translation(text: str, max_chars: int = 1800) -> list[str]:
     paragraphs = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     chunks: list[str] = []
@@ -352,6 +377,85 @@ def update_metadata(conn: sqlite3.Connection) -> None:
     write_json(pb.METADATA_PATH, payload)
 
 
+def add_column(conn: sqlite3.Connection, table: str, definition: str) -> None:
+    name = definition.split()[0]
+    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if name not in existing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {definition}")
+
+
+def ensure_chunk_reference_columns(conn: sqlite3.Connection) -> None:
+    add_column(conn, "chunks", "epub_doc_index INTEGER")
+    add_column(conn, "chunks", "epub_doc_name TEXT")
+    add_column(conn, "chunks", "section_title TEXT")
+    add_column(conn, "chunks", "page_estimate INTEGER")
+    add_column(conn, "chunks", "reference_quality TEXT")
+    add_column(conn, "chunks", "reference_updated_at TEXT")
+    conn.commit()
+
+
+def doc_for_chunk(chunk_index: int, total_chunks: int, docs: list[dict[str, object]]) -> dict[str, object]:
+    if not docs:
+        return {"index": 0, "name": "", "title": ""}
+    ratio = (chunk_index + 1) / max(1, total_chunks)
+    doc_pos = min(len(docs) - 1, max(0, int((ratio * len(docs)) + 0.999999) - 1))
+    return docs[doc_pos]
+
+
+def apply_chunk_references(
+    conn: sqlite3.Connection,
+    book_id: int,
+    chunks: list[dict[str, object]],
+    doc_records: list[dict[str, object]],
+    words_per_page: int = 250,
+) -> dict[int, dict[str, object]]:
+    ensure_chunk_reference_columns(conn)
+    references: dict[int, dict[str, object]] = {}
+    running_words = 0
+    for index, chunk in enumerate(chunks):
+        doc = doc_for_chunk(index, len(chunks), doc_records)
+        page = max(1, (running_words // words_per_page) + 1)
+        running_words += len(re.findall(r"\w+", str(chunk.get("texto", "")), flags=re.UNICODE))
+        reference = {
+            "epub_doc_index": int(doc.get("index") or 0),
+            "epub_doc_name": str(doc.get("name") or ""),
+            "section_title": str(doc.get("title") or ""),
+            "page_estimate": page,
+            "reference_quality": "estimated_from_epub_spine_and_chunk_position",
+        }
+        references[index] = reference
+        conn.execute(
+            """
+            UPDATE chunks
+               SET epub_doc_index = ?,
+                   epub_doc_name = ?,
+                   section_title = ?,
+                   page_estimate = ?,
+                   reference_quality = ?,
+                   reference_updated_at = ?,
+                   capitulo = COALESCE(NULLIF(capitulo, ''), ?),
+                   pagina_inicio = COALESCE(pagina_inicio, ?),
+                   pagina_fin = COALESCE(pagina_fin, ?)
+             WHERE book_id = ? AND chunk_index = ?
+            """,
+            (
+                reference["epub_doc_index"],
+                reference["epub_doc_name"],
+                reference["section_title"],
+                reference["page_estimate"],
+                reference["reference_quality"],
+                now_iso(),
+                reference["section_title"],
+                reference["page_estimate"],
+                reference["page_estimate"],
+                book_id,
+                index,
+            ),
+        )
+    conn.commit()
+    return references
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Ingest text-only EPUB into Natalia Books KB.")
     parser.add_argument("--epub", type=Path, required=True)
@@ -370,6 +474,7 @@ def main() -> int:
         shutil.copy2(args.epub, source_target)
 
     native_text, extract_stats = extract_epub_native_text(source_target)
+    doc_records = epub_doc_records(source_target)
     if extract_stats["native_words"] < 500:
         raise RuntimeError(f"EPUB text extraction looks too small: {extract_stats['native_words']} words")
 
@@ -417,6 +522,9 @@ def main() -> int:
         pb.insert_book(conn, book, stats, len(chunks), len(conversations))
         pb.reset_book_rows(conn, book.id)
         chunk_rows = pb.insert_chunks(conn, book, chunks)
+        references = apply_chunk_references(conn, book.id, chunks, doc_records)
+        for row in chunk_rows:
+            row["metadata"].update(references.get(int(row["metadata"]["chunk_index"]), {}))
         conn.execute("DELETE FROM ocr_image_texts WHERE book_id = ?", (book.id,))
         score = pb.write_quality(conn, book.id, stats["words"], 0)
         conn.execute("UPDATE books SET procesado_pct = 100.0 WHERE id = ?", (book.id,))
@@ -439,6 +547,7 @@ def main() -> int:
         "native_words": extract_stats["native_words"],
         "translated_words": stats["words"],
         "html_docs": extract_stats["html_docs"],
+        "reference_fields": ["epub_doc_index", "epub_doc_name", "section_title", "page_estimate", "reference_quality"],
         "images_seen_not_processed": extract_stats["images_seen_not_processed"],
         "images_processed": 0,
         "translation_blocks": len(translation_blocks),

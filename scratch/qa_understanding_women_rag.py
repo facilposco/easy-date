@@ -171,6 +171,10 @@ def main() -> int:
                         "book_slug": m.get("book_slug"),
                         "chunk_index": m.get("chunk_index"),
                         "tipo_contenido": m.get("tipo_contenido"),
+                        "epub_doc_index": m.get("epub_doc_index"),
+                        "section_title": m.get("section_title"),
+                        "page_estimate": m.get("page_estimate"),
+                        "reference_quality": m.get("reference_quality"),
                     }
                     for m in metas
                 ],
@@ -204,7 +208,10 @@ def main() -> int:
         "<tr>"
         f"<td>{idx}</td><td>{html.escape(row['question'])}</td><td>{html.escape(row['answer'])}</td>"
         f"<td>{'OK' if row['target_hit'] else 'REVISAR'}</td>"
-        f"<td>{html.escape(str(row['top_source']))}</td><td>{row['target_hits_in_top5']}/5</td>"
+        f"<td>{html.escape(str(row['top_source']))}</td>"
+        f"<td>{html.escape(str(row['sources'][0].get('section_title') or ''))}</td>"
+        f"<td>{html.escape(str(row['sources'][0].get('page_estimate') or ''))}</td>"
+        f"<td>{row['target_hits_in_top5']}/5</td>"
         "</tr>"
         for idx, row in enumerate(rows, start=1)
     )
@@ -221,7 +228,7 @@ def main() -> int:
 <b>Hit target top5:</b> <span class="ok">{payload['target_hits']}/10</span> · <b>Top1:</b> {payload['target_top1']}/10</div>
 <div class="card"><h2>Resumen</h2><p>{html.escape(summary['resumen'])}</p><p>{html.escape(summary['como_ayuda'])}</p></div>
 <h2>10 preguntas indirectas</h2>
-<table><thead><tr><th>#</th><th>Pregunta</th><th>Respuesta grounded</th><th>Hit</th><th>Top source</th><th>Top5</th></tr></thead><tbody>{qa_rows}</tbody></table>
+<table><thead><tr><th>#</th><th>Pregunta</th><th>Respuesta grounded</th><th>Hit</th><th>Top source</th><th>Seccion</th><th>Pag. est.</th><th>Top5</th></tr></thead><tbody>{qa_rows}</tbody></table>
 <h2>Temas detectados</h2>
 <table><thead><tr><th>Tema</th><th>Frecuencia aproximada</th></tr></thead><tbody>{theme_rows}</tbody></table>
 </body></html>"""
