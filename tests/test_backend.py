@@ -126,6 +126,96 @@ def test_natalia_prompt_uses_books_as_silent_strategy(monkeypatch):
     assert "no respondas como coach" in prompt
 
 
+def create_principles_db(path):
+    conn = sqlite3.connect(path)
+    conn.execute("CREATE TABLE books (id INTEGER PRIMARY KEY, titulo TEXT, autor TEXT)")
+    conn.execute(
+        """
+        CREATE TABLE book_principles (
+            id INTEGER PRIMARY KEY,
+            book_id INTEGER,
+            principle TEXT,
+            category TEXT,
+            concept_tags TEXT,
+            risk_level TEXT,
+            voice_policy TEXT,
+            natalia_use TEXT,
+            maximus_use TEXT,
+            source_reference TEXT
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE principle_case_links (
+            principle_id INTEGER,
+            post_id TEXT,
+            objective TEXT,
+            link_score INTEGER,
+            confidence TEXT,
+            evidence_summary TEXT
+        )
+        """
+    )
+    conn.execute("INSERT INTO books VALUES (1, 'Text Game', 'Autor')")
+    return conn
+
+
+def test_retrieve_persona_strategy_cases_uses_structured_book_principles(monkeypatch, tmp_path):
+    server = load_server(monkeypatch)
+    db_path = tmp_path / "books_index.sqlite"
+    conn = create_principles_db(db_path)
+    conn.execute(
+        """
+        INSERT INTO book_principles VALUES (
+            1, 1, 'Pide WhatsApp solo despues de una senal receptiva y con una razon concreta.',
+            'cierre_transparente', '{"super_tags":["cierre_transparente"],"tags":["cierre"]}',
+            'low', 'silent_strategy', 'silent_strategy', 'explain_and_teach',
+            'Text Game | cierre | pag_estimada=12 | chunk=1'
+        )
+        """
+    )
+    conn.execute(
+        "INSERT INTO principle_case_links VALUES (1, 'post_ok', 'whatsapp, cita', 9, 'alta', 'Caso real con WhatsApp entregado.')"
+    )
+    conn.commit()
+    conn.close()
+    monkeypatch.setattr(server, "BOOKS_DB_PATH", db_path)
+    request = server.SimulateTurnRequest(user_message="quiero pedir WhatsApp sin parecer intenso")
+
+    cases = server.retrieve_persona_strategy_cases(request, server.level_behavior(1))
+
+    assert cases[0]["source"] == "book_principles"
+    assert "Aplicar en silencio" in cases[0]["text"]
+    assert "post_ok" in cases[0]["text"]
+
+
+def test_book_principles_high_risk_are_excluded_from_natalia_but_available_to_maximus(monkeypatch, tmp_path):
+    server = load_server(monkeypatch)
+    db_path = tmp_path / "books_index.sqlite"
+    conn = create_principles_db(db_path)
+    conn.execute(
+        """
+        INSERT INTO book_principles VALUES (
+            1, 1, 'Tecnica de manipulacion oscura para controlar la conversacion.',
+            'influencia_riesgo_manipulacion', '{"super_tags":["influencia_riesgo_manipulacion"],"tags":["tension"]}',
+            'high', 'maximus_only_review', 'silent_guarded', 'explain_with_guardrails',
+            'Libro riesgoso | pag_estimada=40 | chunk=2'
+        )
+        """
+    )
+    conn.commit()
+    conn.close()
+    monkeypatch.setattr(server, "BOOKS_DB_PATH", db_path)
+
+    natalia_cases = server.retrieve_book_principle_cases("manipulacion conversacion", consumer="natalia")
+    maximus_cases = server.retrieve_book_principle_cases("manipulacion conversacion", consumer="maximus")
+
+    assert natalia_cases == []
+    assert maximus_cases[0]["source"] == "book_principles_coach"
+    assert "Puede explicarse" in maximus_cases[0]["text"]
+
+
 def test_simulate_turn_reports_strategy_context(monkeypatch):
     monkeypatch.setenv("GEMINI_COACH_ENABLED", "0")
     server = load_server(monkeypatch)

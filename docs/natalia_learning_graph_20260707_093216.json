@@ -1,0 +1,1195 @@
+{
+  "generated_at": "2026-07-07T09:32:28",
+  "description": "Grafo auditable libro -> principio -> caso real -> patron de respuesta Natalia.",
+  "nodes": [
+    {
+      "id": "agent:natalia",
+      "label": "Natalia Persona",
+      "kind": "agent"
+    },
+    {
+      "id": "agent:maximus",
+      "label": "Maximus Coach",
+      "kind": "agent"
+    },
+    {
+      "id": "concept:opener",
+      "label": "opener",
+      "kind": "concept",
+      "tokens": [
+        "opener",
+        "abridor",
+        "opening",
+        "primer mensaje",
+        "first message",
+        "icebreaker"
+      ]
+    },
+    {
+      "id": "book:opener:1:23",
+      "label": "Libro: opener #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre\nMessage Game is more than just a guide, it is a lifestyle. It is a way of life, it is a way to achieve things and a w ay to succeed in dating. In order to maximize your dating potential, it will be very useful to join the rest of those who also read this. Get involved, dive straight in and it will prove to be very valuable to..."
+    },
+    {
+      "id": "book:opener:2:23",
+      "label": "Libro: opener #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: opener, cierre, timing, frame\nHe is now contacting her by using her phone number. Some bullshit about names. This is where she was about to stop responding. This guy a sked the group why she would stop here. She stopped responding because, before the phone number, he was efficient and fast. He was taking action. Now there is a bullsh..."
+    },
+    {
+      "id": "case:opener:1s5s4d8",
+      "label": "Por favor. Soy autista. ¿Por qué soy tan malo con esto? Estaba tratando de coquetear... Estoy desesperada por un consejo.",
+      "kind": "success_case",
+      "post_id": "1s5s4d8",
+      "score": 9,
+      "url": "https://old.reddit.com/r/texts/comments/1s5s4d8/please_i_am_autistic_why_do_i_suck_at_this_so/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, instagram, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:opener:1s5s4d8",
+      "label": "Respuesta Natalia derivada: opener",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:opener:1o7b2s",
+      "label": "Me encontré con mi primera prostituta accidental. (Ya hemos tenido una buena cita)",
+      "kind": "success_case",
+      "post_id": "1o7b2s",
+      "score": 9,
+      "url": "https://old.reddit.com/r/OkCupid/comments/1o7b2s/ran_into_my_first_accidental_prostitute_weve/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:opener:1o7b2s",
+      "label": "Respuesta Natalia derivada: opener",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:opener:5a63ld",
+      "label": "[traduccion pendiente] I decided to be creative. It got me a phone number and a date ☺️",
+      "kind": "success_case",
+      "post_id": "5a63ld",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/5a63ld/i_decided_to_be_creative_it_got_me_a_phone_number/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor. Promovido desde auditoria local con QA estricto."
+    },
+    {
+      "id": "response:opener:5a63ld",
+      "label": "Respuesta Natalia derivada: opener",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:opener:3ry27u",
+      "label": "Así comencé la conversación. Conseguí su número y una cita.",
+      "kind": "success_case",
+      "post_id": "3ry27u",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/3ry27u/this_is_how_i_started_the_conversation_got_her/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:opener:3ry27u",
+      "label": "Respuesta Natalia derivada: opener",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "concept:tension",
+      "label": "tension",
+      "kind": "concept",
+      "tokens": [
+        "tension",
+        "tensión",
+        "sexual",
+        "flirt",
+        "coqueteo",
+        "banter",
+        "tease"
+      ]
+    },
+    {
+      "id": "book:tension:1:23",
+      "label": "Libro: tension #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre\nMessage Game is more than just a guide, it is a lifestyle. It is a way of life, it is a way to achieve things and a w ay to succeed in dating. In order to maximize your dating potential, it will be very useful to join the rest of those who also read this. Get involved, dive straight in and it will prove to be very valuable to..."
+    },
+    {
+      "id": "book:tension:2:23",
+      "label": "Libro: tension #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: opener, tension, cierre\nSomeone's Messages\nThis guy literally copy-and-pasted most of the lines from one example in this book with absolutely no context and it still worked. That example is on page 161. Someone's Messages\nThe word 'depends' is quite common in receiving a response to the classic spontaneous line. The new 3 things line..."
+    },
+    {
+      "id": "case:tension:q6rm4d",
+      "label": "Conexi?n instant?nea y brunch con mimosas",
+      "kind": "success_case",
+      "post_id": "q6rm4d",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/q6rm4d/instant_connection_and_best_date_ive_ever_been_on/",
+      "summary": "Sirve para Natalia porque convierte humor y coqueteo en una cita concreta de brunch, con cierre de contacto cuando ella dice que le escriba."
+    },
+    {
+      "id": "response:tension:q6rm4d",
+      "label": "Respuesta Natalia derivada: tension",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:tension:yo0wvd",
+      "label": "¿Masculinidad tóxica, es decir, heterosexual?",
+      "kind": "success_case",
+      "post_id": "yo0wvd",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/yo0wvd/toxic_masculinity_ie_straight/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:tension:yo0wvd",
+      "label": "Respuesta Natalia derivada: tension",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:tension:73b843",
+      "label": "Poemas de broma de Matt",
+      "kind": "success_case",
+      "post_id": "73b843",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/73b843/namegag_poems_by_matt/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:tension:73b843",
+      "label": "Respuesta Natalia derivada: tension",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:tension:5ftftt",
+      "label": "La edad es SÓLO UN NÚMERO ¡Pero debes ser al menos una década y media más joven que yo! No dejes que el hecho de que tengo 58 años afecte tu visión de mí, pero si tienes 43 años o más, ¡definitivamente no te quiero!",
+      "kind": "success_case",
+      "post_id": "5ftftt",
+      "score": 9,
+      "url": "https://old.reddit.com/r/OkCupid/comments/5ftftt/age_is_just_a_number_but_you_must_be_at_least_a/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:tension:5ftftt",
+      "label": "Respuesta Natalia derivada: tension",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "concept:inversion",
+      "label": "inversion",
+      "kind": "concept",
+      "tokens": [
+        "investment",
+        "inversion",
+        "inversión",
+        "chase",
+        "perseguir",
+        "needy",
+        "necesitado"
+      ]
+    },
+    {
+      "id": "book:inversion:1:23",
+      "label": "Libro: inversion #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre\nMessage Game is more than just a guide, it is a lifestyle. It is a way of life, it is a way to achieve things and a w ay to succeed in dating. In order to maximize your dating potential, it will be very useful to join the rest of those who also read this. Get involved, dive straight in and it will prove to be very valuable to..."
+    },
+    {
+      "id": "book:inversion:2:23",
+      "label": "Libro: inversion #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre\nWhether you want to meet many girls or find one special person, this is for you. If you're not ready to change, you're not ready to live. I want you to view \n'message game'\n as a puzzle, but you don't have the box so you don't know what the full picture is. All you have are all these random pieces and you don't know what to do..."
+    },
+    {
+      "id": "case:inversion:yo0wvd",
+      "label": "¿Masculinidad tóxica, es decir, heterosexual?",
+      "kind": "success_case",
+      "post_id": "yo0wvd",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/yo0wvd/toxic_masculinity_ie_straight/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:inversion:yo0wvd",
+      "label": "Respuesta Natalia derivada: inversion",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:inversion:17vjpof",
+      "label": "Intentando concertar una primera cita con una chica. ¿Me equivoqué aquí...?",
+      "kind": "success_case",
+      "post_id": "17vjpof",
+      "score": 8,
+      "url": "https://old.reddit.com/r/texts/comments/17vjpof/trying_to_set_up_a_first_date_with_a_girl_was_i/",
+      "summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:inversion:17vjpof",
+      "label": "Respuesta Natalia derivada: inversion",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:inversion:1ov02fq",
+      "label": "¿Continuar o no?",
+      "kind": "success_case",
+      "post_id": "1ov02fq",
+      "score": 8,
+      "url": "https://old.reddit.com/r/Bumble/comments/1ov02fq/continue_or_not/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:inversion:1ov02fq",
+      "label": "Respuesta Natalia derivada: inversion",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:inversion:5x4guu",
+      "label": "Dijo que le gustaban los juegos de palabras y que soñaba con tener una granja de ovejas. Tal vez me excedí...",
+      "kind": "success_case",
+      "post_id": "5x4guu",
+      "score": 8,
+      "url": "https://old.reddit.com/r/OkCupid/comments/5x4guu/she_said_she_liked_puns_and_dreamed_of_owning_a/",
+      "summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:inversion:5x4guu",
+      "label": "Respuesta Natalia derivada: inversion",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "concept:cierre",
+      "label": "cierre",
+      "kind": "concept",
+      "tokens": [
+        "number",
+        "numero",
+        "número",
+        "whatsapp",
+        "phone",
+        "date",
+        "cita",
+        "meet",
+        "cerrar"
+      ]
+    },
+    {
+      "id": "book:cierre:1:23",
+      "label": "Libro: cierre #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre, frame\n2. Put your name and number into her contacts. 3. Send yourself a stupid message. Number-closing this way means that it's more fun and you know it's the right phone number because it's your number added to her phone. Plus, you already have a message from her, that you sent, that you can respond to at a convenient time f..."
+    },
+    {
+      "id": "book:cierre:2:23",
+      "label": "Libro: cierre #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre\nI slept with one of the three girls, and then slept with this girl 2 days later. Tinder\nThis conversation was not short enough, but it did the job. The problem I faced was that GIFs kept crashing my phone due to Tinder bugs. So I admitted that, and she actually thought it was a pickup line. It was actually the truth, but she l..."
+    },
+    {
+      "id": "case:cierre:1s5s4d8",
+      "label": "Por favor. Soy autista. ¿Por qué soy tan malo con esto? Estaba tratando de coquetear... Estoy desesperada por un consejo.",
+      "kind": "success_case",
+      "post_id": "1s5s4d8",
+      "score": 9,
+      "url": "https://old.reddit.com/r/texts/comments/1s5s4d8/please_i_am_autistic_why_do_i_suck_at_this_so/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, instagram, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:cierre:1s5s4d8",
+      "label": "Respuesta Natalia derivada: cierre",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:cierre:1o7b2s",
+      "label": "Me encontré con mi primera prostituta accidental. (Ya hemos tenido una buena cita)",
+      "kind": "success_case",
+      "post_id": "1o7b2s",
+      "score": 9,
+      "url": "https://old.reddit.com/r/OkCupid/comments/1o7b2s/ran_into_my_first_accidental_prostitute_weve/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:cierre:1o7b2s",
+      "label": "Respuesta Natalia derivada: cierre",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:cierre:5a63ld",
+      "label": "[traduccion pendiente] I decided to be creative. It got me a phone number and a date ☺️",
+      "kind": "success_case",
+      "post_id": "5a63ld",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/5a63ld/i_decided_to_be_creative_it_got_me_a_phone_number/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor. Promovido desde auditoria local con QA estricto."
+    },
+    {
+      "id": "response:cierre:5a63ld",
+      "label": "Respuesta Natalia derivada: cierre",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:cierre:3ry27u",
+      "label": "Así comencé la conversación. Conseguí su número y una cita.",
+      "kind": "success_case",
+      "post_id": "3ry27u",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/3ry27u/this_is_how_i_started_the_conversation_got_her/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:cierre:3ry27u",
+      "label": "Respuesta Natalia derivada: cierre",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "concept:timing",
+      "label": "timing",
+      "kind": "concept",
+      "tokens": [
+        "timing",
+        "tiempo",
+        "wait",
+        "espera",
+        "reply",
+        "responder",
+        "demora"
+      ]
+    },
+    {
+      "id": "book:timing:1:23",
+      "label": "Libro: timing #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: opener, cierre, timing\nThe definition of 'too late' in this case is 8PM, minus the amount of time it takes her to get ready as well as the time of travel, as well as extra time for the sake of not rushing her. A 7PM confirmation for a meeting time of 8PM is a rush, but confirming hours before is very comfortable. When it comes to sol..."
+    },
+    {
+      "id": "book:timing:2:23",
+      "label": "Libro: timing #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre, timing\nIf a girl messages you out of nowhere, then you can reply without worrying about timing; it does not matter if it is a few minutes or a few hours. If a girl messages you because you sent her a message, then she is responding to your message. If she is responding immediately, you have nothing to worry about if you respo..."
+    },
+    {
+      "id": "case:timing:1s5s4d8",
+      "label": "Por favor. Soy autista. ¿Por qué soy tan malo con esto? Estaba tratando de coquetear... Estoy desesperada por un consejo.",
+      "kind": "success_case",
+      "post_id": "1s5s4d8",
+      "score": 9,
+      "url": "https://old.reddit.com/r/texts/comments/1s5s4d8/please_i_am_autistic_why_do_i_suck_at_this_so/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, instagram, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:timing:1s5s4d8",
+      "label": "Respuesta Natalia derivada: timing",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:timing:q6rm4d",
+      "label": "Conexi?n instant?nea y brunch con mimosas",
+      "kind": "success_case",
+      "post_id": "q6rm4d",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/q6rm4d/instant_connection_and_best_date_ive_ever_been_on/",
+      "summary": "Sirve para Natalia porque convierte humor y coqueteo en una cita concreta de brunch, con cierre de contacto cuando ella dice que le escriba."
+    },
+    {
+      "id": "response:timing:q6rm4d",
+      "label": "Respuesta Natalia derivada: timing",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:timing:1itfe3a",
+      "label": "Actualización: ¿crees que estoy cocinado? ¿O simplemente necesito paciencia?",
+      "kind": "success_case",
+      "post_id": "1itfe3a",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/1itfe3a/update_do_you_think_im_cooked_or_do_i_just_need/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:timing:1itfe3a",
+      "label": "Respuesta Natalia derivada: timing",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:timing:114syeg",
+      "label": "Quiero decir, ¿por qué incluirías estos detalles en una primera conversación con alguien con quien estás intentando salir? 🤦🏽‍♀️ (¡lo siento mucho, es Hinge!)",
+      "kind": "success_case",
+      "post_id": "114syeg",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Bumble/comments/114syeg/i_mean_why_would_you_include_these_details_in_a/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:timing:114syeg",
+      "label": "Respuesta Natalia derivada: timing",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "concept:humor",
+      "label": "humor",
+      "kind": "concept",
+      "tokens": [
+        "humor",
+        "funny",
+        "gracioso",
+        "joke",
+        "broma",
+        "jaja",
+        "laugh"
+      ]
+    },
+    {
+      "id": "book:humor:1:26",
+      "label": "Libro: humor #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: La Pildora Roja: Verdades sobre las Mujeres y la Atraccion\nConceptos: tension, inversion, humor\nPuede que haga algunos chistes irónicos o sarcásticos para su propia diversión. Puede que se burle juguetonamente con las mujeres porque lo disfruta. O podría no hacer nada de esto, porque lo que en realidad le interesa es conocer a las mujeres y construir conexiones emocionales con ellas. Lo que más importa..."
+    },
+    {
+      "id": "book:humor:2:23",
+      "label": "Libro: humor #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: tension, cierre, humor\nSomeone's Messages\nThis person poked a t the girl that she is becoming a little out of touch. She did not exactly take it that well, but at least it spills the beans that she liked having her bean flicked. The mere fact that she wrote a lot in her own defense goes to show that she cares about how she is viewed..."
+    },
+    {
+      "id": "case:humor:1s5s4d8",
+      "label": "Por favor. Soy autista. ¿Por qué soy tan malo con esto? Estaba tratando de coquetear... Estoy desesperada por un consejo.",
+      "kind": "success_case",
+      "post_id": "1s5s4d8",
+      "score": 9,
+      "url": "https://old.reddit.com/r/texts/comments/1s5s4d8/please_i_am_autistic_why_do_i_suck_at_this_so/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, instagram, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:humor:1s5s4d8",
+      "label": "Respuesta Natalia derivada: humor",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:humor:1o7b2s",
+      "label": "Me encontré con mi primera prostituta accidental. (Ya hemos tenido una buena cita)",
+      "kind": "success_case",
+      "post_id": "1o7b2s",
+      "score": 9,
+      "url": "https://old.reddit.com/r/OkCupid/comments/1o7b2s/ran_into_my_first_accidental_prostitute_weve/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:humor:1o7b2s",
+      "label": "Respuesta Natalia derivada: humor",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:humor:5a63ld",
+      "label": "[traduccion pendiente] I decided to be creative. It got me a phone number and a date ☺️",
+      "kind": "success_case",
+      "post_id": "5a63ld",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/5a63ld/i_decided_to_be_creative_it_got_me_a_phone_number/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor. Promovido desde auditoria local con QA estricto."
+    },
+    {
+      "id": "response:humor:5a63ld",
+      "label": "Respuesta Natalia derivada: humor",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:humor:3ry27u",
+      "label": "Así comencé la conversación. Conseguí su número y una cita.",
+      "kind": "success_case",
+      "post_id": "3ry27u",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/3ry27u/this_is_how_i_started_the_conversation_got_her/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:humor:3ry27u",
+      "label": "Respuesta Natalia derivada: humor",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "concept:frame",
+      "label": "frame",
+      "kind": "concept",
+      "tokens": [
+        "frame",
+        "marco",
+        "liderazgo",
+        "lead",
+        "dominant",
+        "calibrar",
+        "calibration"
+      ]
+    },
+    {
+      "id": "book:frame:1:23",
+      "label": "Libro: frame #1",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: cierre\nMessage Game is more than just a guide, it is a lifestyle. It is a way of life, it is a way to achieve things and a w ay to succeed in dating. In order to maximize your dating potential, it will be very useful to join the rest of those who also read this. Get involved, dive straight in and it will prove to be very valuable to..."
+    },
+    {
+      "id": "book:frame:2:23",
+      "label": "Libro: frame #2",
+      "kind": "book_principle",
+      "source": "books_chroma",
+      "text": "Fuente libro: The Message Game A Guide to Dating at the Touch of a Button\nConceptos: general\n17:57\nWhat? 17:57\nIdontgoingtotravelformen\n17:58\nI'mnotorderingyou totraveljustforme. 17:58\nYou'renotapizza.17:58\nThatmenjobtoshowhowgentlementhey\nare\n17:58\nHey\n17:58\nIMclearnow\n17:58\nLeaveitok\n17:58\n? 17:58 [OCR_IMAGE: image_0173.jpg | source=OEBPS/images/1624434235.jpg]\nIamveryclassy\n19:40\nIcancookdinneronThursdayaswellifyo..."
+    },
+    {
+      "id": "case:frame:12nhv7y",
+      "label": "He estado en esta aplicación desde el principio y esta es nueva para mí.",
+      "kind": "success_case",
+      "post_id": "12nhv7y",
+      "score": 9,
+      "url": "https://old.reddit.com/r/OkCupid/comments/12nhv7y/ive_been_on_this_app_from_the_beginning_and_this/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:frame:12nhv7y",
+      "label": "Respuesta Natalia derivada: frame",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:frame:1mhab8q",
+      "label": "¿Alguien puede decirme qué significan estos números?",
+      "kind": "success_case",
+      "post_id": "1mhab8q",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Bumble/comments/1mhab8q/can_anyone_tell_me_what_these_numbers_mean/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:frame:1mhab8q",
+      "label": "Respuesta Natalia derivada: frame",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:frame:r3gnp3",
+      "label": "Le seguí meses después como una broma, pero ella en realidad respondió, ¡con su número también! Esperemos no arruinar esto.",
+      "kind": "success_case",
+      "post_id": "r3gnp3",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/r3gnp3/i_followed_up_months_later_as_a_joke_but_she/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:frame:r3gnp3",
+      "label": "Respuesta Natalia derivada: frame",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    },
+    {
+      "id": "case:frame:h7hn59",
+      "label": "Crujientes o suaves.",
+      "kind": "success_case",
+      "post_id": "h7hn59",
+      "score": 9,
+      "url": "https://old.reddit.com/r/Tinder/comments/h7hn59/crunchy_or_smooth/",
+      "summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "id": "response:frame:h7hn59",
+      "label": "Respuesta Natalia derivada: frame",
+      "kind": "natalia_response_pattern",
+      "rule": "Usar el principio en silencio y responder como mujer real, sin teoria visible."
+    }
+  ],
+  "edges": [
+    {
+      "source": "concept:opener",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:opener",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:opener:1:23",
+      "target": "concept:opener",
+      "relation": "supports"
+    },
+    {
+      "source": "book:opener:2:23",
+      "target": "concept:opener",
+      "relation": "supports"
+    },
+    {
+      "source": "case:opener:1s5s4d8",
+      "target": "concept:opener",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:opener",
+      "target": "response:opener:1s5s4d8",
+      "relation": "guides"
+    },
+    {
+      "source": "case:opener:1s5s4d8",
+      "target": "response:opener:1s5s4d8",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:opener:1o7b2s",
+      "target": "concept:opener",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:opener",
+      "target": "response:opener:1o7b2s",
+      "relation": "guides"
+    },
+    {
+      "source": "case:opener:1o7b2s",
+      "target": "response:opener:1o7b2s",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:opener:5a63ld",
+      "target": "concept:opener",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:opener",
+      "target": "response:opener:5a63ld",
+      "relation": "guides"
+    },
+    {
+      "source": "case:opener:5a63ld",
+      "target": "response:opener:5a63ld",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:opener:3ry27u",
+      "target": "concept:opener",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:opener",
+      "target": "response:opener:3ry27u",
+      "relation": "guides"
+    },
+    {
+      "source": "case:opener:3ry27u",
+      "target": "response:opener:3ry27u",
+      "relation": "grounds"
+    },
+    {
+      "source": "concept:tension",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:tension",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:tension:1:23",
+      "target": "concept:tension",
+      "relation": "supports"
+    },
+    {
+      "source": "book:tension:2:23",
+      "target": "concept:tension",
+      "relation": "supports"
+    },
+    {
+      "source": "case:tension:q6rm4d",
+      "target": "concept:tension",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:tension",
+      "target": "response:tension:q6rm4d",
+      "relation": "guides"
+    },
+    {
+      "source": "case:tension:q6rm4d",
+      "target": "response:tension:q6rm4d",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:tension:yo0wvd",
+      "target": "concept:tension",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:tension",
+      "target": "response:tension:yo0wvd",
+      "relation": "guides"
+    },
+    {
+      "source": "case:tension:yo0wvd",
+      "target": "response:tension:yo0wvd",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:tension:73b843",
+      "target": "concept:tension",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:tension",
+      "target": "response:tension:73b843",
+      "relation": "guides"
+    },
+    {
+      "source": "case:tension:73b843",
+      "target": "response:tension:73b843",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:tension:5ftftt",
+      "target": "concept:tension",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:tension",
+      "target": "response:tension:5ftftt",
+      "relation": "guides"
+    },
+    {
+      "source": "case:tension:5ftftt",
+      "target": "response:tension:5ftftt",
+      "relation": "grounds"
+    },
+    {
+      "source": "concept:inversion",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:inversion",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:inversion:1:23",
+      "target": "concept:inversion",
+      "relation": "supports"
+    },
+    {
+      "source": "book:inversion:2:23",
+      "target": "concept:inversion",
+      "relation": "supports"
+    },
+    {
+      "source": "case:inversion:yo0wvd",
+      "target": "concept:inversion",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:inversion",
+      "target": "response:inversion:yo0wvd",
+      "relation": "guides"
+    },
+    {
+      "source": "case:inversion:yo0wvd",
+      "target": "response:inversion:yo0wvd",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:inversion:17vjpof",
+      "target": "concept:inversion",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:inversion",
+      "target": "response:inversion:17vjpof",
+      "relation": "guides"
+    },
+    {
+      "source": "case:inversion:17vjpof",
+      "target": "response:inversion:17vjpof",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:inversion:1ov02fq",
+      "target": "concept:inversion",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:inversion",
+      "target": "response:inversion:1ov02fq",
+      "relation": "guides"
+    },
+    {
+      "source": "case:inversion:1ov02fq",
+      "target": "response:inversion:1ov02fq",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:inversion:5x4guu",
+      "target": "concept:inversion",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:inversion",
+      "target": "response:inversion:5x4guu",
+      "relation": "guides"
+    },
+    {
+      "source": "case:inversion:5x4guu",
+      "target": "response:inversion:5x4guu",
+      "relation": "grounds"
+    },
+    {
+      "source": "concept:cierre",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:cierre",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:cierre:1:23",
+      "target": "concept:cierre",
+      "relation": "supports"
+    },
+    {
+      "source": "book:cierre:2:23",
+      "target": "concept:cierre",
+      "relation": "supports"
+    },
+    {
+      "source": "case:cierre:1s5s4d8",
+      "target": "concept:cierre",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:cierre",
+      "target": "response:cierre:1s5s4d8",
+      "relation": "guides"
+    },
+    {
+      "source": "case:cierre:1s5s4d8",
+      "target": "response:cierre:1s5s4d8",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:cierre:1o7b2s",
+      "target": "concept:cierre",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:cierre",
+      "target": "response:cierre:1o7b2s",
+      "relation": "guides"
+    },
+    {
+      "source": "case:cierre:1o7b2s",
+      "target": "response:cierre:1o7b2s",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:cierre:5a63ld",
+      "target": "concept:cierre",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:cierre",
+      "target": "response:cierre:5a63ld",
+      "relation": "guides"
+    },
+    {
+      "source": "case:cierre:5a63ld",
+      "target": "response:cierre:5a63ld",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:cierre:3ry27u",
+      "target": "concept:cierre",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:cierre",
+      "target": "response:cierre:3ry27u",
+      "relation": "guides"
+    },
+    {
+      "source": "case:cierre:3ry27u",
+      "target": "response:cierre:3ry27u",
+      "relation": "grounds"
+    },
+    {
+      "source": "concept:timing",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:timing",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:timing:1:23",
+      "target": "concept:timing",
+      "relation": "supports"
+    },
+    {
+      "source": "book:timing:2:23",
+      "target": "concept:timing",
+      "relation": "supports"
+    },
+    {
+      "source": "case:timing:1s5s4d8",
+      "target": "concept:timing",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:timing",
+      "target": "response:timing:1s5s4d8",
+      "relation": "guides"
+    },
+    {
+      "source": "case:timing:1s5s4d8",
+      "target": "response:timing:1s5s4d8",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:timing:q6rm4d",
+      "target": "concept:timing",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:timing",
+      "target": "response:timing:q6rm4d",
+      "relation": "guides"
+    },
+    {
+      "source": "case:timing:q6rm4d",
+      "target": "response:timing:q6rm4d",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:timing:1itfe3a",
+      "target": "concept:timing",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:timing",
+      "target": "response:timing:1itfe3a",
+      "relation": "guides"
+    },
+    {
+      "source": "case:timing:1itfe3a",
+      "target": "response:timing:1itfe3a",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:timing:114syeg",
+      "target": "concept:timing",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:timing",
+      "target": "response:timing:114syeg",
+      "relation": "guides"
+    },
+    {
+      "source": "case:timing:114syeg",
+      "target": "response:timing:114syeg",
+      "relation": "grounds"
+    },
+    {
+      "source": "concept:humor",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:humor",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:humor:1:26",
+      "target": "concept:humor",
+      "relation": "supports"
+    },
+    {
+      "source": "book:humor:2:23",
+      "target": "concept:humor",
+      "relation": "supports"
+    },
+    {
+      "source": "case:humor:1s5s4d8",
+      "target": "concept:humor",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:humor",
+      "target": "response:humor:1s5s4d8",
+      "relation": "guides"
+    },
+    {
+      "source": "case:humor:1s5s4d8",
+      "target": "response:humor:1s5s4d8",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:humor:1o7b2s",
+      "target": "concept:humor",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:humor",
+      "target": "response:humor:1o7b2s",
+      "relation": "guides"
+    },
+    {
+      "source": "case:humor:1o7b2s",
+      "target": "response:humor:1o7b2s",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:humor:5a63ld",
+      "target": "concept:humor",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:humor",
+      "target": "response:humor:5a63ld",
+      "relation": "guides"
+    },
+    {
+      "source": "case:humor:5a63ld",
+      "target": "response:humor:5a63ld",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:humor:3ry27u",
+      "target": "concept:humor",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:humor",
+      "target": "response:humor:3ry27u",
+      "relation": "guides"
+    },
+    {
+      "source": "case:humor:3ry27u",
+      "target": "response:humor:3ry27u",
+      "relation": "grounds"
+    },
+    {
+      "source": "concept:frame",
+      "target": "agent:natalia",
+      "relation": "silent_strategy"
+    },
+    {
+      "source": "concept:frame",
+      "target": "agent:maximus",
+      "relation": "teachable_principle"
+    },
+    {
+      "source": "book:frame:1:23",
+      "target": "concept:frame",
+      "relation": "supports"
+    },
+    {
+      "source": "book:frame:2:23",
+      "target": "concept:frame",
+      "relation": "supports"
+    },
+    {
+      "source": "case:frame:12nhv7y",
+      "target": "concept:frame",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:frame",
+      "target": "response:frame:12nhv7y",
+      "relation": "guides"
+    },
+    {
+      "source": "case:frame:12nhv7y",
+      "target": "response:frame:12nhv7y",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:frame:1mhab8q",
+      "target": "concept:frame",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:frame",
+      "target": "response:frame:1mhab8q",
+      "relation": "guides"
+    },
+    {
+      "source": "case:frame:1mhab8q",
+      "target": "response:frame:1mhab8q",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:frame:r3gnp3",
+      "target": "concept:frame",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:frame",
+      "target": "response:frame:r3gnp3",
+      "relation": "guides"
+    },
+    {
+      "source": "case:frame:r3gnp3",
+      "target": "response:frame:r3gnp3",
+      "relation": "grounds"
+    },
+    {
+      "source": "case:frame:h7hn59",
+      "target": "concept:frame",
+      "relation": "example_of"
+    },
+    {
+      "source": "concept:frame",
+      "target": "response:frame:h7hn59",
+      "relation": "guides"
+    },
+    {
+      "source": "case:frame:h7hn59",
+      "target": "response:frame:h7hn59",
+      "relation": "grounds"
+    }
+  ]
+}

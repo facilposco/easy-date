@@ -48,6 +48,7 @@ SIMULATOR_PATH = ROOT_DIR / "simulador_v1.2.html"
 LEVELS_PATH = ROOT_DIR / "backend" / "levels_config.json"
 CHROMA_PATH = ROOT_DIR / "chroma_db"
 BOOKS_CHROMA_PATH = ROOT_DIR / "books_kb" / "chroma_books"
+BOOKS_DB_PATH = ROOT_DIR / "books_kb" / "books_index.sqlite"
 DB_PATH = ROOT_DIR / "textgame.db"
 SUCCESS_COLLECTION_NAME = "natalia_success_cases"
 NEGATIVE_COLLECTION_NAME = "natalia_negative_cases"
@@ -957,6 +958,26 @@ def parse_json_list(raw: Any) -> List[str]:
     return [clean_ui_text(item) for item in data if clean_ui_text(item)]
 
 
+def parse_concept_tags(raw: Any) -> Dict[str, List[str]]:
+    try:
+        data = json.loads(str(raw or "{}"))
+    except Exception:
+        data = []
+    if isinstance(data, dict):
+        tags = data.get("tags") if isinstance(data.get("tags"), list) else []
+        super_tags = data.get("super_tags") if isinstance(data.get("super_tags"), list) else []
+        return {
+            "tags": [clean_ui_text(item) for item in tags if clean_ui_text(item)],
+            "super_tags": [clean_ui_text(item) for item in super_tags if clean_ui_text(item)],
+        }
+    if isinstance(data, list):
+        return {
+            "tags": [clean_ui_text(item) for item in data if clean_ui_text(item)],
+            "super_tags": [],
+        }
+    return {"tags": [], "super_tags": []}
+
+
 def success_time_markers(text: str) -> List[str]:
     patterns = [
         r"\b\d{1,2}:\d{2}\s?(?:AM|PM|a\.m\.|p\.m\.)?\b",
@@ -1215,6 +1236,125 @@ def infer_textgame_concepts(text: str) -> List[str]:
         for concept, tokens in TEXTGAME_CONCEPT_PATTERNS.items()
         if any(token in lowered for token in tokens)
     ][:5]
+
+
+def retrieve_book_principle_cases(query: str, limit: int = 2, consumer: str = "natalia") -> List[Dict[str, str]]:
+    if not BOOKS_DB_PATH.exists():
+        return []
+    consumer = consumer if consumer in {"natalia", "maximus"} else "natalia"
+    where = ""
+    params: List[Any] = []
+    if consumer == "natalia":
+        where = "WHERE p.risk_level != 'high' AND p.natalia_use LIKE 'silent_%'"
+    try:
+        conn = sqlite3.connect(BOOKS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            f"""
+            SELECT p.id, p.principle, p.category, p.concept_tags, p.risk_level,
+                   p.voice_policy, p.natalia_use, p.maximus_use, p.source_reference,
+                   b.titulo, b.autor
+            FROM book_principles p
+            LEFT JOIN books b ON b.id = p.book_id
+            {where}
+            ORDER BY p.id DESC
+            """,
+            params,
+        ).fetchall()
+    except Exception as exc:
+        print(f"Error querying book principles: {exc}")
+        return []
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    scored: List[tuple[int, sqlite3.Row, Dict[str, List[str]]]] = []
+    query_key = analysis_text(query)
+    for row in rows:
+        concept_meta = parse_concept_tags(row["concept_tags"])
+        haystack = " ".join(
+            [
+                str(row["principle"] or ""),
+                str(row["category"] or ""),
+                " ".join(concept_meta["tags"]),
+                " ".join(concept_meta["super_tags"]),
+                str(row["source_reference"] or ""),
+            ]
+        )
+        score = retrieval_score(query, haystack)
+        if str(row["category"] or "").lower() in query_key:
+            score += 2
+        for tag in concept_meta["tags"] + concept_meta["super_tags"]:
+            if analysis_text(tag) in query_key:
+                score += 1
+        if consumer == "maximus" and row["risk_level"] == "high":
+            score += 1
+        if score > 0:
+            scored.append((score, row, concept_meta))
+
+    scored.sort(key=lambda item: item[0], reverse=True)
+    selected = scored[: max(limit * 4, limit)]
+    if not selected:
+        return []
+
+    principle_ids = [int(row["id"]) for _, row, _ in selected]
+    links_by_principle: Dict[int, sqlite3.Row] = {}
+    try:
+        conn = sqlite3.connect(BOOKS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        placeholders = ",".join("?" for _ in principle_ids)
+        link_rows = conn.execute(
+            f"""
+            SELECT principle_id, post_id, objective, link_score, confidence, evidence_summary
+            FROM principle_case_links
+            WHERE principle_id IN ({placeholders})
+            ORDER BY link_score DESC
+            """,
+            principle_ids,
+        ).fetchall()
+        conn.close()
+        for link in link_rows:
+            links_by_principle.setdefault(int(link["principle_id"]), link)
+    except Exception as exc:
+        print(f"Error querying principle links: {exc}")
+
+    cases: List[Dict[str, str]] = []
+    for score, row, concept_meta in selected:
+        link = links_by_principle.get(int(row["id"]))
+        linked_case = ""
+        if link is not None:
+            linked_case = (
+                f"\nCaso real enlazado: post {link['post_id']} | objetivo: {clean_ui_text(link['objective'])} "
+                f"| confianza: {clean_ui_text(link['confidence'])} | score_link: {link['link_score']}\n"
+                f"Resumen evidencia: {clean_ui_text(link['evidence_summary'])}"
+            )
+        policy_line = (
+            "Aplicar en silencio; no citar teoria ni sonar a coach."
+            if consumer == "natalia"
+            else "Puede explicarse como principio, citando que proviene del RAG/libros."
+        )
+        cases.append(
+            {
+                "source": "book_principles" if consumer == "natalia" else "book_principles_coach",
+                "post_id": str(row["id"]),
+                "profile": "teoria_libros_estructurada",
+                "concepts": ", ".join(concept_meta["super_tags"] + concept_meta["tags"]),
+                "text": (
+                    f"Principio estructurado ({consumer}).\n"
+                    f"Fuente: {clean_ui_text(row['source_reference'])}\n"
+                    f"Categoria: {clean_ui_text(row['category'])} | riesgo: {clean_ui_text(row['risk_level'])} "
+                    f"| politica: {clean_ui_text(row['voice_policy'])}\n"
+                    f"Uso: {policy_line}\n"
+                    f"Principio: {clean_ui_text(row['principle'])}"
+                    f"{linked_case}"
+                )[:1800],
+            }
+        )
+        if len(cases) >= limit:
+            break
+    return cases
 
 
 def retrieve_books_chroma_cases(query: str, limit: int = 2) -> List[Dict[str, str]]:
@@ -2169,7 +2309,11 @@ def retrieve_persona_strategy_cases(
         f"{compact_history(request.history, limit=6)}\n"
         f"perfil {profile} text game respuesta femenina natural timing inversion cierre humor"
     )
-    return retrieve_books_chroma_cases(query, limit=limit)
+    structured = retrieve_book_principle_cases(query, limit=limit, consumer="natalia")
+    if len(structured) >= limit:
+        return structured[:limit]
+    fallback = retrieve_books_chroma_cases(query, limit=limit)
+    return (structured + fallback)[:limit]
 
 
 def retrieve_coach_cases(
@@ -2190,6 +2334,7 @@ def retrieve_coach_cases(
     cases.extend(persona_cases[2:5])
     cases.extend(retrieve_chroma_cases(query, profile, limit=2))
     cases.extend(retrieve_sqlite_reddit_cases(query, profile, limit=2))
+    cases.extend(retrieve_book_principle_cases(query, limit=2, consumer="maximus"))
     cases.extend(retrieve_books_chroma_cases(query, limit=2))
     cases.extend(retrieve_youtube_theory(query, limit=2))
     cases.extend(retrieve_chat_turns(query, profile, limit=2))

@@ -1,0 +1,222 @@
+[
+  {
+    "categoria": "text_game",
+    "pregunta": "Como pido WhatsApp sin parecer necesitado?",
+    "respuesta_grounded": "Pide contacto despues de una senal clara de receptividad o despues de aterrizar un plan. La evidencia recuperada favorece una razon simple y concreta, no pedirlo en frio.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1jh2sr7, success_chroma:se23g9, success_chroma:1d3126p, books_chroma:28, books_chroma:24, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: telefono, whatsapp, cita | Resumen: Sirve para Natalia porque contiene señales de telefono, whatsapp, cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad de",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Cuando conviene pasar de chat a cita?",
+    "respuesta_grounded": "Avanza a cita cuando ya hay ritmo, humor o respuesta abierta. Propone un plan facil con dia/lugar ligero y deja una salida comoda.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1fq54ja, success_chroma:1u1j19y, success_chroma:1mqerbl, books_chroma:25, books_chroma:24, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: whatsapp, cita | Resumen: Sirve para Natalia porque contiene señales de whatsapp, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Que hago si ella responde frio pero no me rechaza?",
+    "respuesta_grounded": "Con una mujer fria o selectiva, baja intensidad, responde al contexto y usa curiosidad corta. No persigas aprobacion ni expliques demasiado.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:e2uvtu, success_chroma:1mk7pxj, success_chroma:1i3z862, books_chroma:27, books_chroma:25, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 7/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Que tipo de abridor gracioso funciona mejor?",
+    "respuesta_grounded": "El humor funciona cuando conecta con el contexto y abre conversacion. Si solo busca llamar la atencion o se vuelve personaje, baja la calidad.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1as9zlz, success_chroma:bzd1ha, success_chroma:t5no08, books_chroma:24, books_chroma:29, chroma:asoxmv",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 7/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Como cierro una cita con vino o cafe sin sonar intenso?",
+    "respuesta_grounded": "Avanza a cita cuando ya hay ritmo, humor o respuesta abierta. Propone un plan facil con dia/lugar ligero y deja una salida comoda.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:x3yvjz, success_chroma:1tjkpp5, success_chroma:1tzp3ga, books_chroma:24, books_chroma:27, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Como manejo una respuesta tardia de varias horas?",
+    "respuesta_grounded": "La pauta consistente es calibrar: mensaje corto, conectado al contexto visible, con avance suave solo cuando hay receptividad.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1mt8ihy, success_chroma:1n16s39, success_chroma:1lti486, books_chroma:25, books_chroma:30, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Cuantos emojis conviene usar en un mensaje inicial?",
+    "respuesta_grounded": "Usa 0 a 2 emojis como maximo si aportan tono. Muchos emojis o emojis sexuales tempranos se leen como descalibrados.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1skwf8d, success_chroma:m0to5q, success_chroma:2thko5, books_chroma:29, books_chroma:26, chroma:e9tsf9",
+    "muestra_evidencia": "Titulo: Hola a todos, tengo una pregunta: ¿cuántos mensajes de texto son razonables antes de la primera cita? Lo pregunto porque no me gusta enviar mensajes de texto. | Objetivos: telefono, cita",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Que senales muestran que ella esta receptiva?",
+    "respuesta_grounded": "La pauta consistente es calibrar: mensaje corto, conectado al contexto visible, con avance suave solo cuando hay receptividad.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1evw5lt, success_chroma:1re3ti3, success_chroma:1anqmjf, books_chroma:30, books_chroma:30, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Como responder si ella dice jaja y nada mas?",
+    "respuesta_grounded": "El humor funciona cuando conecta con el contexto y abre conversacion. Si solo busca llamar la atencion o se vuelve personaje, baja la calidad.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:vxe1wx, success_chroma:oxyeja, success_chroma:1gabcv1, books_chroma:24, books_chroma:28, chroma:e9tsf9",
+    "muestra_evidencia": "Titulo: El mejor número equivocado jamás... | Objetivos: telefono",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "text_game",
+    "pregunta": "Que errores hacen perder una conversacion que iba bien?",
+    "respuesta_grounded": "La pauta consistente es calibrar: mensaje corto, conectado al contexto visible, con avance suave solo cuando hay receptividad.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1io1414, success_chroma:yq11xa, success_chroma:1h1f1u5, books_chroma:25, books_chroma:26, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: telefono | Resumen: Sirve para Natalia porque contiene señales de telefono, tiene OCR conversacional y obtuvo un score heuristico de 7/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Como evitar sobreinvertir al inicio?",
+    "respuesta_grounded": "Mantenerlo humano significa una idea clara por turno, responder lo ultimo que ella dijo y dejar espacio para que ella tambien invierta.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1rude5u, success_chroma:1fno9yq, success_chroma:1jwltfz, books_chroma:29, books_chroma:29, chroma:e9tsf9",
+    "muestra_evidencia": "Titulo: Número en 3 textos. No pases semanas de interminables y aburridos mensajes de texto | Objetivos: telefono, cita",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Que significa calibrar el tono con una mujer selectiva?",
+    "respuesta_grounded": "Con una mujer fria o selectiva, baja intensidad, responde al contexto y usa curiosidad corta. No persigas aprobacion ni expliques demasiado.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1fztft8, success_chroma:152ugym, success_chroma:1as9zlz, books_chroma:30, books_chroma:30, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 7/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Como crear curiosidad sin presumir?",
+    "respuesta_grounded": "Mantenerlo humano significa una idea clara por turno, responder lo ultimo que ella dijo y dejar espacio para que ella tambien invierta.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:6o3na2, success_chroma:10nhv08, success_chroma:1rj3n1f, books_chroma:25, books_chroma:30, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 6/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Que temas ayudan a una primera cita?",
+    "respuesta_grounded": "Avanza a cita cuando ya hay ritmo, humor o respuesta abierta. Propone un plan facil con dia/lugar ligero y deja una salida comoda.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1l58fre, success_chroma:13mtwff, success_chroma:1ji0mui, books_chroma:24, books_chroma:29, chroma:e9tsf9",
+    "muestra_evidencia": "Titulo: Es la segunda cita, por lo que \"conexión\" ya no tiene significado | Objetivos: cita",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Como detectar si ya puedo proponer plan?",
+    "respuesta_grounded": "Avanza a cita cuando ya hay ritmo, humor o respuesta abierta. Propone un plan facil con dia/lugar ligero y deja una salida comoda.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1l58fre, success_chroma:1tiqfee, success_chroma:1sxk948, books_chroma:24, books_chroma:30, chroma:asoxmv",
+    "muestra_evidencia": "Titulo: Es la segunda cita, por lo que \"conexión\" ya no tiene significado | Objetivos: cita",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Como responder a una prueba o comentario defensivo?",
+    "respuesta_grounded": "Con una mujer fria o selectiva, baja intensidad, responde al contexto y usa curiosidad corta. No persigas aprobacion ni expliques demasiado.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1ua1ycu, success_chroma:1mafxem, success_chroma:1i3z862, books_chroma:25, books_chroma:24, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 7/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Que diferencia hay entre humor y payasear?",
+    "respuesta_grounded": "El humor funciona cuando conecta con el contexto y abre conversacion. Si solo busca llamar la atencion o se vuelve personaje, baja la calidad.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:fqpac5, success_chroma:uyu86t, success_chroma:cfzjev, books_chroma:27, books_chroma:28, chroma:e9tsf9",
+    "muestra_evidencia": "CASO REAL EXITOSO REDDIT | Post ID: fqpac5",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Como pedir Instagram en vez de numero?",
+    "respuesta_grounded": "Pide contacto despues de una senal clara de receptividad o despues de aterrizar un plan. La evidencia recuperada favorece una razon simple y concreta, no pedirlo en frio.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1p2qsem, success_chroma:1365abs, success_chroma:1iegpmc, books_chroma:27, books_chroma:26, chroma:asoxmv",
+    "muestra_evidencia": "Titulo: Se siente raro cuando una mujer te pide tu número sin hablar mucho primero | Objetivos: telefono, instagram, cita",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Que hago si ella tiene muchos matches?",
+    "respuesta_grounded": "Con una mujer fria o selectiva, baja intensidad, responde al contexto y usa curiosidad corta. No persigas aprobacion ni expliques demasiado.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1ellyf2, success_chroma:13s9n2j, success_chroma:1l58fre, books_chroma:27, books_chroma:25, chroma:e9tsf9",
+    "muestra_evidencia": "Titulo: Así van las citas online jajaja | Objetivos: telefono",
+    "resultado": "OK"
+  },
+  {
+    "categoria": "seduccion",
+    "pregunta": "Como mantener la conversacion humana y no entrevista?",
+    "respuesta_grounded": "Mantenerlo humano significa una idea clara por turno, responder lo ultimo que ella dijo y dejar espacio para que ella tambien invierta.",
+    "success_cases": 3,
+    "book_cases": 2,
+    "old_cases": 1,
+    "fuentes": "success_chroma:1j9y736, success_chroma:1rxykib, success_chroma:1lti486, books_chroma:25, books_chroma:26, chroma:e9tsf9",
+    "muestra_evidencia": "Objetivos: cita | Resumen: Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 6/10 segun objetivo, conexion y calidad del abridor.",
+    "resultado": "OK"
+  }
+]

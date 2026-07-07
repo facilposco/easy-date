@@ -54,6 +54,10 @@ def main() -> int:
             ],
         ),
         run_step("sync_success_chroma_deletes_dry_run", ["scratch/sync_success_chroma_deletes.py"]),
+        run_step(
+            "build_book_principles_and_links",
+            ["scratch/build_book_principles_and_links.py", "--max-per-chunk", "2", "--links-per-principle", "2"],
+        ),
         run_step("build_objective_graph", ["scratch/build_natalia_objective_graph.py"]),
         run_step("qa_20", ["scratch/qa_natalia_rag_20.py"]),
         run_step("generate_eval_catalog", ["scratch/generate_natalia_rag_eval_catalog.py"]),
