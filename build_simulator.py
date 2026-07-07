@@ -452,7 +452,8 @@ def main():
             evaluated_step_index: gameState.step_index,
             last_natalia_message: lastNatalia ? lastNatalia.text : '',
             last_user_message: lastUser ? lastUser.text : '',
-            chat_snapshot: snapshot
+            chat_snapshot: snapshot,
+            mode: gameState.uiMode || gameState.mode || 'chat'
         };
     }
 

@@ -188,6 +188,41 @@ def test_simulate_turn_maximus_route_does_not_spend_life(monkeypatch):
     assert data["retrieval_summary"]["natalia_live_used"] is False
 
 
+def test_simulate_turn_writes_turn_audit_log(monkeypatch, tmp_path):
+    server = load_server(monkeypatch)
+    monkeypatch.setenv("GEMINI_LIVE_ENABLED", "0")
+    db_path = tmp_path / "textgame.db"
+    sqlite3.connect(db_path).close()
+    monkeypatch.setattr(server, "DB_PATH", db_path)
+    monkeypatch.setattr(server, "retrieve_persona_cases", lambda request, behavior: [])
+    monkeypatch.setattr(server, "retrieve_persona_strategy_cases", lambda request, behavior: [])
+    monkeypatch.setattr(server, "retrieve_coach_cases", lambda request, behavior, persona_cases: [])
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/api/simulate-turn",
+        json={
+            "level": 1,
+            "step_index": 0,
+            "evaluated_step_id": 1,
+            "lives": 4,
+            "attraction": 50,
+            "history": [{"sender": "her", "text": "Hola :)"}],
+            "user_message": "Hola, que tal tu dia?",
+            "chosen_time": "15m",
+            "visible_context": {"last_natalia_message": "Hola :)"},
+        },
+    )
+
+    assert response.status_code == 200
+    conn = sqlite3.connect(db_path)
+    row = conn.execute(
+        "SELECT route, score, user_message_preview FROM turn_audit_log ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+    conn.close()
+    assert row == ("natalia", response.json()["score"], "Hola, que tal tu dia?")
+
+
 def test_simulate_turn_can_use_local_coach_and_live_natalia(monkeypatch):
     monkeypatch.setenv("GEMINI_COACH_ENABLED", "0")
     server = load_server(monkeypatch)
@@ -821,10 +856,59 @@ def test_retrieve_cases_prioritizes_real_reply_pairs(monkeypatch):
         visible_context={"last_natalia_message": ""},
     )
 
-    cases = server.retrieve_cases(request, server.level_behavior(1))
+    with pytest.raises(RuntimeError, match="deprecada"):
+        server.retrieve_cases(request, server.level_behavior(1))
 
-    assert cases
-    assert cases[0]["source"] in {"sqlite_chat_pair", "sqlite_reddit_pair"}
+
+def test_emoji_profile_counts_real_unicode_categories(monkeypatch):
+    server = load_server(monkeypatch)
+
+    risky = server.emoji_profile("".join(map(chr, [0x1F346, 0x1F4A6])))
+    warm = server.emoji_profile("".join(map(chr, [0x1F609, 0x1F642])))
+    romantic = server.emoji_profile("".join(map(chr, [0x1F60D, 0x1F618, 0x2764, 0xFE0F])))
+
+    assert risky["risky_count"] == 2
+    assert risky["calibration"] == "riesgo sexual temprano"
+    assert warm["warm_count"] == 2
+    assert warm["calibration"] == "calibrados"
+    assert romantic["romantic_count"] == 3
+    assert romantic["calibration"] == "demasiado romanticos"
+
+
+def test_retrieve_persona_cases_filters_success_support_by_direct_topic(monkeypatch):
+    server = load_server(monkeypatch)
+
+    request = server.SimulateTurnRequest(
+        level=1,
+        user_message="Que musica te gusta?",
+        chosen_time="15m",
+        history=[],
+        visible_context={"last_natalia_message": "jaja, eso me da curiosidad."},
+    )
+    monkeypatch.setattr(
+        server,
+        "retrieve_real_reply_pairs",
+        lambda *args, **kwargs: [
+            {
+                "source": "sqlite_chat_pair",
+                "man_message": "Que musica escuchas?",
+                "woman_response": "De todo, pero me gusta bailar.",
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        server,
+        "retrieve_success_chroma_cases",
+        lambda *args, **kwargs: [
+            {"source": "success_chroma", "text": "Caso de cita y WhatsApp para cerrar rapido.", "objectives": "cita, whatsapp"},
+            {"source": "success_chroma", "text": "Hablaron de musica y playlist antes de seguir.", "objectives": "humor"},
+        ],
+    )
+
+    cases = server.retrieve_persona_cases(request, server.level_behavior(1))
+
+    assert [case["source"] for case in cases] == ["sqlite_chat_pair", "success_chroma"]
+    assert "musica" in cases[1]["text"]
 
 
 def test_retrieve_real_reply_pairs_broadens_profiles_for_scarce_plan_intent(monkeypatch, tmp_path):

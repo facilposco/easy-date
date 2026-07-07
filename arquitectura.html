@@ -368,7 +368,7 @@
                         <tr>
                             <td>Evaluacion diaria</td>
                             <td><code>scratch/daily_natalia_rag_maintenance.py</code></td>
-                            <td>Traduce pendientes, indexa incremental, actualiza negativos, regenera grafo, corre QA de 20 preguntas y QA extendida de 120 preguntas etiquetadas.</td>
+                            <td>Traduce pendientes, indexa incremental, actualiza negativos, audita huerfanos Chroma-SQLite, regenera grafo, corre QA de 20 preguntas y QA extendida de 225 preguntas etiquetadas.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -377,6 +377,7 @@
                 <p><strong>Verificacion extendida 2026-07-07:</strong> se genero el catalogo etiquetado <code>docs/natalia_rag_eval_catalog_v1.csv/json/html</code> con 120 preguntas por categoria, intencion, perfil y objetivo. La corrida <code>docs/natalia_rag_eval_catalog_run_20260706_210358.*</code> recupero evidencia en 120/120 preguntas y 0 quedaron como <code>FALTA_EVIDENCIA</code>. El mantenimiento completo <code>docs/natalia_rag_daily_maintenance_20260706_210023.json</code> termino OK: traduccion pendiente 0, indexacion incremental OK, negativos OK, grafo actualizado, QA 20 OK y QA catalogo 120 OK.</p>
                 <p><strong>Actualizacion de entrenamiento silencioso 2026-07-07:</strong> Natalia-persona consulta libros de text game como <code>strategy_context</code> en el prompt, pero solo para razonar en silencio. La respuesta visible debe sonar como mujer real, sin citar libros ni explicar teoria. Los conceptos se etiquetan como <code>opener</code>, <code>tension</code>, <code>inversion</code>, <code>cierre</code>, <code>timing</code>, <code>humor</code> y <code>frame</code>. La QA extendida fue regenerada a 225 preguntas y la corrida <code>docs/natalia_rag_eval_catalog_run_20260706_224719.*</code> dio 225/225 OK y 0 <code>FALTA_EVIDENCIA</code>. Nuevo grafo pedagogico: <code>docs/natalia_learning_graph_20260706_224330.json/html</code>, 79 nodos y 112 relaciones libro -> principio -> caso real -> patron de respuesta Natalia.</p>
                 <p><strong>Router Natalia/Maximus 2026-07-07:</strong> <code>route_turn_request()</code> ahora decide por destinatario. Mensajes dirigidos a ella como "nuestra primera cita" siguen en Natalia aunque mencionen cita; mensajes con prefijo <code>Maximus</code>/<code>coach</code>, etapas de estudio/game over o preguntas de consejo en tercera persona van a Maximus. Si la ruta es Maximus, el backend usa <code>build_maximus_prompt()</code>, no llama a Natalia, no pierde vida, no cambia atraccion y no avanza el nivel. El frontend quita ese mensaje del historial de Natalia y lo muestra como modal de coach.</p>
+                <p><strong>Hardening RAG/router 2026-07-07:</strong> se aplicaron las mejoras utiles del informe <code>docs/revision_rag_router_natalia_maximus.md</code>. La ruta legacy <code>retrieve_cases()</code> queda deprecada porque mezcla fuentes incompatibles. Los emojis se evaluan con Unicode real para detectar exceso, romanticismo o riesgo sexual temprano. Natalia filtra tambien los casos exitosos de soporte por tema cuando el usuario hace una pregunta directa. El reranker descarta casos de baja relevancia antes de inyectarlos al prompt. Cada turno guarda auditoria ligera en <code>turn_audit_log</code>, y el mantenimiento diario incluye un dry-run de integridad Chroma-SQLite con <code>scratch/sync_success_chroma_deletes.py</code>.</p>
                 <p><strong>Runtime Gemini 2026-07-07:</strong> el archivo <code>.env</code> quedo parseable por <code>python-dotenv</code>; Decodo se guarda como <code>DECODO_PROXY_TEST_URL</code> y <code>DECODO_API_AUTH</code>, y <code>GEMINI_LIVE_ENABLED=1</code>. Se corrigieron nombres locales de claves <code>GEMINI_API_KEY_4..7</code> y la verificacion cargo 7 claves sin warnings. <code>.env</code> no se versiona en GitHub. Backup previo: <code>.env.bak_20260706_201411</code>.</p>
                 <h3>Arquitectura RAG consolidada 2026-07-07</h3>
                 <table>
@@ -432,6 +433,12 @@
                             <td>Clasifica por destinatario: chat dirigido a ella va a Natalia; consejo, estudio, game over o prefijo Maximus va a Coach.</td>
                         </tr>
                         <tr>
+                            <td>Estado UI para router</td>
+                            <td><code>buildVisibleContext()</code></td>
+                            <td>Activo</td>
+                            <td>El frontend envia <code>mode</code>; estudio, resumen, game over o coach pueden enrutar a Maximus sin depender solo de palabras clave.</td>
+                        </tr>
+                        <tr>
                             <td>Maximus Coach Q&amp;A</td>
                             <td><code>build_maximus_prompt()</code> + modal coach</td>
                             <td>Activo</td>
@@ -447,13 +454,43 @@
                             <td>Reranker</td>
                             <td><code>backend/server.py</code> / <code>success_case_rank()</code></td>
                             <td>Activo</td>
-                            <td>Reordena por objetivo, score, confidence, app/fuente, marcas temporales y similitud textual.</td>
+                            <td>Reordena por objetivo, score, confidence, app/fuente, marcas temporales y similitud textual; <code>success_case_is_relevant()</code> descarta casos flojos antes del prompt.</td>
+                        </tr>
+                        <tr>
+                            <td>Filtro Persona</td>
+                            <td><code>retrieve_persona_cases()</code></td>
+                            <td>Activo</td>
+                            <td>Si el usuario pregunta por un tema directo, filtra pares reales y success support por ese tema para evitar saltos incoherentes.</td>
+                        </tr>
+                        <tr>
+                            <td>Ruta legacy bloqueada</td>
+                            <td><code>retrieve_cases()</code></td>
+                            <td>Deprecada</td>
+                            <td>Lanza error si alguien intenta usarla, porque mezcla fuentes de Persona, Coach, libros, YouTube y negativos.</td>
+                        </tr>
+                        <tr>
+                            <td>Auditoria por turno</td>
+                            <td><code>turn_audit_log</code> en <code>textgame.db</code></td>
+                            <td>Activa</td>
+                            <td>Guarda route, fuentes, score, fallback, conteos y preview del mensaje. <code>/health</code> y <code>/api/training-status</code> reportan filas.</td>
+                        </tr>
+                        <tr>
+                            <td>Calibracion de emojis</td>
+                            <td><code>emoji_profile()</code></td>
+                            <td>Corregida</td>
+                            <td>Usa Unicode real para detectar emojis sexuales, calidos y romanticos; evita el bug de mojibake en sets internos.</td>
+                        </tr>
+                        <tr>
+                            <td>Integridad Chroma-SQLite</td>
+                            <td><code>scratch/sync_success_chroma_deletes.py</code></td>
+                            <td>Dry-run diario</td>
+                            <td>Detecta embeddings huerfanos cuando un caso deja de ser <code>candidate_qa</code>. Solo borra con <code>--apply</code>.</td>
                         </tr>
                         <tr>
                             <td>Mantenimiento</td>
                             <td><code>scratch/daily_natalia_rag_maintenance.py</code></td>
                             <td>Automatizado y probado</td>
-                            <td>Traduce pendientes, indexa incremental, actualiza negativos, regenera grafo, ejecuta QA 20 y QA catalogo 120.</td>
+                            <td>Traduce pendientes, indexa incremental, actualiza negativos, audita huerfanos Chroma, regenera grafo, ejecuta QA 20 y QA catalogo.</td>
                         </tr>
                         <tr>
                             <td>Evaluacion base</td>
@@ -518,7 +555,7 @@
                         </tr>
                     </tbody>
                 </table>
-                <p><strong>Decision implementada:</strong> se crearon 120 preguntas predefinidas etiquetadas no para que Natalia memorice respuestas, sino para evaluar, enrutar y mejorar retrieval. Campos incluidos: <code>categoria</code>, <code>intencion</code>, <code>perfil</code>, <code>objetivo</code>, <code>colecciones_esperadas</code>, <code>evidencia_esperada</code>, <code>respuesta_ideal_resumida</code> y <code>criterios_de_fallo</code>. Generador: <code>scratch/generate_natalia_rag_eval_catalog.py</code>. Evaluador: <code>scratch/qa_natalia_rag_catalog.py</code>. Reporte aprobado: <code>docs/natalia_rag_eval_catalog_run_20260706_210358.*</code>, 120/120 OK.</p>
+                <p><strong>Decision implementada:</strong> se crearon preguntas predefinidas etiquetadas no para que Natalia memorice respuestas, sino para evaluar, enrutar y mejorar retrieval. El catalogo operativo actual tiene 225 preguntas. Campos incluidos: <code>categoria</code>, <code>intencion</code>, <code>perfil</code>, <code>objetivo</code>, <code>colecciones_esperadas</code>, <code>evidencia_esperada</code>, <code>respuesta_ideal_resumida</code> y <code>criterios_de_fallo</code>. Generador: <code>scratch/generate_natalia_rag_eval_catalog.py</code>. Evaluador: <code>scratch/qa_natalia_rag_catalog.py</code>. Reporte aprobado: <code>docs/natalia_rag_eval_catalog_run_20260706_224719.*</code>, 225/225 OK.</p>
                 <h3>Flujo runtime de consulta RAG</h3>
                 <table>
                     <thead>
@@ -543,10 +580,10 @@
                             <td>Explicar errores, comparar contra exitos y dar 3 sugerencias accionables sin mezclar voz con Natalia.</td>
                         </tr>
                         <tr>
-                            <td>Helper legacy/general</td>
+                            <td>Ruta legacy bloqueada</td>
                             <td><code>retrieve_cases()</code></td>
-                            <td>Mixta</td>
-                            <td>No es la ruta principal de <code>simulate_turn()</code>. Si se reactiva en endpoints futuros, revisar que negativos no alimenten Natalia-persona.</td>
+                            <td>Mixta no permitida</td>
+                            <td>Deprecada por seguridad: lanza error para impedir que negativos, libros y YouTube entren accidentalmente en voz de Natalia.</td>
                         </tr>
                         <tr>
                             <td>Freshness de entrenamiento</td>

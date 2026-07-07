@@ -131,6 +131,25 @@ def chroma_query_enabled() -> bool:
     value = os.getenv("CHROMA_QUERY_ENABLED", "1").strip().lower()
     return value not in {"0", "false", "no", "off"}
 
+
+def optional_table_count(table_name: str) -> Optional[int]:
+    if not DB_PATH.exists() or not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", table_name):
+        return None
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        exists = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+            (table_name,),
+        ).fetchone()
+        if not exists:
+            conn.close()
+            return 0
+        total = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
+        conn.close()
+        return int(total or 0)
+    except Exception:
+        return None
+
 LEVEL_BEHAVIOR = {
     1: {
         "name": "Natalia",
@@ -585,6 +604,7 @@ async def health():
         "book_conversations_chroma_documents": book_conversations_count,
         "negative_chroma_collection": getattr(negative_collection, "name", None),
         "negative_chroma_documents": negative_collection_count,
+        "turn_audit_log_rows": optional_table_count("turn_audit_log"),
     }
 
 
@@ -749,6 +769,7 @@ async def training_status():
             book_conversations_collection.count() if book_conversations_collection is not None else None
         ),
         "negative_chroma_documents": negative_collection.count() if negative_collection is not None else None,
+        "turn_audit_log_rows": optional_table_count("turn_audit_log"),
     }
 
 
@@ -1014,6 +1035,19 @@ def success_case_rank(query: str, case: Dict[str, str]) -> int:
     return rank
 
 
+def success_case_is_relevant(query: str, case: Dict[str, str]) -> bool:
+    """Reject weak success cases before they enter Natalia's prompt."""
+    rank = success_case_rank(query, case)
+    query_objectives = infer_query_objectives(query)
+    case_objectives = set(str(case.get("objectives", "")).split(", "))
+    confidence = str(case.get("confidence") or "")
+    if query_objectives and query_objectives.intersection(case_objectives):
+        return rank >= 8
+    if confidence == "alta":
+        return rank >= 10
+    return rank >= 12
+
+
 def success_candidate_case_text(row: sqlite3.Row, max_chars: int = 2600) -> str:
     objectives = parse_json_list(row["objectives_json"])
     confidence, confidence_reasons = success_confidence(row)
@@ -1103,7 +1137,8 @@ def retrieve_success_chroma_cases(query: str, limit: int = 4) -> List[Dict[str, 
             }
         )
     cases.sort(key=lambda case: success_case_rank(query, case), reverse=True)
-    return cases[:limit]
+    filtered = [case for case in cases if success_case_is_relevant(query, case)]
+    return filtered[:limit]
 
 
 def retrieve_success_sqlite_cases(query: str, limit: int = 3) -> List[Dict[str, str]]:
@@ -2068,30 +2103,21 @@ def retrieve_youtube_theory(query: str, limit: int = 2) -> List[Dict[str, str]]:
 
 
 def retrieve_cases(request: SimulateTurnRequest, behavior: Dict[str, Any]) -> List[Dict[str, str]]:
-    profile = str(behavior.get("profile", "coqueta"))
-    query = f"{request.user_message}\n{visible_context_text(request)}\n{compact_history(request.history, limit=6)}"
-    last_natalia = authoritative_last_natalia(request)
-    intent = infer_turn_intent(request.user_message, last_natalia)
-    cases = retrieve_real_reply_pairs(query, profile, intent=intent, limit=5)
-    cases.extend(retrieve_success_chroma_cases(query, limit=3))
-    if not any(case.get("source") == "success_chroma" for case in cases):
-        cases.extend(retrieve_success_sqlite_cases(query, limit=2))
-    cases.extend(retrieve_chroma_cases(query, profile, limit=2))
-    cases.extend(retrieve_sqlite_reddit_cases(query, profile, limit=2))
-    cases.extend(retrieve_books_chroma_cases(query, limit=2))
-    cases.extend(retrieve_negative_chroma_cases(query, limit=2))
-    cases.extend(retrieve_youtube_theory(query, limit=2))
-    cases.extend(retrieve_chat_turns(query, profile, limit=2))
+    raise RuntimeError(
+        "retrieve_cases() esta deprecada porque mezcla fuentes de Persona, Coach, libros, "
+        "YouTube y negativos. Usar retrieve_persona_cases(), retrieve_coach_cases() o "
+        "retrieve_persona_strategy_cases() segun el consumidor."
+    )
 
-    deduped: List[Dict[str, str]] = []
-    seen = set()
-    for case in cases:
-        key = (case.get("source", ""), case.get("post_id", ""), case.get("text", "")[:80])
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(case)
-    return deduped[:10]
+
+def case_topics(case: Dict[str, str]) -> set[str]:
+    return topic_set(
+        "\n".join(
+            clean_ui_text(case.get(key))
+            for key in ["man_message", "woman_response", "text", "objectives"]
+            if clean_ui_text(case.get(key))
+        )
+    )
 
 
 def retrieve_persona_cases(request: SimulateTurnRequest, behavior: Dict[str, Any], limit: int = 8) -> List[Dict[str, str]]:
@@ -2116,7 +2142,12 @@ def retrieve_persona_cases(request: SimulateTurnRequest, behavior: Dict[str, Any
         for case in cases
         if pair_topics(case).intersection(direct_topics)
     ]
-    return filtered_pairs + success_cases
+    filtered_success = [
+        case
+        for case in success_cases
+        if case_topics(case).intersection(direct_topics)
+    ]
+    return filtered_pairs + filtered_success
 
 
 def retrieve_persona_strategy_cases(
@@ -2206,6 +2237,97 @@ def retrieval_summary_for_cases(
     }
 
 
+def turn_audit_enabled() -> bool:
+    value = os.getenv("TURN_AUDIT_ENABLED", "1").strip().lower()
+    return value not in {"0", "false", "no", "off"}
+
+
+def write_turn_audit_log(
+    request: SimulateTurnRequest,
+    retrieval_summary: Dict[str, Any],
+    response: SimulateTurnResponse,
+) -> None:
+    if not turn_audit_enabled() or not DB_PATH.exists():
+        return
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5)
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS turn_audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                level INTEGER,
+                step_index INTEGER,
+                evaluated_step_id TEXT,
+                route TEXT,
+                route_stage TEXT,
+                route_reasons_json TEXT,
+                addressed_to_her INTEGER,
+                score INTEGER,
+                lose_life INTEGER,
+                attraction_delta INTEGER,
+                fallback INTEGER,
+                natalia_live_used INTEGER,
+                coach_live_used INTEGER,
+                fallback_category TEXT,
+                user_message_preview TEXT,
+                persona_pair_cases INTEGER,
+                persona_support_cases INTEGER,
+                coach_context_cases INTEGER,
+                strategy_context_cases INTEGER,
+                sources_json TEXT
+            )
+            """
+        )
+        sources = {
+            "persona": retrieval_summary.get("persona_sources", {}),
+            "persona_support": retrieval_summary.get("persona_support_sources", {}),
+            "coach": retrieval_summary.get("coach_sources", {}),
+            "strategy": retrieval_summary.get("strategy_sources", {}),
+        }
+        conn.execute(
+            """
+            INSERT INTO turn_audit_log (
+                level, step_index, evaluated_step_id, route, route_stage, route_reasons_json,
+                addressed_to_her, score, lose_life, attraction_delta, fallback,
+                natalia_live_used, coach_live_used, fallback_category, user_message_preview,
+                persona_pair_cases, persona_support_cases, coach_context_cases,
+                strategy_context_cases, sources_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                request.level,
+                request.step_index,
+                str(request.evaluated_step_id or ""),
+                str(retrieval_summary.get("route") or ""),
+                str(retrieval_summary.get("route_stage") or ""),
+                json.dumps(retrieval_summary.get("route_reasons") or [], ensure_ascii=False),
+                1 if retrieval_summary.get("addressed_to_her") else 0,
+                response.score,
+                1 if response.lose_life else 0,
+                response.attraction_delta,
+                1 if response.fallback else 0,
+                1 if retrieval_summary.get("natalia_live_used") else 0,
+                1 if retrieval_summary.get("coach_live_used") else 0,
+                str(
+                    retrieval_summary.get("natalia_fallback_category")
+                    or retrieval_summary.get("maximus_fallback_category")
+                    or ""
+                ),
+                clean_ui_text(request.user_message)[:280],
+                int(retrieval_summary.get("persona_pair_cases") or 0),
+                int(retrieval_summary.get("persona_support_cases") or 0),
+                int(retrieval_summary.get("coach_context_cases") or 0),
+                int(retrieval_summary.get("strategy_context_cases") or 0),
+                json.dumps(sources, ensure_ascii=False),
+            ),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as exc:
+        print(f"WARNING: turn audit log skipped: {exc}")
+
+
 def cases_signal(cases: List[Dict[str, str]]) -> str:
     combined = "\n".join(case.get("text", "") for case in cases[:5]).lower()
     if any(word in combined for word in ["whatsapp", "phone", "nÃºmero", "numero", "telÃ©fono", "telefono"]):
@@ -2221,9 +2343,19 @@ def cases_signal(cases: List[Dict[str, str]]) -> str:
 
 def emoji_profile(text: str) -> Dict[str, Any]:
     emojis = re.findall("[\U0001F300-\U0001FAFF\u2600-\u27BF]", text or "")
-    risky = {"ðŸ†", "ðŸ’¦", "ðŸ‘…", "ðŸ¥µ", "ðŸ˜ˆ"}
-    warm = {"ðŸ˜‰", "ðŸ˜„", "ðŸ˜ƒ", "ðŸ˜‚", "ðŸ¤£", "ðŸ˜…", "ðŸ™‚", "ðŸ˜Š", "ðŸ˜Œ"}
-    romantic = {"ðŸ˜", "ðŸ˜˜", "â¤ï¸", "ðŸ’•", "ðŸ’–", "ðŸ”¥"}
+    risky = {"\U0001F346", "\U0001F4A6", "\U0001F445", "\U0001F975", "\U0001F608"}
+    warm = {
+        "\U0001F609",
+        "\U0001F604",
+        "\U0001F603",
+        "\U0001F602",
+        "\U0001F923",
+        "\U0001F605",
+        "\U0001F642",
+        "\U0001F60A",
+        "\U0001F60C",
+    }
+    romantic = {"\U0001F60D", "\U0001F618", "\u2764", "\U0001F495", "\U0001F496", "\U0001F525"}
     unique = sorted(set(emojis))
     risky_count = sum(1 for emoji in emojis if emoji in risky)
     warm_count = sum(1 for emoji in emojis if emoji in warm)
@@ -3555,10 +3687,6 @@ def route_turn_request(request: SimulateTurnRequest) -> Dict[str, Any]:
     }
 
 
-def maximus_intercept_message() -> str:
-    return "Te contesta Maximus abajo; no voy a mezclar esto con el chat."
-
-
 def build_maximus_prompt(request: SimulateTurnRequest, behavior: Dict[str, Any], cases_prompt: str) -> str:
     return f"""Eres Maximus, coach de text game del simulador Easy Date.
 El usuario te esta pidiendo consejo; NO esta hablando con Natalia.
@@ -3830,7 +3958,7 @@ def simulate_turn(request: SimulateTurnRequest):
                 "addressed_to_her": route_info.get("addressed_to_her", False),
             }
         )
-        return SimulateTurnResponse(
+        response = SimulateTurnResponse(
             natalia_message="",
             natalia_time="Maximus",
             coach_title="Maximus Coach",
@@ -3845,6 +3973,8 @@ def simulate_turn(request: SimulateTurnRequest):
             turn_analysis=turn_analysis,
             turn_metrics=turn_metrics,
         )
+        write_turn_audit_log(request, retrieval_summary, response)
+        return response
 
     if gemini_live_enabled() and gemini_coach_enabled():
         try:
@@ -3864,9 +3994,6 @@ def simulate_turn(request: SimulateTurnRequest):
     passing_score = passing_score_for_behavior(behavior)
     lose_life = score < passing_score or bool(coach.get("lose_life", False))
     attraction_delta = int(coach.get("attraction_delta", 10 if score >= 8 else -10 if score < 6 else 3))
-    if route_info["route"] == "maximus":
-        lose_life = False
-        attraction_delta = 0
     suggestions = [
         clean_ui_text(item)
         for item in coach.get("suggestions", [])
@@ -3905,11 +4032,6 @@ def simulate_turn(request: SimulateTurnRequest):
         natalia_time = "Tardó: 15 min"
         fallback = True
 
-    if route_info["route"] == "maximus":
-        natalia_message = maximus_intercept_message()
-        natalia_time = "Maximus"
-        natalia_live_used = False
-
     title = "Maximus Coach" if route_info["route"] == "maximus" else "Buena respuesta" if score >= passing_score + 1 else "Respuesta aceptable" if not lose_life else "Respuesta incorrecta"
     coach_feedback = feedback
     if suggestions:
@@ -3944,7 +4066,7 @@ def simulate_turn(request: SimulateTurnRequest):
         }
     )
 
-    return SimulateTurnResponse(
+    response = SimulateTurnResponse(
         natalia_message=natalia_message,
         natalia_time=natalia_time or "Tardó: 15 min",
         coach_title=title,
@@ -3959,6 +4081,8 @@ def simulate_turn(request: SimulateTurnRequest):
         turn_analysis=turn_analysis,
         turn_metrics=turn_metrics,
     )
+    write_turn_audit_log(request, retrieval_summary, response)
+    return response
 
 
 @app.post("/api/evaluate", response_model=EvaluateResponse)

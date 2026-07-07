@@ -32,7 +32,7 @@
   - El backend reordena resultados de `natalia_success_cases` despues de Chroma con un reranker local por objetivo consultado, score, confianza, fuente, app, marcas de tiempo y similitud textual.
   - La recuperacion sigue el patron parent document: Chroma devuelve IDs/casos y el backend rehidrata la conversacion completa desde SQLite antes de construir contexto.
   - `scratch\build_natalia_objective_graph.py` genera grafo JSON/HTML de objetivos (`contacto`, `cita`, `instagram`, `snapchat`, `humor`, `abridor`, `conexion`), apps, confianza y casos.
-  - `scratch\daily_natalia_rag_maintenance.py` ejecuta mantenimiento diario: traduccion pendiente, indexacion incremental, negativos, grafo, QA de 20 preguntas y QA extendida de 120 preguntas etiquetadas.
+  - `scratch\daily_natalia_rag_maintenance.py` ejecuta mantenimiento diario: traduccion pendiente, indexacion incremental, negativos, auditoria Chroma-SQLite, grafo, QA de 20 preguntas y QA extendida de 225 preguntas etiquetadas.
   - `/health` y `/api/training-status` deben reportar tambien `negative_chroma_documents` para auditar que Maximus tenga ejemplos de errores sin contaminar la persona de Natalia.
   - Cierre de verificacion: reindex `docs\natalia_rag_reindex_confidence_negative_20260706.json` dejo `natalia_success_cases=1895` y `natalia_negative_cases=1000`. Grafo inicial: `docs\natalia_objective_graph_20260706_200116.json/html` con 1.895 casos, 1.914 nodos y 6.025 relaciones. QA final: `docs\natalia_rag_qa_20_20260706_200231.*` con 20/20 preguntas OK. Automatizacion diaria activa: `qa-diaria-rag-natalia`.
 - Configuracion runtime 2026-07-06: se corrigio `.env` para que Decodo use variables parseables por `python-dotenv` (`DECODO_PROXY_TEST_URL`, `DECODO_API_AUTH`) y se activo `GEMINI_LIVE_ENABLED=1`. Verificacion: `/health` reporto `gemini_live_enabled=true`, `gemini_keys_loaded=3`, `chroma_query_enabled=true`; `/api/simulate-turn` confirmo `coach_live_used=true`, `natalia_live_used=true`, `fallback=false` con respuesta UTF-8 correcta. Backup previo: `.env.bak_20260706_201411`.
@@ -47,7 +47,7 @@
   | Libros | `books_kb/chroma_books` / `natalia_books_kb` | 2.335 docs | Base teorica staged; consultar como apoyo, no como conversacion real. |
   | Conversaciones libros | `books_kb/chroma_books` / `natalia_conversations` | 74 docs | Casos de libros; deben conservar parent context cuando se integren completamente. |
   | Reranker | `backend/server.py` / `success_case_rank()` | Activo | Reordena por objetivo, score, confidence, app/fuente, marcas temporales y similitud textual. |
-  | Mantenimiento | `scratch/daily_natalia_rag_maintenance.py` | Automatizado y probado | Traduce pendientes, indexa incremental, actualiza negativos, regenera grafo, ejecuta QA 20 y QA catalogo 120. |
+  | Mantenimiento | `scratch/daily_natalia_rag_maintenance.py` | Automatizado y probado | Traduce pendientes, indexa incremental, actualiza negativos, audita huerfanos Chroma, regenera grafo, ejecuta QA 20 y QA catalogo 225. |
   | Evaluacion base | `scratch/qa_natalia_rag_20.py` | 20/20 OK | Prueba rapida de humo para retrieval y groundedness. |
   | Evaluacion catalogo | `scratch/qa_natalia_rag_catalog.py` + `docs/natalia_rag_eval_catalog_v1.*` | 120/120 OK | Benchmark etiquetado por categoria, intencion, perfil, objetivo, colecciones esperadas y criterio de fallo. |
   | Runtime | `GEMINI_LIVE_ENABLED=1`, `CHROMA_QUERY_ENABLED=1` | Activo | Gemini responde en vivo con RAG; si hay 429, fallback local debe quedar disponible. |
@@ -66,15 +66,22 @@
   - Luego obtiene `coach_cases = retrieve_coach_cases(...)` para Maximus-Coach. Esta ruta combina algunos casos persona, exitosos, libros, legacy, YouTube/chat turns y `natalia_negative_cases` para explicar errores.
   - `route_turn_request()` decide si el mensaje va a Natalia o a Maximus. La regla nueva es por destinatario: si el mensaje esta dirigido a ella (`te`, `tu`, `nuestra primera cita`, etc.) sigue como Natalia aunque mencione cita; si inicia con `Maximus`/`coach`, etapa de estudio/game over o pide consejo en tercera persona, va a Maximus.
   - Si la ruta es Maximus, el backend responde con prompt propio `build_maximus_prompt()`, no llama a Natalia, no pierde vida, no cambia atraccion y no avanza el nivel. El frontend de `simulador_v1.2.html` quita ese mensaje del historial de Natalia y lo muestra como modal de coach.
-  - `retrieve_cases(...)` queda como helper legacy/general; no es la ruta principal de `simulate_turn()`. Si se reactiva en un endpoint futuro, revisar que los negativos no alimenten la voz de Natalia-persona.
+  - `retrieve_cases(...)` queda deprecada y lanza `RuntimeError`: esa ruta mezclaba Persona, Coach, libros, YouTube y negativos. Usar siempre `retrieve_persona_cases()`, `retrieve_coach_cases()` o `retrieve_persona_strategy_cases()` segun el consumidor.
   - Regla de prompt: Natalia responde como mujer real y breve; Maximus evalua calidad, contexto, objetivo, timing y emojis. No mezclar nombres ni voces.
   - Regla de freshness: si entran nuevos `candidate_qa`, ejecutar traduccion pendiente e indexacion incremental antes de afirmar que ya entrenan a Natalia.
+- Hardening RAG/router 2026-07-07:
+  - `emoji_profile()` usa emojis Unicode reales por escape, no mojibake; ahora detecta riesgo sexual temprano, calidez y romanticismo correctamente.
+  - `retrieve_persona_cases()` filtra tambien los `success_chroma/success_sqlite` por tema cuando el usuario hace una pregunta directa, para evitar que Natalia salte de musica/trabajo/ubicacion a cita o WhatsApp sin puente.
+  - `retrieve_success_chroma_cases()` aplica `success_case_is_relevant()` despues del rerank; casos con baja coincidencia no entran al prompt solo porque Chroma los devolvio.
+  - `turn_audit_log` registra en SQLite cada turno con route, fuentes, score, fallback, conteos de contexto y preview del mensaje. `/health` y `/api/training-status` reportan `turn_audit_log_rows`.
+  - `buildVisibleContext()` envia `mode` al backend para que etapas de estudio, game over, resumen o coach activen Maximus por senal de UI.
+  - `scratch/sync_success_chroma_deletes.py` audita embeddings huerfanos de `natalia_success_cases`; por defecto es dry-run y solo borra con `--apply`. `daily_natalia_rag_maintenance.py` lo ejecuta en dry-run.
 - Actualizacion entrenamiento silencioso 2026-07-07:
   - Los libros se etiquetan al recuperar contexto con `TEXTGAME_CONCEPT_PATTERNS`: `opener`, `tension`, `inversion`, `cierre`, `timing`, `humor` y `frame`.
   - `retrieval_summary` ahora separa `persona_pair_cases`, `persona_support_cases`, `strategy_context_cases`, `persona_sources`, `persona_support_sources` y `strategy_sources` para auditar si Natalia uso libros como estrategia silenciosa.
   - QA extendida regenerada: `docs\natalia_rag_eval_catalog_v1.*` tiene 225 preguntas. Corrida `docs\natalia_rag_eval_catalog_run_20260706_224719.*`: 225/225 OK, 0 `FALTA_EVIDENCIA`.
   - Grafo pedagogico generado con `scratch\build_natalia_learning_graph.py`: `docs\natalia_learning_graph_20260706_224330.json/html`, 79 nodos y 112 relaciones tipo libro -> principio -> caso real -> patron de respuesta Natalia.
-  - Pruebas backend: `pytest -q tests\test_backend.py` paso 101/101. Se corrigio localmente el formato de `.env` para claves `GEMINI_API_KEY_4..7`; verificacion `python -c "from dotenv import load_dotenv; ..."` cargo 7 claves sin warnings. `.env` no se versiona.
+  - Pruebas backend: `pytest -q tests\test_backend.py` paso 104/104. Se corrigio localmente el formato de `.env` para claves `GEMINI_API_KEY_4..7`; verificacion `python -c "from dotenv import load_dotenv; ..."` cargo 7 claves sin warnings. `.env` no se versiona.
 - Optimizacion Decodo 2026-07-01:
   - Para descubrimiento masivo usar Decodo Web Scraping API con `target=universal`, `proxy_pool=standard` y sin JS/headless, porque la documentacion indica que Standard es para sitios simples/estaticos y las plantillas Reddit usan Premium por defecto.
   - No usar `reddit_post` como plantilla en barrido amplio; reservarla para validacion de finalistas o casos donde reemplace varias llamadas genericas.
