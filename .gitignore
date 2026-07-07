@@ -1,0 +1,94 @@
+# Secrets and local configuration
+.env
+*.env
+.env.*
+*.key
+*.pem
+
+# Databases, vector stores, and local datasets
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+chroma_db/
+chroma_db.bak_*/
+books_kb/
+imagenes/
+imagenes_nuevas/
+reddit_images/
+downloaded_files*/
+prueba_assets/
+casos_reales_tinder/
+reddit_cases/
+parsed_cases/
+failed_cases/
+
+# Logs and generated run artifacts
+*.log
+*.stdout.log
+*.stderr.log
+output*.txt
+temp*.txt
+transcript*.txt
+*.txt
+*.json
+scratch_transcript.txt
+schema_info.txt
+scraper_log.txt
+YARS.log
+docs/*.log
+docs/*.stdout.log
+docs/*.stderr.log
+docs/*.csv
+docs/*.json
+scratch/*.csv
+scratch/*.json
+scratch/*.html
+scratch/*.png
+scratch/*.txt
+scratch/cache/
+scratch/chroma_backups/
+scratch/message_game_sample/
+scratch/reddit_dialogue_text_scan_raw/
+scratch/reddit_objective_dialogue_scan_raw/
+scratch/reddit_success_image_pipeline/
+scratch/reddit_text_scan_raw/
+scratch/yars/
+
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Node/runtime caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.bak
+*.bak_*
+
+# Local screenshots and scratch media
+screenshot*.png
+docs/qa_screenshots/
+*.webp.tmp
+
+# Local credential/proxy smoke tests
+*proxy_test.py
+reddit_decodo_playwright.py
+test_decodo_api.py
+scratch/test_key_direct.py
+scratch/test_proxy_final.py
+scratch/test_reddit_proxy.py

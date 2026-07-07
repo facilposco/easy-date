@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de bases de datos - Natalia Books KB</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5c687a;
+      --line: #d8e0ec;
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --blue: #1d4ed8;
+      --green: #087f5b;
+      --amber: #9a6700;
+      --dark: #111827;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+
+    header {
+      background: var(--dark);
+      color: #fff;
+      padding: 34px 24px;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+
+    h1, h2, h3 { margin-top: 0; letter-spacing: 0; }
+    h1 { margin-bottom: 10px; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.1; }
+    h2 { margin: 0 0 14px; font-size: 1.45rem; }
+    h3 { margin-bottom: 8px; font-size: 1.02rem; }
+    p { margin: 0 0 14px; }
+    code { background: #edf1f7; padding: 2px 5px; border-radius: 4px; }
+
+    .intro { max-width: 880px; color: #dbe4ef; }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      margin: 18px 0;
+    }
+
+    .diagram {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .node {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 156px;
+      background: #fff;
+      position: relative;
+    }
+
+    .node strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .node ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .node::after {
+      content: ">";
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .node:last-child::after { content: ""; }
+    .source { border-top: 5px solid var(--amber); }
+    .sqlite { border-top: 5px solid var(--blue); }
+    .chroma { border-top: 5px solid var(--green); }
+    .api { border-top: 5px solid #7c3aed; }
+    .agent { border-top: 5px solid #be123c; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e9eef7;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .tag.green { background: var(--green); }
+    .tag.amber { background: var(--amber); }
+    .tag.gray { background: #64748b; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--amber);
+      background: #fff8e6;
+      padding: 14px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .small { color: var(--muted); font-size: 0.94rem; }
+
+    @media (max-width: 920px) {
+      .diagram,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .node::after { content: ""; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mapa simple de las bases de datos de Natalia</h1>
+    <p class="intro">Vista facil de entender de como esta organizada la informacion en <code>books_kb</code>: archivos fuente, SQLite, ChromaDB, scripts de consulta y agente Natalia.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Flujo general</h2>
+      <div class="diagram">
+        <div class="node source">
+          <strong>1. Fuentes</strong>
+          <ul>
+            <li>23 EPUB en <code>source_books/</code></li>
+            <li>22 libros unicos procesados</li>
+            <li>1 duplicado omitido</li>
+          </ul>
+        </div>
+        <div class="node sqlite">
+          <strong>2. SQLite</strong>
+          <ul>
+            <li><code>books_index.sqlite</code></li>
+            <li>catalogo, chunks, conversaciones</li>
+            <li>FTS5 para busqueda textual</li>
+          </ul>
+        </div>
+        <div class="node chroma">
+          <strong>3. ChromaDB</strong>
+          <ul>
+            <li><code>chroma_books/</code></li>
+            <li>busqueda semantica</li>
+            <li>embeddings multilenguaje</li>
+          </ul>
+        </div>
+        <div class="node api">
+          <strong>4. API local</strong>
+          <ul>
+            <li><code>search_kb.py</code></li>
+            <li><code>NataliaKB</code></li>
+            <li>une resultados y contexto</li>
+          </ul>
+        </div>
+        <div class="node agent">
+          <strong>5. Natalia</strong>
+          <ul>
+            <li>consulta por tema</li>
+            <li>recupera ejemplos</li>
+            <li>usa trazabilidad por libro</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tablas principales de SQLite</h2>
+      <table>
+        <tr>
+          <th>Tabla</th>
+          <th>Registros</th>
+          <th>Que guarda</th>
+          <th>Relacion principal</th>
+          <th>Uso para Natalia</th>
+        </tr>
+        <tr>
+          <td><code>books</code></td>
+          <td>22</td>
+          <td>Catalogo maestro: titulo, autor, slug, archivo original, conteos y hash.</td>
+          <td>Tabla padre. <code>books.id</code> conecta con chunks, conversaciones y calidad.</td>
+          <td>Saber de que libro viene cada respuesta.</td>
+        </tr>
+        <tr>
+          <td><code>chunks</code></td>
+          <td>2,114</td>
+          <td>Fragmentos ordenados de conocimiento con texto, temas, tipo de contenido y <code>embedding_id</code>.</td>
+          <td><code>chunks.book_id</code> apunta a <code>books.id</code>.</td>
+          <td>Responder preguntas generales y reconstruir contexto con chunks vecinos.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_libros</code></td>
+          <td>4</td>
+          <td>Conversaciones completas detectadas por el extractor original, con turnos, resultado, tecnicas y score.</td>
+          <td><code>conversaciones_libros.book_id</code> apunta a <code>books.id</code>.</td>
+          <td>Extraer ejemplos completos sin depender del chunking.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_segunda_pasada</code></td>
+          <td>37</td>
+          <td>Candidatos conversacionales detectados en una segunda pasada mas flexible sobre <code>raw_texts/</code>.</td>
+          <td><code>book_id</code>, lineas de inicio/fin y campos duplicados de libro/autor.</td>
+          <td>Encontrar ejemplos que el extractor original no habia clasificado como conversacion completa.</td>
+        </tr>
+        <tr>
+          <td><code>processing_quality</code></td>
+          <td>22</td>
+          <td>Metricas por libro: texto bruto, chunks, embeddings, relleno, OCR, score y advertencias.</td>
+          <td><code>processing_quality.book_id</code> apunta a <code>books.id</code>.</td>
+          <td>Verificar si un libro esta completo y con buena calidad.</td>
+        </tr>
+        <tr>
+          <td><code>omitted_duplicates</code></td>
+          <td>1</td>
+          <td>Registro del EPUB omitido como duplicado.</td>
+          <td>No depende de <code>books.id</code>; guarda rutas y hash.</td>
+          <td>Auditoria: explica por que hay 23 archivos pero 22 libros unicos.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Tablas de conversaciones por cantidad de turnos</h2>
+      <table>
+        <tr>
+          <th>Tabla</th>
+          <th>Registros</th>
+          <th>Cuando usarla</th>
+        </tr>
+        <tr>
+          <td><code>conversaciones_turnos_1_5</code></td>
+          <td>35</td>
+          <td>Ejemplos cortos, aperturas, respuestas puntuales y cierres rapidos.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_turnos_6_10</code></td>
+          <td>1</td>
+          <td>Secuencias medianas con mas ida y vuelta.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_turnos_11_15</code></td>
+          <td>0</td>
+          <td>No hay registros actuales en este rango.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_turnos_16_plus</code></td>
+          <td>1</td>
+          <td>Conversaciones largas o roleplay extendido. Revisar cuando el usuario pida conversaciones completas.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Indices de busqueda textual FTS5</h2>
+      <table>
+        <tr>
+          <th>Indice</th>
+          <th>Registros</th>
+          <th>Busca sobre</th>
+          <th>Uso recomendado</th>
+        </tr>
+        <tr>
+          <td><code>chunks_fts</code></td>
+          <td>2,114</td>
+          <td><code>texto</code>, <code>temas</code>, <code>capitulo</code></td>
+          <td>Buscar palabras exactas o terminos especificos dentro de los chunks.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_fts</code></td>
+          <td>4</td>
+          <td><code>conversacion_raw</code>, <code>analisis_autor</code>, <code>tecnicas_usadas</code>, <code>temas</code></td>
+          <td>Buscar texto exacto dentro de las conversaciones originales vectorizadas.</td>
+        </tr>
+      </table>
+      <p class="small">Las tablas internas <code>chunks_fts_config</code>, <code>chunks_fts_data</code>, <code>chunks_fts_docsize</code>, <code>chunks_fts_idx</code> y equivalentes de conversaciones son mantenimiento interno de SQLite FTS5; no se consultan directamente desde Natalia.</p>
+    </section>
+
+    <section>
+      <h2>ChromaDB: busqueda semantica</h2>
+      <div class="grid-2">
+        <div>
+          <h3><span class="tag green">Coleccion</span> <code>natalia_books_kb</code></h3>
+          <table>
+            <tr><th>Documentos</th><td>2,104</td></tr>
+            <tr><th>Origen</th><td>Chunks de <code>chunks</code> con <code>incluido_embedding = 1</code>.</td></tr>
+            <tr><th>Para que sirve</th><td>Buscar por significado, aunque el usuario no use las mismas palabras del libro.</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3><span class="tag green">Coleccion</span> <code>natalia_conversations</code></h3>
+          <table>
+            <tr><th>Documentos</th><td>4</td></tr>
+            <tr><th>Origen</th><td>Conversaciones de <code>conversaciones_libros</code>.</td></tr>
+            <tr><th>Para que sirve</th><td>Recuperar conversaciones completas detectadas originalmente.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="callout">
+        <strong>Importante:</strong> las 37 conversaciones de <code>conversaciones_segunda_pasada</code> estan en SQLite, pero no aparecen en ChromaDB como coleccion vectorial separada. Si Natalia debe buscarlas semanticamente, conviene vectorizarlas tambien en una futura mejora.
+      </div>
+    </section>
+
+    <section>
+      <h2>Relaciones faciles de recordar</h2>
+      <table>
+        <tr>
+          <th>Relacion</th>
+          <th>Explicacion simple</th>
+        </tr>
+        <tr>
+          <td><code>books.id = chunks.book_id</code></td>
+          <td>Un libro tiene muchos chunks.</td>
+        </tr>
+        <tr>
+          <td><code>books.id = conversaciones_libros.book_id</code></td>
+          <td>Un libro puede tener conversaciones completas detectadas.</td>
+        </tr>
+        <tr>
+          <td><code>books.id = conversaciones_segunda_pasada.book_id</code></td>
+          <td>Un libro puede tener candidatos conversacionales detectados en segunda pasada.</td>
+        </tr>
+        <tr>
+          <td><code>books.id = processing_quality.book_id</code></td>
+          <td>Cada libro tiene una fila de control de calidad.</td>
+        </tr>
+        <tr>
+          <td><code>chunks.embedding_id</code></td>
+          <td>Conecta el chunk de SQLite con su documento vectorial en ChromaDB.</td>
+        </tr>
+        <tr>
+          <td><code>conversaciones_libros.embedding_id</code></td>
+          <td>Conecta la conversacion original de SQLite con su documento vectorial en ChromaDB.</td>
+        </tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Que debe consultar Natalia segun la pregunta</h2>
+      <table>
+        <tr>
+          <th>Si el usuario pide...</th>
+          <th>Consultar primero</th>
+          <th>Funcion o tabla recomendada</th>
+        </tr>
+        <tr>
+          <td>Una tecnica, principio o explicacion general</td>
+          <td><span class="tag green">ChromaDB</span> + <span class="tag">SQLite</span></td>
+          <td><code>NataliaKB.search()</code> o <code>NataliaKB.search_with_context()</code></td>
+        </tr>
+        <tr>
+          <td>Una conversacion completa</td>
+          <td><span class="tag">SQLite</span></td>
+          <td><code>conversaciones_libros</code>, luego <code>conversaciones_segunda_pasada</code></td>
+        </tr>
+        <tr>
+          <td>Conversaciones largas de mas de 16 turnos</td>
+          <td><span class="tag">SQLite</span></td>
+          <td><code>conversaciones_turnos_16_plus</code></td>
+        </tr>
+        <tr>
+          <td>Ver si los libros estan completos</td>
+          <td><span class="tag amber">Calidad</span></td>
+          <td><code>processing_quality</code> y <code>verify_completeness.py</code></td>
+        </tr>
+        <tr>
+          <td>Auditar texto original</td>
+          <td><span class="tag gray">Archivos</span></td>
+          <td><code>raw_texts/</code> y <code>books.archivo_original</code></td>
+        </tr>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

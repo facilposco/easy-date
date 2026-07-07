@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Propuesta Easy Date: La Cura a la Soledad Digital</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --text-color: #f8fafc;
+            --accent-color: #3b82f6;
+            --glass-bg: rgba(30, 41, 59, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(16px);
+            --text-secondary: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+            /* Paleta de colores solicitada */
+            --bubble-me: #172554;     /* Azul oscuro hombre */
+            --bubble-her: #6b21a8;    /* Morado mujer */
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0b0f19 100%);
+            background-attachment: fixed;
+            color: var(--text-color);
+            margin: 0;
+            padding: 80px 15px 40px 15px; /* Margen superior para la barra persistente */
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- BARRA DE ACCIONES / COMPARTIR --- */
+        .action-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .action-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .path-input-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 3px 6px;
+            gap: 6px;
+        }
+
+        .path-input {
+            background: transparent;
+            border: none;
+            color: #60a5fa;
+            font-family: monospace;
+            font-size: 0.8rem;
+            width: 260px;
+            outline: none;
+        }
+
+        .action-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .action-btn.secondary {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--glass-border);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .action-bar-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        }
+
+        .card h2 {
+            color: #fff;
+            margin-top: 0;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 12px;
+        }
+
+        .icon { font-size: 1.8rem; }
+        .highlight { color: #60a5fa; font-weight: 600; }
+
+        /* Estilos de Datos y Gráficos CSS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .stat-number.blue { color: #3b82f6; }
+        .stat-number.red { color: #ef4444; }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 15px;
+            height: 120px;
+            margin-top: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .bar {
+            width: 70px;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: height 1s ease;
+        }
+
+        .bar.men { background: linear-gradient(180deg, #ef4444 0%, #991b1b 100%); height: 63%; }
+        .bar.women { background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%); height: 34%; }
+
+        /* Elementos Didácticos */
+        .concept-list { list-style: none; padding: 0; }
+        .concept-list li {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent-color);
+        }
+        .concept-title { font-size: 1.1rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+
+        /* --- SIMULADOR INTERACTIVO --- */
+        .simulator-container {
+            background: #000;
+            border: 6px solid #1e293b;
+            border-radius: 24px;
+            overflow: hidden;
+            max-width: 100%;
+            margin: 20px auto;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sim-header {
+            background: rgba(30, 41, 59, 0.95);
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            font-weight: bold;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .level-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .sim-chat {
+            padding: 15px;
+            height: 320px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #0f172a;
+        }
+
+        .sim-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            animation: fadeIn 0.25s ease-out;
+            position: relative;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sim-her {
+            background: var(--bubble-her);
+            color: #fff;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .sim-me {
+            background: var(--bubble-me);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .sim-options {
+            padding: 12px;
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sim-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #fff;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+
+        .sim-btn:hover { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+
+        /* Coach Overlay */
+        .coach-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.88);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .coach-icon { font-size: 3rem; margin-bottom: 8px; }
+        .coach-title { font-size: 1.3rem; margin-bottom: 8px; color: #fff; font-weight: bold; }
+        .coach-msg { color: #cbd5e1; font-size: 0.85rem; margin-bottom: 15px; max-width: 320px; }
+        
+        .try-again-btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .success-state {
+            background: rgba(16, 185, 129, 0.95);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 110px;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .card {
+                padding: 15px;
+            }
+            .sim-chat {
+                height: 260px;
+            }
+            .sim-btn {
+                font-size: 0.8rem;
+                padding: 8px 10px;
+            }
+            .action-bar {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+            .action-bar-right {
+                justify-content: flex-end;
+            }
+            .path-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR PARA COMPARTIR Y COPIAR -->
+    <div class="action-bar">
+        <div class="action-bar-left">
+            <span>Enlace local:</span>
+            <div class="path-input-container">
+                <input type="text" class="path-input" id="documentUrl" value="file:///C:/desarrollos/antigravity/text%20game%20youtube%20estudio%20ejemplos/propuesta-easy-date.html" readonly>
+                <button class="action-btn" onclick="copyUrl()" style="padding: 3px 6px; font-size: 0.75rem;">📋 Copiar</button>
+            </div>
+        </div>
+        <div class="action-bar-right">
+            <button class="action-btn secondary" onclick="openInBrowser()">🌐 Abrir en el Navegador</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="header">
+            <h1>Proyecto: Easy Date</h1>
+            <p>La cura tecnológica contra la epidemia de soledad, disfrazada de simulador de vuelo conversacional.</p>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🌍</span> El Problema Real: La Pandemia de Soledad</h2>
+            <p>Actualmente, el mundo enfrenta una crisis silenciada. La Organización Mundial de la Salud (OMS) ha declarado a la soledad como una <strong>amenaza global de salud pública</strong>, asegurando que sus efectos son tan mortales como fumar 15 cigarrillos al día.</p>
+            <p>Pero esta epidemia es extremadamente asimétrica. Al estudiar redes sociales, foros y encuestas sociológicas recientes (como los datos del <em>Pew Research Center</em>), la realidad es cruda:</p>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number red">63%</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">De los hombres jóvenes (18-30 años) en USA se reportan solteros y sin vínculos.</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number blue">34%</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">De las mujeres jóvenes (18-30 años) se reportan solteras.</div>
+                </div>
+            </div>
+
+            <div class="bar-chart">
+                <div class="bar women">Mujeres 34%</div>
+                <div class="bar men">Hombres 63%</div>
+            </div>
+
+            <h3 style="margin-top: 25px; font-size:1.1rem; color:#fff;">Impacto por Regiones (El "Invierno Demográfico")</h3>
+            <ul style="color: var(--text-secondary); line-height: 1.6; padding-left: 20px;">
+                <li><strong>Asia (El Estrangulamiento):</strong> En países como China e India, el desequilibrio de género ha dejado a más de <span class="highlight">70 millones de hombres</span> matemáticamente sin posibilidad de encontrar pareja local.</li>
+                <li><strong>Europa:</strong> Las tasas de formación de hogares están en mínimos históricos. Los expertos proyectan que para 2060, casi la mitad de los europeos vivirán completamente solos.</li>
+                <li><strong>Latinoamérica:</strong> Se ha perdido la tradición del matrimonio temprano, y aunque abunda la "unión libre", el aislamiento digital en los jóvenes urbanos está disparando la depresión masculina, canalizada a menudo en hostilidad y aislamiento.</li>
+                <li><strong>La Consecuencia Final:</strong> Las tasas de fertilidad global se han desplomado. Al no haber habilidades para formar parejas, no hay matrimonios, y sin matrimonios, no hay niños (Corea del Sur o España están batiendo récords de despoblación).</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">💡</span> La Solución Oculta (Easy Date)</h2>
+            <p>Los hombres no necesitan más aplicaciones de citas (donde el 80% compite inútilmente por el 20% de la atención). Necesitan un <strong>entorno seguro para fallar, aprender y corregir sus conductas sociales.</strong></p>
+            
+            <p>Imagínalo así: Antes de volar un avión real, un piloto pasa meses en un simulador donde puede estrellarse mil veces sin salir lastimado. Easy Date es exactamente eso: <strong>Un simulador de vuelo para el corazón.</strong></p>
+            
+            <ul class="concept-list">
+                <li>
+                    <div class="concept-title">👱‍♀️ El Cerebro Actriz (Natalia)</div>
+                    <p>Una Inteligencia Artificial que simula ser una usuaria real. A veces es divertida, a veces es fría o te hace "pruebas" (Shit-tests). Te entrena para no ponerte nervioso ante respuestas inesperadas.</p>
+                </li>
+                <li>
+                    <div class="concept-title">👨‍🏫 El Cerebro Entrenador (El Árbitro invisible)</div>
+                    <p>Mientras chateas con Natalia, un "Profesor" lee por encima de tu hombro. Si te pones celoso o escribes textos gigantes (rompiendo "La Balanza del Interés"), el Árbitro pausa el juego, te explica por qué asustaste a la chica, y te obliga a intentarlo de nuevo.</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- SIMULADOR INTERACTIVO -->
+        <div class="card">
+            <h2><span class="icon">🎮</span> Simulador Interactivo: Camino a la Cita (10 Niveles)</h2>
+            <p>Descubre el proceso completo en 10 etapas lógicas. Tú (el hombre) siempre inicias la interacción. Natalia tiene una dificultad intermedia (7/10) y responderá dinámicamente si tomas las decisiones correctas.</p>
+
+            <div class="simulator-container">
+                <div class="sim-header">
+                    <span>Chat con Natalia 🟢</span>
+                    <span class="level-badge" id="levelIndicator">Nivel 1: El Abridor</span>
+                </div>
+                
+                <div class="sim-chat" id="chatBox">
+                    <!-- El chat comienza vacío porque el hombre inicia siempre -->
+                    <div style="text-align: center; color: var(--text-secondary); font-size: 0.8rem; padding: 10px 0;" id="emptyNotice">
+                        Inicia la conversación seleccionando una de las opciones de abajo.
+                    </div>
+                </div>
+
+                <div class="sim-options" id="optionsBox">
+                    <!-- Las opciones se inyectarán dinámicamente por JS -->
+                </div>
+
+                <!-- OVERLAY DEL COACH (Árbitro) -->
+                <div class="coach-overlay" id="coachOverlay">
+                    <div class="coach-icon" id="coachIcon">🛑</div>
+                    <div class="coach-title" id="coachTitle">¡Pausa del Entrenador!</div>
+                    <div class="coach-msg" id="coachMsg">Has cometido un error.</div>
+                    <button class="try-again-btn" id="coachBtn" onclick="handleOverlayAction()">Reintentar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const coachOverlay = document.getElementById('coachOverlay');
+        const levelIndicator = document.getElementById('levelIndicator');
+        const optionsBox = document.getElementById('optionsBox');
+        const emptyNotice = document.getElementById('emptyNotice');
+
+        let currentLevel = 1;
+        let selectedType = "";
+        let isCorrectChoice = false;
+
+        // Base de datos de los 10 niveles
+        const gameLevels = {
+            1: {
+                title: "Nivel 1: El Abridor",
+                womanText: "", // El hombre empieza
+                options: [
+                    {
+                        text: "Hola hermosa, eres muy guapa. ¿Hablamos?",
+                        type: "anxious",
+                        feedback: "🚨 Inseguridad/Baja calibración (Simpeo). Poner a la chica en un pedestal en el primer mensaje destruye el misterio y la atracción instantáneamente."
+                    },
+                    {
+                        text: "Hola, ¿cómo estás? Qué tal tu día?",
+                        type: "logical",
+                        feedback: "⚠️ Modo Entrevista (Aburrido). Esta es la frase que recibe 100 veces al día. No destaca, no genera curiosidad ni emoción."
+                    },
+                    {
+                        text: "Se nota que eres de las que se roban las sudaderas ajenas y no las devuelven... 🐻",
+                        type: "calibrated",
+                        feedback: "✨ ¡Excelente abridor! Creas una acusación juguetona e intrigante que la obliga a justificarse con humor.",
+                        nextHerResponse: "Jajaja oye, ¡difamación pura! Aunque no lo niego... ¿por qué lo dices? 🤔"
+                    }
+                ]
+            },
+            2: {
+                title: "Nivel 2: La Justificación",
+                womanText: "Jajaja oye, ¡difamación pura! Aunque no lo niego... ¿por qué lo dices? 🤔",
+                options: [
+                    {
+                        text: "Porque tienes cara de traviesa en tus fotos.",
+                        type: "logical",
+                        feedback: "⚠️ Demasiado obvio. Vas directo al aspecto físico de forma plana, perdiendo el juego lúdico que iniciaste."
+                    },
+                    {
+                        text: "Jaja es broma, no te enojes por favor, eres muy linda.",
+                        type: "anxious",
+                        feedback: "🚨 Disculpa innecesaria. Pedir perdón por una broma inofensiva muestra miedo al rechazo y debilidad de carácter."
+                    },
+                    {
+                        text: "Es una vibra que transmites. Pero no te preocupes, tengo un detector de cleptómanas certificado.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Excelente! Mantienes la dinámica divertida viva y te posicionas con humor sin retractarte.",
+                        nextHerResponse: "Jajaja bueno, pasé la prueba entonces. ¿O todavía estoy bajo sospecha?"
+                    }
+                ]
+            },
+            3: {
+                title: "Nivel 3: Calibrando el Interés",
+                womanText: "Jajaja bueno, pasé la prueba entonces. ¿O todavía estoy bajo sospecha?",
+                options: [
+                    {
+                        text: "Para mí ya estás aprobada al 100% reina, me encantas.",
+                        type: "anxious",
+                        feedback: "🚨 Sobreinversión masiva. La apruebas demasiado rápido sin que ella se haya esforzado. Pierde el reto."
+                    },
+                    {
+                        text: "Estás bajo sospecha. Por cierto, ¿a qué te dedicas en tu día a día?",
+                        type: "logical",
+                        feedback: "⚠️ Modo Entrevista. Rompes la tensión divertida abruptamente para hacer una pregunta típica de currículum laboral."
+                    },
+                    {
+                        text: "Estás en periodo de prueba de 3 días. El comportamiento excelente se premia con café.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Perfecto! Creas un marco de evaluación humorístico donde tú eres quien califica y proyectas una recompensa (el café).",
+                        nextHerResponse: "¿Un café? Qué rápido vas jaja. ¿Siempre eres así de lanzado con todas?"
+                    }
+                ]
+            },
+            4: {
+                title: "Nivel 4: Superando el Shit Test",
+                womanText: "¿Un café? Qué rápido vas jaja. ¿Siempre eres así de lanzado con todas?",
+                options: [
+                    {
+                        text: "No, en serio, no soy así. Es que contigo sentí una conexión especial.",
+                        type: "anxious",
+                        feedback: "🚨 Justificación defensiva. Explicarte y tomarte en serio su 'acusación' demuestra que eres fácilmente manipulable."
+                    },
+                    {
+                        text: "No soy lanzado, solo es un café para conocernos. No le veo lo malo.",
+                        type: "logical",
+                        feedback: "⚠️ Respuesta lógica y reactiva. Suena un poco molesto o rígido, rompiendo el ambiente lúdico."
+                    },
+                    {
+                        text: "Solo con las que sospecho que me van a robar la sudadera. Hay que cuidar el clóset.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Brillante! Pasas el Shit-test absorbiendo la acusación y redirigiéndola hacia el chiste inicial.",
+                        nextHerResponse: "Jajaja ok, bien jugado. Bueno, pero no te he dicho qué color de sudaderas me gusta."
+                    }
+                ]
+            },
+            5: {
+                title: "Nivel 5: Generando Micro-compromiso",
+                womanText: "Jajaja ok, bien jugado. Bueno, pero no te he dicho qué color de sudaderas me gusta.",
+                options: [
+                    {
+                        text: "Ah, ¿qué colores te gustan? A mí me gusta el azul y el negro.",
+                        type: "logical",
+                        feedback: "⚠️ Demasiado plano y lógico. Le devuelves una pregunta común y corriente en lugar de liderar."
+                    },
+                    {
+                        text: "Te compro la que tú quieras del color que me digas, dime marca.",
+                        type: "anxious",
+                        feedback: "🚨 Proveedor sumiso. Intentar comprar su interés ofreciendo regalos antes de conocerse mata el valor masculino."
+                    },
+                    {
+                        text: "Tengo dos opciones: vino tinto o verde oliva. Elige con sabiduría tu destino.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Excelente! Limitas las opciones de manera divertida para obligarla a tomar una decisión cómplice.",
+                        nextHerResponse: "Mmm... elijo verde oliva, definitivamente. Es mi color favorito."
+                    }
+                ]
+            },
+            6: {
+                title: "Nivel 6: Proyección Futura (El Puente)",
+                womanText: "Mmm... elijo verde oliva, definitivamente. Es mi color favorito.",
+                options: [
+                    {
+                        text: "¡Genial! Vamos a comprarla hoy mismo, paso por ti a las 8.",
+                        type: "anxious",
+                        feedback: "🚨 Aceleración excesiva. Suena a desesperación por verla de inmediato sin haber fijado la comodidad logística adecuada."
+                    },
+                    {
+                        text: "Qué buen color. A mí también me gusta el verde oliva.",
+                        type: "logical",
+                        feedback: "⚠️ Neutral y soso. Dejas morir la pelota de tenis de la interacción sin empujar la conversación hacia adelante."
+                    },
+                    {
+                        text: "Anotado. Me la pondré para nuestra primera cita, así combinas con mi clóset.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Perfecto! Asumes la cita futura como un hecho natural asociado a su respuesta previa.",
+                        nextHerResponse: "Jaja vaya, ya asumiste que habrá una primera cita... Qué seguro de ti mismo."
+                    }
+                ]
+            },
+            7: {
+                title: "Nivel 7: El Marco de Seguridad",
+                womanText: "Jaja vaya, ya asumiste que habrá una primera cita... Qué seguro de ti mismo.",
+                options: [
+                    {
+                        text: "Bueno, si tú no quieres no pasa nada, disculpa si te presioné.",
+                        type: "anxious",
+                        feedback: "🚨 Inseguridad instantánea. Ante una resistencia mínima, retrocediste y te disculpaste."
+                    },
+                    {
+                        text: "Obvio, nadie me dice que no a mí. Vas a tener suerte.",
+                        type: "logical",
+                        feedback: "⚠️ Cruzaste la línea de divertido a arrogante/pedante. Puede generar rechazo por sonar narcisista."
+                    },
+                    {
+                        text: "La timidez no te va a conseguir sudaderas cómodas en esta vida. Hay que tomar riesgos.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Excelente! Defiendes tu confianza vinculándola con el beneficio humorístico (la sudadera) de forma audaz.",
+                        nextHerResponse: "Jajaja me gusta tu actitud. Está bien, acepto el riesgo. ¿Y qué plan tienes para esa supuesta cita?"
+                    }
+                ]
+            },
+            8: {
+                title: "Nivel 8: Definición de Logística",
+                womanText: "Jajaja me gusta tu actitud. Está bien, acepto el riesgo. ¿Y qué plan tienes para esa supuesta cita?",
+                options: [
+                    {
+                        text: "Te invito a cenar a un restaurante italiano carísimo y luego vamos por tragos.",
+                        type: "anxious",
+                        feedback: "🚨 Sobrecarga del encuentro. Las primeras citas deben ser casuales y de baja presión económica para evitar la presión excesiva."
+                    },
+                    {
+                        text: "No sé, lo que tú quieras hacer. ¿Tú qué prefieres?",
+                        type: "logical",
+                        feedback: "⚠️ Falta de liderazgo. Dejar la decisión al 100% en ella muestra indecisión. Propón tú el plan."
+                    },
+                    {
+                        text: "Café en algún lugar lindo por la tarde para ver si no eres un bot de Tinder, y luego caminar un rato.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Excelente! Un plan relajado, divertido, sin presiones y con una pizca de humor ('ver si no eres un bot').",
+                        nextHerResponse: "Me parece un buen plan, pero esta semana estoy súper ocupada con la universidad."
+                    }
+                ]
+            },
+            9: {
+                title: "Nivel 9: Manejo del Tiempo (No Disponibilidad)",
+                womanText: "Me parece un buen plan, pero esta semana estoy súper ocupada con la universidad.",
+                options: [
+                    {
+                        text: "No te preocupes, yo me adapto. ¿Cuándo tienes libre? ¿El lunes? ¿El martes?",
+                        type: "anxious",
+                        feedback: "🚨 Regalar tu tiempo. Mostrar disponibilidad absoluta mata tu valor percibido. Tienes una vida ocupada tú también."
+                    },
+                    {
+                        text: "Bueno, si estás tan ocupada mejor lo dejamos para después.",
+                        type: "logical",
+                        feedback: "⚠️ Cortante y orgulloso. Ella te dio una realidad horaria, no un rechazo. Muestra flexibilidad inteligente."
+                    },
+                    {
+                        text: "Entendido, las prioridades primero. Yo suelo estar libre el jueves a las 6 pm. Si te queda bien, genial. Si no, coordinamos luego.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Perfecto! Muestras liderazgo al dar día y hora, pero sin sonar desesperado ni adaptarte enteramente a ella.",
+                        nextHerResponse: "El jueves a las 6 pm me queda perfecto. ¿Cómo nos coordinamos entonces?"
+                    }
+                ]
+            },
+            10: {
+                title: "Nivel 10: El Cierre de Contacto",
+                womanText: "El jueves a las 6 pm me queda perfecto. ¿Cómo nos coordinamos entonces?",
+                options: [
+                    {
+                        text: "Te escribo por aquí el jueves antes de salir para confirmar, ¿ok?",
+                        type: "anxious",
+                        feedback: "🚨 Pasivo. Las citas de apps se cierran obteniendo el teléfono para evitar que te dejen en visto el día del encuentro."
+                    },
+                    {
+                        text: "Pásame tu Instagram, Facebook y TikTok para hablar por ahí.",
+                        type: "logical",
+                        feedback: "⚠️ Demasiadas redes. El canal directo y formal para concretar citas rápidas es el número de WhatsApp."
+                    },
+                    {
+                        text: "Pásame tu WhatsApp y coordinamos detalles por ahí, esta app anda muy lenta.",
+                        type: "calibrated",
+                        feedback: "✨ ¡Excelente cierre! Obtienes el teléfono de manera lógica, fluida y con justificación técnica.",
+                        nextHerResponse: "¡Perfecto! Mi número es +54 9 11 1234-5678. Agendado, ¡nos vemos el jueves!"
+                    }
+                ]
+            }
+        };
+
+        function initLevel() {
+            // Eliminar notice si existe
+            if (emptyNotice) {
+                emptyNotice.style.display = "none";
+            }
+
+            const levelData = gameLevels[currentLevel];
+            levelIndicator.innerText = levelData.title;
+
+            // Limpiar caja de opciones
+            optionsBox.innerHTML = "";
+
+            // Generar botones de opción
+            levelData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "sim-btn";
+                btn.innerHTML = `<strong>Opción ${String.fromCharCode(65 + idx)}:</strong> "${opt.text}"`;
+                btn.onclick = () => selectGameOption(opt.type, opt.text, opt.feedback, opt.nextHerResponse);
+                optionsBox.appendChild(btn);
+            });
+
+            // Restablecer eventos de opciones
+            optionsBox.style.pointerEvents = "auto";
+            optionsBox.style.opacity = "1";
+        }
+
+        function selectGameOption(type, text, feedback, nextHerResponse) {
+            // Deshabilitar opciones temporalmente
+            optionsBox.style.pointerEvents = "none";
+            optionsBox.style.opacity = "0.5";
+
+            selectedType = type;
+            isCorrectChoice = (type === 'calibrated');
+
+            // Añadir mensaje del hombre (usuario) al chat
+            const meBubble = document.createElement('div');
+            meBubble.className = "sim-bubble sim-me";
+            meBubble.innerText = text;
+            chatBox.appendChild(meBubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Mostrar retroalimentación tras 1 segundo
+            setTimeout(() => {
+                const coachTitle = document.getElementById('coachTitle');
+                const coachMsg = document.getElementById('coachMsg');
+                const coachIcon = document.getElementById('coachIcon');
+                const coachBtn = document.getElementById('coachBtn');
+
+                coachMsg.innerText = feedback;
+
+                if (isCorrectChoice) {
+                    coachOverlay.className = "coach-overlay success-state";
+                    coachIcon.innerText = "🏆";
+                    coachTitle.innerText = "¡Excelente Calibración!";
+                    
+                    if (currentLevel < 10) {
+                        coachBtn.innerText = "Avanzar al Nivel " + (currentLevel + 1);
+                    } else {
+                        coachBtn.innerText = "¡Ver Resultados de la Cita!";
+                    }
+                } else {
+                    coachOverlay.className = "coach-overlay";
+                    coachIcon.innerText = "🛑";
+                    coachTitle.innerText = "¡Pausa del Entrenador!";
+                    coachBtn.innerText = "Reintentar Nivel " + currentLevel;
+                }
+
+                coachOverlay.style.display = "flex";
+            }, 800);
+        }
+
+        function handleOverlayAction() {
+            coachOverlay.style.display = "none";
+
+            if (isCorrectChoice) {
+                // Si es la respuesta calibrada, avanzamos de nivel
+                const currentData = gameLevels[currentLevel];
+                
+                // Mostrar respuesta de la mujer
+                const herBubble = document.createElement('div');
+                herBubble.className = "sim-bubble sim-her";
+                herBubble.innerText = currentData.options.find(o => o.type === 'calibrated').nextHerResponse;
+                chatBox.appendChild(herBubble);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                if (currentLevel < 10) {
+                    currentLevel++;
+                    setTimeout(() => {
+                        initLevel();
+                    }, 600);
+                } else {
+                    // Win state final
+                    showWinState();
+                }
+            } else {
+                // Si falló, borramos el último burbuja del usuario para reintentar
+                if (chatBox.lastChild && chatBox.lastChild.classList.contains('sim-me')) {
+                    chatBox.removeChild(chatBox.lastChild);
+                }
+                optionsBox.style.pointerEvents = "auto";
+                optionsBox.style.opacity = "1";
+            }
+        }
+
+        function showWinState() {
+            optionsBox.innerHTML = `
+                <div style="text-align: center; color: var(--success); font-weight: bold; padding: 15px; font-size: 0.95rem;">
+                    🎉 ¡Felicidades! Has concretado la cita y conseguido su número de WhatsApp con calibración perfecta.
+                </div>
+                <button class="action-btn" onclick="restartGame()" style="align-self: center; margin-bottom: 10px;">🔄 Volver a Jugar</button>
+            `;
+            levelIndicator.innerText = "¡Cita Concretada!";
+        }
+
+        function restartGame() {
+            currentLevel = 1;
+            chatBox.innerHTML = "";
+            initLevel();
+        }
+
+        // Inicializar el juego al cargar la página
+        document.addEventListener("DOMContentLoaded", () => {
+            initLevel();
+        });
+
+        // Funciones de la barra superior
+        function copyUrl() {
+            const urlInput = document.getElementById('documentUrl');
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999); // Móviles
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                alert("¡Enlace copiado al portapapeles!");
+            }).catch(err => {
+                alert("Error al copiar enlace automáticamente.");
+            });
+        }
+
+        function openInBrowser() {
+            window.open(document.getElementById('documentUrl').value, '_blank');
+        }
+    </script>
+</body>
+</html>

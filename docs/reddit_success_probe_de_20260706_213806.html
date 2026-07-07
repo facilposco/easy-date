@@ -1,0 +1,28 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reddit success probe_de_20260706_213806</title>
+<style>
+:root{color-scheme:dark;--bg:#101116;--panel:#191c25;--panel2:#11141d;--text:#f7f8fc;--muted:#a9b2c8;--accent:#ff426d;--line:#303545;--green:#58e0b2}
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);margin:0}header,main{max-width:1220px;margin:auto;padding:24px}h1{margin-bottom:8px}.toolbar{position:sticky;top:0;z-index:5;background:rgba(16,17,22,.96);border-bottom:1px solid var(--line);padding:12px 24px}.toolbar-inner{max-width:1220px;margin:auto;display:grid;grid-template-columns:1fr 220px 160px;gap:10px}input,select{width:100%;background:#222635;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:15px}.chip,.meta span{background:#293044;border-radius:999px;padding:5px 9px;color:#d4dcf3;display:inline-block}.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.case{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;margin:18px 0}.case-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.eyebrow{margin:0 0 4px;color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.06em}h2{margin:0 0 10px;font-size:22px}.score{background:var(--accent);border-radius:10px;padding:9px 11px;white-space:nowrap}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}a.source{color:var(--green)}.summary{color:#d8deef}.grid{display:grid;grid-template-columns:minmax(280px,450px) 1fr;gap:18px;margin-top:14px}.imgs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}.imgs a{display:block;flex:0 0 auto;scroll-snap-align:start}.imgs img{max-width:100%;width:420px;max-height:680px;object-fit:contain;display:block;border-radius:8px;background:#090a0e}pre{white-space:pre-wrap;background:var(--panel2);padding:12px;border-radius:8px;max-height:420px;overflow:auto;line-height:1.45;overflow-wrap:anywhere}.hidden{display:none}#empty{display:none;color:var(--muted);padding:32px;text-align:center}@media(max-width:800px){.toolbar-inner{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.case-header{display:block}.imgs img{width:88vw}}
+</style></head>
+<body><header><h1>Prueba Reddit success probe_de_20260706_213806</h1><p>Ordenado por score de mejor a peor. Descubrimiento por Decodo/proxy, imagen directa con fallback DataImpulse, OCR local RapidOCR y traduccion LATAM fallback web. Requests: 300, bytes metadata: 48104, bytes imagenes: 0.</p><div class="stats"></div></header>
+<div class="toolbar"><div class="toolbar-inner"><input id="q" type="search" placeholder="Buscar por titulo, objetivo, OCR o traduccion..."><select id="cat"><option value="">Todas las categorias</option></select><select id="minScore"><option value="0">Score minimo</option><option value="10">10</option><option value="9">9+</option><option value="8">8+</option><option value="7">7+</option><option value="6">6+</option></select></div></div>
+<main id="cases"><div id="empty">No hay casos con esos filtros.</div></main>
+<script>
+function applyFilters(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const cat = document.getElementById('cat').value;
+  const minScore = Number(document.getElementById('minScore').value || 0);
+  let visible = 0;
+  document.querySelectorAll('.case').forEach(card => {
+    const okQ = !q || card.dataset.search.includes(q);
+    const okCat = !cat || card.dataset.category === cat;
+    const okScore = Number(card.dataset.score || 0) >= minScore;
+    const show = okQ && okCat && okScore;
+    card.classList.toggle('hidden', !show);
+    if (show) visible += 1;
+  });
+  document.getElementById('empty').style.display = visible ? 'none' : 'block';
+}
+document.getElementById('q').addEventListener('input', applyFilters);
+document.getElementById('cat').addEventListener('change', applyFilters);
+document.getElementById('minScore').addEventListener('change', applyFilters);
+</script></body></html>

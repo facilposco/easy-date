@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EspecificaciÃ³n de Arquitectura: Estudio Text Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-panel: #141928;
+            --text-main: #f0f4f8;
+            --text-muted: #94a3b8;
+            --accent: #ff3c6e;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(255, 60, 110, 0.15);
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 30px 15px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+            margin-top: 0;
+        }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+        }
+        /* PestaÃ±as Premium */
+        .tabs-header {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .tab-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff7854 100%);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(255, 60, 110, 0.3);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .card h2 {
+            border-left: 4px solid var(--accent);
+            padding-left: 12px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .card h2.blue-title {
+            border-left-color: var(--accent-blue);
+        }
+        .card h2.green-title {
+            border-left-color: var(--accent-green);
+        }
+        code {
+            background: rgba(0,0,0,0.4);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #ff7854;
+            font-size: 0.9rem;
+        }
+        .highlight-box {
+            background: rgba(255, 60, 110, 0.04);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+            border-top: 1px solid var(--border-glow);
+            border-right: 1px solid var(--border-glow);
+            border-bottom: 1px solid var(--border-glow);
+        }
+        /* Tabla de Funciones */
+        .func-table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-js { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+        .badge-py { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .badge-new { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EspecificaciÃ³n TÃ©cnica de la Arquitectura</h1>
+        
+        <!-- NavegaciÃ³n de PestaÃ±as -->
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab('arch')">âš™ï¸ Pipeline y DiseÃ±o</button>
+            <button class="tab-btn" onclick="switchTab('block')">ðŸ›¡ï¸ EvasiÃ³n de Bloqueos</button>
+            <button class="tab-btn" onclick="switchTab('funcs')">âš¡ Funciones del Sistema</button>
+            <button class="tab-btn" onclick="switchTab('proxy')">ðŸŒ Sistema de Proxy</button>
+            <button class="tab-btn" onclick="switchTab('roadmap')">ðŸš€ Roadmap y Fases</button>
+        </div>
+
+        <!-- PESTAÃ‘A 1: PIPELINE Y DISEÃ‘O -->
+        <div id="tab-arch" class="tab-content active">
+            <div class="card">
+                <h2>1. Flujo de Datos del Sistema (Pipeline)</h2>
+                <p>El sistema se compone de tres fases automatizadas que operan en base a datos reales, respetando la regla estricta de cero datos sintÃ©ticos o inventados:</p>
+                <ol>
+                    <li><strong>ExtracciÃ³n (Scraping):</strong> <code>reddit_sb_extractor.py</code> consume las imÃ¡genes y diÃ¡logos de Reddit respetando los intervalos de evasiÃ³n y los almacena en SQLite (<code>textgame.db</code>).</li>
+                    <li><strong>Procesamiento MultilingÃ¼e (RAG):</strong> El subagente asÃ­ncrono procesa y traduce los turnos al espaÃ±ol de LatinoamÃ©rica casual, indexando los vectores en la base vectorial <code>ChromaDB</code> para el cerebro de Natalia.</li>
+                    <li><strong>CompilaciÃ³n:</strong> <code>build_simulator.py</code> toma los diÃ¡logos validados e inyecta imÃ¡genes comprimidas Base64 y los casos de estudio en un Ãºnico HTML estÃ¡tico portable.</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2 class="green-title">1.1 Arquitectura Aprobada: Scraping Paralelo de 5.000 Conversaciones Natalia</h2>
+                <p>El corpus objetivo se amplio a 5.000 conversaciones ganadoras para Natalia. El pipeline se ejecuta de forma auditable y paralela: gastar poco en descubrimiento, validar localmente, guardar en el corpus principal solo casos exitosos y retrasar cualquier integracion al RAG/ChromaDB hasta tener QA aprobado.</p>
+                <ol>
+                    <li><strong>Descubrimiento barato de metadata:</strong> usar Decodo Web Scraping API como <code>target=universal</code>, <code>proxy_pool=standard</code> y sin JS/headless para RSS/metadata. No usar plantillas Reddit en barrido amplio porque Decodo documenta que esas plantillas usan Premium por defecto; reservar <code>reddit_post</code> para finalistas o auditoria puntual.</li>
+                    <li><strong>Pre-filtro local:</strong> descartar offline duplicados, spam, posts incompletos, baja relevancia, casos sin objetivo logrado o evidencia conversacional insuficiente.</li>
+                    <li><strong>Descarga por capas:</strong> intentar descarga directa primero; usar DataImpulse solo como fallback cuando haya bloqueo, rate limit o inaccesibilidad.</li>
+                    <li><strong>OCR local:</strong> procesar imagenes y carruseles localmente, conservando originales y OCR bruto para auditoria.</li>
+                    <li><strong>Scoring y QA:</strong> aprobar solo casos con exito conversacional verificable, turnos coherentes, OCR util, fuente trazable, categoria, objetivo y score documentado. El filtro de likes puede usar <code>--min-reddit-score</code>, pero las consultas individuales de score no deben caer a Decodo por defecto; activar <code>--score-decodo-fallback</code> solo si se acepta ese costo. En corridas masivas, usar <code>sort=top/relevance/comments</code> como proxy barato de likes y dejar el score exacto para finalistas.</li>
+                    <li><strong>Traduccion LATAM:</strong> generar version corregida en espanol latino despues del OCR, manteniendo original, OCR bruto y traduccion lado a lado.</li>
+                    <li><strong>Estado en SQLite:</strong> registrar candidatos, intentos, proveedor usado, fallback, OCR, traduccion, scoring, QA y aprobacion en SQLite como fuente de estado operativo. La tabla principal <code>reddit_success_scrape_candidates</code> queda reservada para <code>candidate_qa</code>; rechazados, duplicados y fallos tecnicos se guardan en <code>reddit_success_scrape_rejected_audit</code> para auditoria y limpieza sin contaminar el entrenamiento.</li>
+                    <li><strong>Outputs:</strong> publicar HTML, CSV y JSON auditables en <code>docs/</code>; guardar imagenes nuevas en <code>imagenes_nuevas/</code>.</li>
+                    <li><strong>Compuerta RAG/Chroma:</strong> no indexar el lote nuevo en RAG/ChromaDB hasta que QA apruebe los casos.</li>
+                    <li><strong>Grafo posterior:</strong> generar el grafo solamente despues de llegar a 5.000 casos aprobados, documentando rutas y resultados antes de cualquier integracion final.</li>
+                </ol>
+                <h3>Agentes y colas operativas</h3>
+                <ul>
+                    <li><strong>Agente Discovery:</strong> consulta Decodo Web Scraping API para metadata/RSS con rate control, usando Standard/no-JS. Primero agota ingles y luego amplia a los cinco idiomas con mayor senal practica en Reddit no ingles: aleman, espanol, portugues, frances e italiano. Desde 2026-07-02 el modo de continuacion usa <code>--discovery-workers 16</code>, <code>--decodo-rps 9</code>, <code>--discovery-window 72</code> y <code>--batch-size 8</code>, dejando margen frente al limite Decodo de 10 req/s.</li>
+                    <li><strong>Agente Prefiltro:</strong> trabaja offline sobre titulo, subreddit, URL, duplicados y senales de objetivo logrado antes de descargar imagenes. El pipeline reanuda desde SQLite/cache combinando IDs de <code>reddit_conversations</code>, <code>reddit_success_scrape_candidates</code> y <code>reddit_success_scrape_rejected_audit</code>, por lo que no debe repetir posts ya aceptados o descartados.</li>
+                    <li><strong>Agente Downloader:</strong> descarga imagenes/carruseles directo; usa DataImpulse solamente como fallback. Registra proveedor, bytes, errores y ruta local.</li>
+                    <li><strong>Agente OCR:</strong> ejecuta OCR local sobre imagenes validas, preservando imagen original, OCR bruto y estructura de turnos.</li>
+                    <li><strong>Agente Translator LATAM:</strong> traduce y corrige a espanol latino sin inventar mensajes, manteniendo el original para auditoria. Desde <code>broad5_defer_translation</code> la traduccion puede ejecutarse como backfill posterior con <code>scratch/translate_reddit_success_candidates.py</code> para no bloquear el scraping masivo.</li>
+                    <li><strong>Agente Scoring/QA:</strong> acepta solo conversaciones con evidencia de numero, WhatsApp, Instagram, Snapchat, cita, abridor ingenioso o conexion larga de calidad. Solo los aprobados entran como <code>candidate_qa</code>.</li>
+                    <li><strong>Agente Cleaner:</strong> al finalizar elimina imagenes de rechazos, duplicados y fallos tecnicos, conservando solo casos aprobados y reportes auditables.</li>
+                </ul>
+                <p><strong>Optimizacion 2026-07-02 - arquitectura broad35_top_media_ocr:</strong> se agrego early-stop por fuente/query cuando una busqueda devuelve varias ventanas vacias o solo duplicados, se saltan por defecto subreddits de baja senal historica salvo que se use <code>--include-low-signal-subreddits</code>, y el log de inicio reporta <code>resume_seen_ids</code> y <code>resume_counts</code> para confirmar continuidad sin perdida. Para salir del cache agotado, el discovery combina queries por app/objetivo y subreddits con alto historial de ganadores. La corrida rps8 anterior finalizo con 1.343 conversaciones ganadoras totales y cleanup aplicado; <code>broad2</code> quedo cerrada con reporte recuperado, <code>broad3</code> se detuvo con 1.626 <code>candidate_qa</code>, <code>broad4_batch8</code> se detuvo con 1.638, <code>broad5_defer_translation</code> se detuvo con 1.828 por baja senal, <code>broad6_multilang_deep</code> se reemplazo porque seguia restringida a subreddits anglos, <code>broad7/broad8/broad9/broad10/broad11</code> se reemplazaron tras detectar ruido, <code>broad12</code> se endurecio porque aun aceptaba perfiles/no-respuesta, <code>broad14</code> corrigio falsos positivos por substring, <code>broad15</code> exige senal positiva, <code>broad16</code> uso <code>--query-profile highyield_exact</code> pero fue reemplazada tras QA manual porque algunos OK dependian de senales del titulo, <code>broad17</code> exigio senal positiva dentro del OCR/conversacion, <code>broad18</code> agrego rechazo de pantallas de perfil/bio y frases de rechazo explicito, <code>broad19</code> agrego titulos negativos como <code>never heard from her again</code>, <code>didn't work</code>, <code>no response</code> y <code>ghosted</code>, <code>broad20</code> exige cierre verificable, <code>broad21</code> endurece la cita quitando aceptadores demasiado genericos como <code>yes</code> y <code>let's</code> de la compuerta de cierre, <code>broad22</code> recupera volumen permitiendo titulo de exito explicito fuerte cuando el OCR prueba conversacion real y no hay senal negativa, <code>broad23</code> probo <code>multilang_global</code> pero produjo falsos positivos y bajo rendimiento, <code>broad24</code> probo <code>global_exact</code> pero produjo spam no-dating, <code>broad25</code> vuelve a high-yield con filtros endurecidos, <code>broad26</code> agrega negativos de no-quimica/amigos/busy-tonight y termina sin error pero con 0 OK, <code>broad27</code> queda en 0 OK tras 1.871 discovery, <code>broad28</code> descarga ruido global, <code>broad29</code> reduce gasto pero sigue sin OK, <code>broad30</code> muestra cruce app/subreddit improductivo, <code>broad31</code> tampoco produce OK tras 692 discovery, <code>broad32</code> encuentra un falso positivo angry/nice-guy, <code>broad33</code> termina con 0 OK y <code>broad34</code> prueba top-media pero el filtro de titulo queda demasiado estricto. La corrida activa cambia a <code>broad35_top_media_ocr</code>: usa <code>self:no</code> en subreddits high-signal sin <code>--strict-title-prefilter</code>, permitiendo OCR en una muestra controlada; mantiene <code>--min-score 8</code>, <code>--min-ocr-lines 4</code>, QA negativa, <code>--max-requests 1000</code>, <code>--decodo-rps 6</code> y <code>--discovery-window 24</code>. QA previo: <code>dmoeoi</code> fue demovido, <code>1tzzsys</code> fue recuperado/promovido, total neto 1.875 y <code>translation_es</code> pendiente en 0.</p>
+                <p><strong>Continuacion 2026-07-02 - broad36_signalfix:</strong> <code>broad35</code> quedo sin proceso activo y se aplico cleanup en <code>docs/reddit_images_cleanup_apply_20260702_152056.csv/json</code>. La auditoria local encontro el falso negativo <code>q6rm4d</code>, una conversacion con brunch/cita y cierre <code>Text me</code> que habia caido por OCR pegado (<code>let'sgetbrunch</code>, <code>Textme</code>). Se recupero la imagen local, se promovio el caso a <code>candidate_qa</code>, se tradujo y el total quedo en 1.876 con pendientes de traduccion en 0. El clasificador agrega de forma conservadora <code>brunch</code>, <code>mimosas</code>, <code>textme</code> y <code>delivered</code> como senales de cita/contacto/evidencia de chat, sin quitar la exigencia de objetivo verificable. Nueva corrida activa: <code>parallel_success_only_5000_decodoapi_standard_rps8_broad36_signalfix_20260702_1528</code>, PID <code>27188</code>, con <code>--query-profile top_media_highsignal</code>, <code>--max-requests 2500</code>, <code>--workers 10</code>, <code>--batch-size 10</code>, <code>--discovery-workers 12</code>, <code>--decodo-rps 8</code>, <code>--discovery-window 48</code>, <code>--min-score 8</code>, <code>--min-ocr-lines 4</code>, <code>--max-images-per-post 3</code> y <code>--defer-translation</code>.</p>
+                <p><strong>Continuacion 2026-07-02 - broad37_winner_titles:</strong> <code>broad36</code> se detuvo por baja senal y se limpio en <code>docs/reddit_images_cleanup_apply_20260702_153455.csv/json</code>. El nuevo perfil <code>winner_title_exact</code> usa frases tomadas de ganadores reales (<code>got her phone number</code>, <code>number and a date</code>, <code>got the number</code>, <code>asked me for my number</code>, <code>number in 3 texts</code>, <code>date this week</code>, <code>coffee date</code>, <code>went smoothly</code>, <code>actually worked</code>, <code>opener worked</code>, <code>made her laugh</code>) y restringe fuentes a <code>Tinder</code>, <code>Bumble</code>, <code>hingeapp</code>, <code>OkCupid</code> y <code>Tinderpickuplines</code>. Se lanza con <code>--strict-title-prefilter</code> para reducir OCR de perfiles, memes y posts de consejos. Tambien se agregaron negativos observados: <code>no ghosting</code>, <code>letting her down</code>, <code>didn't feel the spark</code>, <code>not up to meeting</code>, <code>banned from</code> y <code>got banned</code>. Re-minado local: <code>docs/reddit_audit_remine_20260702_1545_signalfix.csv/html</code>, 116 revisados, 0 promovibles. Corrida activa: <code>parallel_success_only_5000_decodoapi_standard_rps8_broad37_winner_titles_20260702_1540</code>, PID <code>25516</code>, con <code>--query-profile winner_title_exact</code>, <code>--max-requests 3500</code>, <code>--workers 10</code>, <code>--batch-size 10</code>, <code>--discovery-workers 14</code>, <code>--decodo-rps 8</code>, <code>--discovery-window 64</code>, <code>--min-score 8</code>, <code>--min-ocr-lines 4</code>, <code>--max-images-per-post 3</code> y <code>--defer-translation</code>.</p>
+                <p><strong>Continuacion 2026-07-02 - broad38_winner_titles_multilangchat:</strong> la auditoria de <code>broad37</code> encontro dos falsos negativos limpios. <code>r9npku</code> tenia propuesta de cafe y aceptacion, pero fallaba porque la evidencia de chat estaba en aleman (<code>Gesendet</code>, <code>Nachricht</code>); <code>x2nt17</code> dependia del titulo fuerte <code>Date this weekend</code> junto con chat real y respuesta positiva. Se agrego evidencia de chat multilingue (<code>mensaje</code>, <code>mensagens</code>, <code>messaggio</code>, <code>gesendet</code>, <code>nachricht</code>, <code>senden</code>), titulos fuertes <code>date this weekend</code>, <code>got asked out</code>, <code>asked out</code>, y negativo <code>stops responding</code>. Re-minado local: <code>docs/reddit_audit_remine_20260702_1600_multilang_chat.csv/html</code>, 122 revisados, 2 promovidos; traduccion: <code>docs/reddit_success_translation_backfill_20260702_1600_multilang_promotions.csv</code>. Total actual: 1.878 <code>candidate_qa</code>, 0 pendientes de traduccion. <code>broad37</code> se detuvo y se limpio en <code>docs/reddit_images_cleanup_apply_20260702_154823.csv/json</code>. Corrida activa: <code>parallel_success_only_5000_decodoapi_standard_rps8_broad38_winner_titles_multilangchat_20260702_1602</code>, PID <code>28812</code>, con la misma configuracion que <code>broad37</code> y reglas multilingues cargadas.</p>
+                <p><strong>Continuacion 2026-07-02 - broad39_winner_titles_ocrjoined:</strong> la auditoria de <code>broad38</code> detecto <code>a2poda</code> como falso negativo limpio: propuesta de drinks y aceptacion concreta, pero OCR unido (<code>Drinkssoundsgreat</code>, <code>Tomorrow'sgood</code>) impedia detectar exito. Se agregaron senales conservadoras <code>sounds great</code>, <code>drinkssoundsgreat</code>, <code>tomorrow'sgood</code> y <code>tomorrowsgood</code>. Re-minado local: <code>docs/reddit_audit_remine_20260702_1620_ocr_joined_acceptance.csv/html</code>, 127 revisados, 1 promovido; traduccion: <code>docs/reddit_success_translation_backfill_20260702_1620_a2poda.csv</code>. Total actual: 1.879 <code>candidate_qa</code>, 0 pendientes de traduccion. <code>broad38</code> se detuvo y se limpio en <code>docs/reddit_images_cleanup_apply_20260702_155944.csv/json</code>. Corrida activa: <code>parallel_success_only_5000_decodoapi_standard_rps8_broad39_winner_titles_ocrjoined_20260702_1623</code>, PID <code>27456</code>, con <code>--query-profile winner_title_exact</code>, <code>--strict-title-prefilter</code>, <code>--max-requests 3500</code>, <code>--workers 10</code>, <code>--batch-size 10</code>, <code>--discovery-workers 14</code>, <code>--decodo-rps 8</code>, <code>--discovery-window 64</code>, <code>--min-score 8</code>, <code>--min-ocr-lines 4</code>, <code>--max-images-per-post 3</code> y <code>--defer-translation</code>.</p>
+                <p><strong>Probe multilingue controlado 2026-07-06:</strong> tras una corrida reciente con 0 nuevos ganadores, se decide no relanzar otra corrida larga identica. Se agrego <code>--language-probe {all,en,es,pt,fr,de,it}</code> a <code>scratch/reddit_success_parallel_pipeline.py</code> y se creo <code>scratch/run_reddit_multilang_probe.py</code>. La prueba corre secuencialmente ingles, espanol, portugues, frances, aleman e italiano con maximo 300 requests por idioma, <code>--defer-translation</code>, <code>--max-images-per-post 2</code>, <code>--min-score 8</code>, <code>--min-ocr-lines 4</code>, Decodo standard/no-JS para discovery y DataImpulse solo como fallback de imagenes. Objetivo: medir ganadores por idioma antes de gastar en una corrida larga. Proceso lanzado: PID <code>20100</code>; logs runner <code>docs/reddit_multilang_probe_runner_20260706_213805.stdout.log</code> y <code>.stderr.log</code>; heartbeat activo <code>status-probe-multilang-reddit-natalia</code>.</p>
+                <p><strong>Continuacion 2026-07-02 - broad40_winner_titles_phone_date:</strong> <code>broad39</code> produjo un OK nuevo (<code>3ry27u</code>) y se tradujo con <code>docs/reddit_success_translation_backfill_20260702_1628_broad39_ok.csv</code>. La auditoria local encontro <code>5a63ld</code> como falso negativo limpio: titulo fuerte <code>got me a phone number and a date</code> y OCR conversacional. Se agregaron senales de titulo <code>got me a phone number</code>, <code>phone number and a date</code>, <code>got me a phone number and a date</code>, y negativos <code>wrong number</code>, <code>not gonna reply</code>, <code>not going to reply</code>, <code>if you're not gonna reply</code>, <code>gimme grandma's number</code>. Re-minado local: <code>docs/reddit_audit_remine_20260702_1633_phone_number_date.csv/html</code>, 139 revisados, 1 promovido; traduccion: <code>docs/reddit_success_translation_backfill_20260702_1633_phone_number_date.csv</code>. Total actual: 1.881 <code>candidate_qa</code>, 0 pendientes de traduccion. <code>broad39</code> se detuvo y se limpio en <code>docs/reddit_images_cleanup_apply_20260702_161416.csv/json</code>. Corrida activa: <code>parallel_success_only_5000_decodoapi_standard_rps8_broad40_winner_titles_phone_date_20260702_1638</code>, PID <code>27800</code>, con el perfil de precision <code>winner_title_exact</code>, cache local y early-stop activos.</p>
+                <p><strong>Expansion de queries high-yield:</strong> la auditoria paralela agrego rutas exactas prometedoras: <code>asks for my number</code>, <code>ask for a number</code>, <code>moved to text</code>, <code>phone number ensued</code>, <code>number ensued</code> y <code>set up our first date</code>. Estas queries solo amplian descubrimiento; la aceptacion sigue dependiendo de OCR conversacional, objetivo verificable y ausencia de outcome negativo.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Configuracion actual</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Corrida activa</td>
+                            <td><code>parallel_success_only_5000_decodoapi_standard_rps8_broad40_winner_titles_phone_date_20260702_1638</code>, PID esperado <code>27800</code>. Logs: <code>docs/parallel_success_only_5000_decodoapi_standard_rps8_broad40_winner_titles_phone_date_20260702_1638.stdout.log</code> y <code>.stderr.log</code>.</td>
+                            <td>Permite monitorear, pausar y reanudar sin confundirla con corridas antiguas.</td>
+                        </tr>
+                        <tr>
+                            <td>Discovery / Decodo</td>
+                            <td><code>DECODO_API_MODE=force</code>, <code>target=universal</code>, <code>proxy_pool=standard</code>, sin JS/headless, <code>--decodo-rps 8</code>, <code>--discovery-workers 14</code>, <code>--discovery-window 64</code>, <code>--batch-size 10</code>, <code>--defer-translation</code>, <code>--query-profile winner_title_exact</code>, con <code>--strict-title-prefilter</code>.</td>
+                            <td>Usa el plan barato de Web Scraping API y reduce gasto de OCR al buscar titulos/frases que ya aparecieron en ganadores reales.</td>
+                        </tr>
+                        <tr>
+                            <td>Priorizacion de busqueda</td>
+                            <td><code>--query-profile multilang_global</code>: en <code>__global__</code> usa solo queries multilingues; despues subreddits default con queries completas como respaldo.</td>
+                            <td>Evita seguir agotando el bloque ingles y evita gastar busqueda global en queries de baja precision.</td>
+                        </tr>
+                        <tr>
+                            <td>Perfil high-yield exacto</td>
+                            <td><code>--query-profile highyield_exact</code>: excluye <code>__global__</code> y usa solo <code>Tinder</code>, <code>Bumble</code>, <code>OkCupid</code>, <code>Tinderpickuplines</code>, <code>hingeapp</code>, <code>DatingApps</code> y <code>OnlineDating</code> con queries exactas de numero, WhatsApp, snap, Instagram, cita y encuentro. Desde <code>broad17</code>, el titulo puede ayudar al discovery, pero no basta para aprobar: la senal de exito debe estar en OCR. Desde <code>broad18</code>, perfiles/bios (<code>edit profile</code>, <code>smart photos</code>, <code>about me</code>) y rechazos explicitos se envian a auditoria. Desde <code>broad19</code>, titulos con no-respuesta o fallo explicito tambien se rechazan. Desde <code>broad20</code>, pedir numero o proponer cita no basta: debe existir contacto entregado o aceptacion/plan verificable en OCR. Desde <code>broad21</code>, <code>yes</code>, <code>let's</code> y <code>lets</code> quedan como senales generales, pero no verifican por si solas una cita. Desde <code>broad22</code>, titulos de exito explicito fuerte pueden verificar resultado si el OCR es conversacional y pasa filtros negativos.</td>
+                            <td>Reduce ruido y evita gastar requests en fuentes amplias cuando el QA success-only ya esta estricto.</td>
+                        </tr>
+                        <tr>
+                            <td>Ruta de idiomas</td>
+                            <td>Primero espanol (<code>me dio su whatsapp</code>, <code>me dio su numero</code>, <code>consegui cita</code>, <code>quedamos para salir</code>), portugues (<code>me passou o whatsapp</code>, <code>marquei um encontro</code>, <code>deu certo no tinder</code>), frances (<code>elle m a donne son numero</code>, <code>rendez vous</code>, <code>on va se voir</code>), aleman (<code>nummer bekommen</code>, <code>date bekommen</code>, <code>treffen ausgemacht</code>) e italiano (<code>mi ha dato il numero</code>, <code>appuntamento tinder</code>, <code>ci vediamo</code>) en busqueda global. Ingles queda como respaldo (<code>got her number</code>, <code>got a date</code>, <code>date secured</code>, <code>asked her out</code>, <code>coffee date</code>).</td>
+                            <td>La corrida inglesa bajo de rendimiento; esta ruta abre mas superficie de Reddit manteniendo el mismo QA y traduccion diferida.</td>
+                        </tr>
+                        <tr>
+                            <td>Filtro media</td>
+                            <td>Cada query se transforma con <code>self:no</code> si no lo trae.</td>
+                            <td>Prioriza posts con imagen, carrusel o media antes de gastar OCR/descarga.</td>
+                        </tr>
+                        <tr>
+                            <td>QA estricto global</td>
+                            <td>Todo candidato debe traer evidencia de chat en OCR y senal positiva de exito/cierre (<code>yes</code>, <code>sure</code>, <code>would love</code>, <code>go out sometime</code>, <code>my snap is</code>, <code>add me</code>, <code>text me</code>, <code>whatsapp</code>, <code>haha</code>). Las coincidencias se hacen por palabra/frase, no substring. En <code>__global__</code>, ademas exige contexto fuerte de app de citas y objetivo en OCR/conversacion.</td>
+                            <td>Evita que noticias, perfiles, apps no dating, memes/listas de apps, capturas de login, perfiles sin conversacion o conversaciones negativas/sin cierre contaminen <code>candidate_qa</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>Continuidad y dedupe</td>
+                            <td>Al iniciar carga IDs desde <code>reddit_conversations</code>, <code>reddit_success_scrape_candidates</code> y <code>reddit_success_scrape_rejected_audit</code>; tambien hashes de imagen/OCR aprobados.</td>
+                            <td>Permite parar, relanzar y ampliar busquedas sin perder ni repetir trabajo.</td>
+                        </tr>
+                        <tr>
+                            <td>Cache RSS</td>
+                            <td><code>scratch/cache/reddit_rss</code>; si una busqueda ya esta cacheada, retorna <code>bytes=0</code>.</td>
+                            <td>Ahorra Decodo y evita pagar de nuevo por metadata ya consultada.</td>
+                        </tr>
+                        <tr>
+                            <td>Prefiltro barato</td>
+                            <td>Descarta <code>sin_imagen</code>, titulos negativos, fuentes de baja senal sin objetivo y duplicados conocidos antes de descargar imagen.</td>
+                            <td>Reduce gasto de DataImpulse, OCR y almacenamiento en casos que no sirven para Natalia.</td>
+                        </tr>
+                        <tr>
+                            <td>Imagenes / DataImpulse</td>
+                            <td>Descarga directa primero; DataImpulse solo como fallback. No usar DataImpulse para score exacto masivo porque los endpoints JSON de Reddit devolvieron 403.</td>
+                            <td>Minimiza consumo residencial y evita cuellos de botella innecesarios.</td>
+                        </tr>
+                        <tr>
+                            <td>OCR y QA</td>
+                            <td>RapidOCR local por hilo; score local por objetivo logrado, lineas OCR, senales positivas y outcome. Rechaza por OCR corto, score bajo o resultado negativo. <code>process_batch()</code> es sincrono, por eso el batch operativo baja de 16 a 8; la traduccion LATAM se difiere al backfill.</td>
+                            <td>Solo pasan conversaciones con evidencia util para entrenar a Natalia; el batch menor y la traduccion diferida evitan que el caso mas lento retenga discovery/OCR demasiado tiempo.</td>
+                        </tr>
+                        <tr>
+                            <td>Persistencia</td>
+                            <td>Solo <code>candidate_qa</code> entra en <code>reddit_success_scrape_candidates</code>. Rechazos, duplicados y fallos van a <code>reddit_success_scrape_rejected_audit</code>.</td>
+                            <td>La tabla principal queda limpia para QA/RAG y la auditoria conserva por que se rechazo cada caso.</td>
+                        </tr>
+                        <tr>
+                            <td>Limpieza final</td>
+                            <td>Al terminar: <code>python scratch/cleanup_reddit_images_after_scrape.py --apply</code>.</td>
+                            <td>Borra imagenes de <code>rejected_low_score</code>, <code>rejected_negative_outcome</code>, <code>duplicate_content</code> y <code>candidate_failed</code>, conservando <code>candidate_qa</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>Rendimiento observado</td>
+                            <td>rps8: aprox. 35 ganadoras/15 min. broad2: ventanas de 45 a 52 ganadoras/15 min, sin 429 reales y metadata baja por cache. broad3 reanudo desde SQLite/cache y se detuvo con 1.626 candidate_qa; broad4_batch8 llego a 1.638; broad5_defer_translation llego a 1.828 y luego bajo a baja senal; broad7_multilang_global encontro OK rapido pero tambien falsos positivos migrados a auditoria.</td>
+                            <td>broad8 conserva continuidad desde SQLite/cache, usa traduccion diferida y mantiene busqueda global multilingue con QA mas estricto, sin subir RPS ni consumo residencial.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Regla de integracion:</strong> al completar el scrapeo y aplicar cleanup, revisar QA del HTML/CSV/JSON antes de indexar en RAG/Chroma. El grafo de conocimiento se genera despues de llegar a los 5.000 casos aprobados y antes de fusionar con la base vectorial final de Natalia.</p>
+            </div>
+
+            <div class="card">
+                <h2 class="green-title">1.2 Arquitectura RAG Operativa de Natalia y Maximus</h2>
+                <p>La integracion del lote disponible de conversaciones exitosas funciona como RAG operativo, no como fine-tuning. ChromaDB actua como indice semantico y SQLite queda como fuente de verdad para rehidratar conversaciones completas, conservar auditoria y evitar respuestas inventadas por fragmentos cortados.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Estado 2026-07-06</th>
+                            <th>Uso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Indexacion incremental</td>
+                            <td><code>scratch/index_success_candidates_chroma.py --incremental</code></td>
+                            <td>Agrega nuevos <code>candidate_qa</code> sin reconstruir toda la coleccion.</td>
+                        </tr>
+                        <tr>
+                            <td>Coleccion exitosos</td>
+                            <td><code>natalia_success_cases</code></td>
+                            <td>Casos ganadores de Reddit con score, objetivos, app, fuente, confianza y marcas de tiempo si existen.</td>
+                        </tr>
+                        <tr>
+                            <td>Coleccion negativos</td>
+                            <td><code>natalia_negative_cases</code></td>
+                            <td>Ejemplos de errores/rechazos para Maximus Coach. No deben alimentar la voz de Natalia-persona.</td>
+                        </tr>
+                        <tr>
+                            <td>Libros</td>
+                            <td><code>books_kb/chroma_books</code> con <code>natalia_books_kb</code> y conversaciones de libros</td>
+                            <td>Teoria, metodologia y conversaciones de libros; se consulta como conocimiento complementario.</td>
+                        </tr>
+                        <tr>
+                            <td>Reranker local</td>
+                            <td><code>success_case_rank()</code> en backend</td>
+                            <td>Reordena despues de Chroma por objetivo, score, confianza, fuente, app, marcas de tiempo y similitud textual.</td>
+                        </tr>
+                        <tr>
+                            <td>Parent document</td>
+                            <td>Chroma devuelve IDs; backend rehidrata desde SQLite</td>
+                            <td>Permite consultar conversaciones completas y no solo chunks cortados.</td>
+                        </tr>
+                        <tr>
+                            <td>Confianza</td>
+                            <td><code>alta</code>, <code>media</code>, <code>baja</code></td>
+                            <td>Calculada por objetivo, score, longitud conversacional, imagen/fuente y marcas temporales.</td>
+                        </tr>
+                        <tr>
+                            <td>Grafo de objetivos</td>
+                            <td><code>scratch/build_natalia_objective_graph.py</code></td>
+                            <td>Genera JSON/HTML con objetivos, apps, confianza, casos y co-ocurrencias.</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluacion diaria</td>
+                            <td><code>scratch/daily_natalia_rag_maintenance.py</code></td>
+                            <td>Traduce pendientes, indexa incremental, actualiza negativos, regenera grafo, corre QA de 20 preguntas y QA extendida de 120 preguntas etiquetadas.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Regla de seguridad RAG:</strong> Natalia puede usar casos exitosos y libros para responder como mujer/persona del simulador. Maximus Coach puede usar tambien casos negativos para explicar errores. Ningun agente debe afirmar que una tecnica consigue WhatsApp, cita o Instagram si ese resultado no esta en el contexto recuperado o en el estado visible del juego.</p>
+                <p><strong>Verificacion 2026-07-06:</strong> <code>natalia_success_cases</code> quedo con 1.895 documentos y <code>natalia_negative_cases</code> con 1.000. Reporte de reindexacion: <code>docs/natalia_rag_reindex_confidence_negative_20260706.json</code>. Grafo inicial: <code>docs/natalia_objective_graph_20260706_200116.json/html</code> con 1.895 casos, 1.914 nodos y 6.025 relaciones. QA de 20 preguntas: <code>docs/natalia_rag_qa_20_20260706_200231.*</code>, resultado 20/20 OK. Automatizacion diaria activa: <code>qa-diaria-rag-natalia</code>.</p>
+                <p><strong>Verificacion extendida 2026-07-07:</strong> se genero el catalogo etiquetado <code>docs/natalia_rag_eval_catalog_v1.csv/json/html</code> con 120 preguntas por categoria, intencion, perfil y objetivo. La corrida <code>docs/natalia_rag_eval_catalog_run_20260706_210358.*</code> recupero evidencia en 120/120 preguntas y 0 quedaron como <code>FALTA_EVIDENCIA</code>. El mantenimiento completo <code>docs/natalia_rag_daily_maintenance_20260706_210023.json</code> termino OK: traduccion pendiente 0, indexacion incremental OK, negativos OK, grafo actualizado, QA 20 OK y QA catalogo 120 OK.</p>
+                <p><strong>Runtime Gemini 2026-07-06:</strong> el archivo <code>.env</code> quedo parseable por <code>python-dotenv</code>; Decodo se guarda como <code>DECODO_PROXY_TEST_URL</code> y <code>DECODO_API_AUTH</code>, y <code>GEMINI_LIVE_ENABLED=1</code>. Prueba controlada de <code>/api/simulate-turn</code>: <code>coach_live_used=true</code>, <code>natalia_live_used=true</code>, <code>fallback=false</code>, respuesta UTF-8 correcta. Backup previo: <code>.env.bak_20260706_201411</code>.</p>
+                <h3>Arquitectura RAG consolidada 2026-07-07</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Capa</th>
+                            <th>Ruta / coleccion</th>
+                            <th>Estado</th>
+                            <th>Regla operativa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fuente de verdad</td>
+                            <td><code>textgame.db</code></td>
+                            <td>Activa</td>
+                            <td>SQLite conserva conversaciones completas, OCR, traduccion, objetivos, score, confidence y auditoria.</td>
+                        </tr>
+                        <tr>
+                            <td>Exitos Reddit</td>
+                            <td><code>chroma_db</code> / <code>natalia_success_cases</code></td>
+                            <td>1.895 documentos</td>
+                            <td>Chroma indexa; backend rehidrata parent document completo desde SQLite antes de responder.</td>
+                        </tr>
+                        <tr>
+                            <td>Negativos Coach</td>
+                            <td><code>chroma_db</code> / <code>natalia_negative_cases</code></td>
+                            <td>1.000 documentos</td>
+                            <td>Solo Maximus/Coach los usa para explicar errores. Natalia-persona no debe imitarlos.</td>
+                        </tr>
+                        <tr>
+                            <td>Legacy perfiles</td>
+                            <td><code>chroma_db</code> / <code>natalia_conversations</code></td>
+                            <td>169 documentos</td>
+                            <td>Soporte historico por perfil; mantener separado de casos exitosos y negativos.</td>
+                        </tr>
+                        <tr>
+                            <td>Libros</td>
+                            <td><code>books_kb/chroma_books</code> / <code>natalia_books_kb</code></td>
+                            <td>2.335 documentos</td>
+                            <td>Base teorica staged. Usar como apoyo metodologico, no como evidencia de chat real.</td>
+                        </tr>
+                        <tr>
+                            <td>Conversaciones libros</td>
+                            <td><code>books_kb/chroma_books</code> / <code>natalia_conversations</code></td>
+                            <td>74 documentos</td>
+                            <td>Casos de libros; deben conservar parent context completo cuando se integren totalmente.</td>
+                        </tr>
+                        <tr>
+                            <td>Reranker</td>
+                            <td><code>backend/server.py</code> / <code>success_case_rank()</code></td>
+                            <td>Activo</td>
+                            <td>Reordena por objetivo, score, confidence, app/fuente, marcas temporales y similitud textual.</td>
+                        </tr>
+                        <tr>
+                            <td>Mantenimiento</td>
+                            <td><code>scratch/daily_natalia_rag_maintenance.py</code></td>
+                            <td>Automatizado y probado</td>
+                            <td>Traduce pendientes, indexa incremental, actualiza negativos, regenera grafo, ejecuta QA 20 y QA catalogo 120.</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluacion base</td>
+                            <td><code>scratch/qa_natalia_rag_20.py</code></td>
+                            <td>20/20 OK</td>
+                            <td>Prueba rapida de humo para retrieval, groundedness y fuentes recuperadas.</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluacion catalogo</td>
+                            <td><code>scratch/qa_natalia_rag_catalog.py</code> + <code>docs/natalia_rag_eval_catalog_v1.*</code></td>
+                            <td>120/120 OK</td>
+                            <td>Benchmark etiquetado por categoria, intencion, perfil, objetivo, colecciones esperadas y criterio de fallo.</td>
+                        </tr>
+                        <tr>
+                            <td>Runtime</td>
+                            <td><code>GEMINI_LIVE_ENABLED=1</code>, <code>CHROMA_QUERY_ENABLED=1</code></td>
+                            <td>Activo</td>
+                            <td>Gemini responde en vivo con RAG; fallback local queda como resiliencia ante 429.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>Base tecnica investigada para la siguiente mejora</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fuente</th>
+                            <th>Hallazgo aplicable</th>
+                            <th>Decision para Natalia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>LlamaIndex RAG</td>
+                            <td>RAG incluye loading, indexing, storing, querying y evaluation como ciclo completo.</td>
+                            <td>La QA diaria y el catalogo de preguntas pasan a ser parte central del sistema.</td>
+                        </tr>
+                        <tr>
+                            <td>Chroma metadata filtering</td>
+                            <td>Chroma permite filtros y arrays en metadata con operadores como <code>$contains</code> y <code>$and</code>.</td>
+                            <td>Normalizar campos atomicos: objetivo, perfil, app, idioma, confidence, fuente y tipo de evidencia.</td>
+                        </tr>
+                        <tr>
+                            <td>Cohere Rerank</td>
+                            <td>Los rerankers reordenan resultados ya recuperados por relevancia semantica.</td>
+                            <td>Mantener reranker local y comparar uno neural solo si el set de 100-200 preguntas muestra ganancia.</td>
+                        </tr>
+                        <tr>
+                            <td>LangSmith / OpenAI cookbook</td>
+                            <td>Evaluar por separado relevancia, exactitud, groundedness y calidad del retrieval.</td>
+                            <td>Cada pregunta de QA debe guardar colecciones esperadas, evidencia esperada y criterio de fallo.</td>
+                        </tr>
+                        <tr>
+                            <td>Metadata + hybrid search</td>
+                            <td>Hybrid/BM25 ayuda en terminos raros o campos estructurados, pero agrega complejidad; medir antes de adoptar.</td>
+                            <td>No activar hybrid search global todavia. Primero crear benchmark etiquetado y medir brechas del vector search actual.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Decision implementada:</strong> se crearon 120 preguntas predefinidas etiquetadas no para que Natalia memorice respuestas, sino para evaluar, enrutar y mejorar retrieval. Campos incluidos: <code>categoria</code>, <code>intencion</code>, <code>perfil</code>, <code>objetivo</code>, <code>colecciones_esperadas</code>, <code>evidencia_esperada</code>, <code>respuesta_ideal_resumida</code> y <code>criterios_de_fallo</code>. Generador: <code>scratch/generate_natalia_rag_eval_catalog.py</code>. Evaluador: <code>scratch/qa_natalia_rag_catalog.py</code>. Reporte aprobado: <code>docs/natalia_rag_eval_catalog_run_20260706_210358.*</code>, 120/120 OK.</p>
+                <h3>Flujo runtime de consulta RAG</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ruta</th>
+                            <th>Funcion principal</th>
+                            <th>Colecciones permitidas</th>
+                            <th>Regla</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Natalia-persona</td>
+                            <td><code>retrieve_persona_cases()</code></td>
+                            <td>Pares reales por perfil, <code>natalia_success_cases</code></td>
+                            <td>Responder como mujer real, breve y contextual. No usar <code>natalia_negative_cases</code> como inspiracion.</td>
+                        </tr>
+                        <tr>
+                            <td>Maximus-Coach</td>
+                            <td><code>retrieve_coach_cases()</code></td>
+                            <td>Success, legacy, libros, YouTube/chat turns y <code>natalia_negative_cases</code></td>
+                            <td>Explicar errores, comparar contra exitos y dar 3 sugerencias accionables sin mezclar voz con Natalia.</td>
+                        </tr>
+                        <tr>
+                            <td>Helper legacy/general</td>
+                            <td><code>retrieve_cases()</code></td>
+                            <td>Mixta</td>
+                            <td>No es la ruta principal de <code>simulate_turn()</code>. Si se reactiva en endpoints futuros, revisar que negativos no alimenten Natalia-persona.</td>
+                        </tr>
+                        <tr>
+                            <td>Freshness de entrenamiento</td>
+                            <td><code>daily_natalia_rag_maintenance.py</code></td>
+                            <td>SQLite + Chroma</td>
+                            <td>Cuando entren nuevos <code>candidate_qa</code>, traducir pendientes e indexar incremental antes de decir que Natalia ya los consulta.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2 class="blue-title">1.3 RAC de Libros Migrado desde AntiGravity</h2>
+                <p>El modulo de libros de AntiGravity quedo copiado en Codex como base de conocimiento staged para Natalia y Maximus. No se fusiono con el Chroma operativo del simulador para evitar contaminar la coleccion activa durante el scraping masivo.</p>
+                <ul>
+                    <li><strong>Origen:</strong> <code>C:\desarrollos\antigravity\Easy Date\books_kb</code></li>
+                    <li><strong>Destino Codex:</strong> <code>C:\desarrollos\Codex\Easy Date\books_kb</code></li>
+                    <li><strong>Copia:</strong> 195 archivos, aproximadamente 260 MB. Se excluyeron <code>.venv</code>, <code>__pycache__</code> y <code>*.pyc</code> por ser runtime/cache regenerable.</li>
+                    <li><strong>SQLite:</strong> <code>books_index.sqlite</code> contiene 23 libros procesados unicos, 2.347 chunks, 74 conversaciones de libros, 209 registros OCR de imagen, 48.082 palabras nuevas de <em>The Message Game</em> y 1 duplicado omitido.</li>
+                    <li><strong>Fuentes:</strong> <code>source_books/</code> conserva 24 EPUB originales, incluyendo el duplicado historico omitido y el nuevo EPUB <em>The Message Game</em>.</li>
+                    <li><strong>Chroma de libros:</strong> <code>books_kb\chroma_books\chroma.sqlite3</code> contiene <code>natalia_books_kb</code> (2.335 embeddings), <code>natalia_conversations</code> (74) y <code>natalia_conversations_plus</code> (46 legacy pendiente de sincronizacion).</li>
+                    <li><strong>Nuevo libro ID 23:</strong> <em>The Message Game A Guide to Dating at the Touch of a Button</em> quedo con 233 chunks, 28 conversaciones detectadas, 204 imagenes guardadas, OCR local y ventanas de contexto para recuperar informacion completa.</li>
+                    <li><strong>Separacion operativa:</strong> el backend actual sigue apuntando a <code>C:\desarrollos\Codex\Easy Date\chroma_db</code>. El RAC de libros se integrara despues con backup, QA y reglas de retrieval completas.</li>
+                    <li><strong>Regla anti-fragmentacion:</strong> para consultar conversaciones completas, Chroma debe recuperar IDs y SQLite debe rehidratar la conversacion completa o ventana padre antes de responder.</li>
+                    <li><strong>Reportes:</strong> <code>docs\migracion_books_kb_antigravity_20260701.md</code> y <code>docs\ingesta_message_game_rag_20260701.md</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2 class="blue-title">2. Arquitectura de OrquestaciÃ³n y Enrutamiento de Modelos</h2>
+                <p>Con el objetivo de maximizar la eficiencia de tokens y la duraciÃ³n de la sesiÃ³n, se implementa una arquitectura de agentes orquestadores:</p>
+                <ul>
+                    <li><strong>Enrutamiento de Modelos:</strong>
+                        <ul>
+                            <li>Las tareas complejas de lÃ³gica de juego, algoritmos y diseÃ±o de arquitectura se enrutan a <code>Gemini Pro 1.5</code>.</li>
+                            <li>Las tareas bÃ¡sicas de diseÃ±o CSS, maquetaciÃ³n visual, traducciones, generaciÃ³n de boilerplate y transcripciÃ³n OCR repetitiva de scraping se delegan a <code>Gemini Flash 3.5 (low tier)</code>.</li>
+                        </ul>
+                    </li>
+                    <li><strong>RotaciÃ³n y Resiliencia de APIs (Gemini API Keys):</strong>
+                        <ul>
+                            <li>Se configuran mÃºltiples claves de API gratuitas (<code>GEMINI_API_KEY_1</code>, <code>GEMINI_API_KEY_2</code>, etc.) en el archivo <code>.env</code>.</li>
+                            <li>Cada clave pertenece a un proyecto de Google Cloud independiente, lo que multiplica de forma gratuita los lÃ­mites de solicitudes por minuto (RPM) y solicitudes por dÃ­a (RPD).</li>
+                            <li>La rotacion activa vive en <code>backend/server.py</code>: carga <code>GEMINI_API_KEY_1</code>, <code>GEMINI_API_KEY_2</code> y <code>GEMINI_API_KEY_3</code>, y cambia de clave si Gemini devuelve <code>429 (Resource Exhausted)</code>.</li>
+                            <li><code>/health</code> confirma modelo, cantidad de llaves cargadas y conexion con ChromaDB sin revelar secretos.</li>
+                            <li><code>tests/verify_local_server.py</code> deja una verificacion reproducible: valida <code>/health</code> contra <code>http://localhost:8000</code> y prueba <code>/api/evaluate</code> en proceso con fakes para no consumir cuota Gemini.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Servidor Local Principal:</strong>
+                        <ul>
+                            <li><code>backend/server.py</code> es la entrada FastAPI oficial. Sirve <code>simulador_v1.2.html</code> en <code>/</code> y <code>/simulador_v1.2.html</code>, y evalua mensajes en <code>/api/evaluate</code>.</li>
+                            <li><code>server.py</code>, <code>start_easy_date.ps1</code> y <code>start_easy_date.bat</code> son lanzadores para levantar el servidor en <code>0.0.0.0:8000</code>.</li>
+                            <li>La verificacion local documentada en <code>README.md</code> no conecta el RAC/RAG de libros; solo valida el servidor, llaves cargadas por conteo, ChromaDB del simulador y el flujo evaluate sin llamada externa.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Scraping de Contexto MÃ­nimo:</strong>
+                        <ul>
+                            <li>Se prohÃ­be pasar el DOM HTML completo a los modelos de lenguaje.</li>
+                            <li>Se aplica un pre-filtro local (offline) en Python (sin IA) para recortar imÃ¡genes/textos de Reddit y envÃ­a fragmentos pequeÃ±os (chunks) exclusivamente al modelo Gemini Flash 3.5.</li>
+                        </ul>
+                    </li>
+                    <li><strong>IntegraciÃ³n en un solo archivo (Single-HTML):</strong>
+                        <ul>
+                            <li>El simulador y el visualizador de casos reales se compilan en un Ãºnico archivo HTML portable. El visualizador se inyecta en Base64 y se renderiza en un iframe aislado usando <code>srcdoc</code> para evitar bloqueos del navegador.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PESTAÃ‘A 2: EVASIÃ“N DE BLOQUEOS -->
+        <div id="tab-block" class="tab-content">
+            <div class="card">
+                <h2>1. AnÃ¡lisis de DetecciÃ³n en Sitios de Alta Resistencia</h2>
+                <div class="highlight-box">
+                    <strong>Â¿Por quÃ© bloquean las redes a pesar de usar un Proxy?</strong><br>
+                    Los sistemas de seguridad de Cloudflare y Reddit utilizan mÃºltiples capas de heurÃ­stica que van mÃ¡s allÃ¡ del origen de la IP:
+                    <ul>
+                        <li><strong>Ausencia de Latencia Humana:</strong> El script original ejecutaba peticiones secuenciales inmediatas. Hacer mÃ¡s de 30 consultas en pocos segundos es un indicador inmediato de automatizaciÃ³n.</li>
+                        <li><strong>TLS Fingerprinting:</strong> La librerÃ­a <code>requests</code> de Python tiene una firma TLS fija y conocida. Las capas de protecciÃ³n identifican esta firma como un bot de Python en lugar de un navegador real, sin importar que la IP sea residencial.</li>
+                        <li><strong>Calidad del Pool de IPs:</strong> Los proxies residenciales de DataImpulse son compartidos. Si otro usuario los saturÃ³ minutos antes, entran en "lista gris".</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="blue-title">2. Nuevas Reglas de EvasiÃ³n de Bloqueos (MitigaciÃ³n)</h2>
+                <p>Para futuros escaneos masivos en YouTube y otras fuentes, se han definido y programado las siguientes directrices:</p>
+                <ul>
+                    <li><strong>Delays Aleatorios (Sleeps):</strong> Introducir una espera de entre <code>5 a 10 segundos</code> generada de forma aleatoria (<code>random.uniform</code>) entre peticiÃ³n y peticiÃ³n.</li>
+                    <li><strong>RotaciÃ³n Activa de SesiÃ³n en Proxy:</strong> Forzar la rotaciÃ³n del IP en el proveedor agregando un identificador de sesiÃ³n Ãºnico en el string de conexiÃ³n del proxy (ej. <code>username-session-XXXX</code>) en cada consulta.</li>
+                    <li><strong>Spoofing de Cabeceras e InnerTube Client:</strong> Inyectar cabeceras HTTP que simulen ser un navegador moderno (incluyendo <code>Accept-Language</code>, <code>sec-ch-ua</code> y <code>User-Agent</code> real de Chrome).</li>
+                    <li><strong>Plan de Contingencia (Whisper local):</strong> En caso de bloqueo total, el sistema descargarÃ¡ el audio crudo mediante <code>yt-dlp</code> y se transcribirÃ¡ localmente de forma offline usando modelos Whisper.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PESTAÃ‘A 3: FUNCIONES DEL SISTEMA -->
+        <div id="tab-funcs" class="tab-content">
+            <div class="card">
+                <h2 class="green-title">Funciones Registradas en el Sistema</h2>
+                <p>Lista oficial de las funciones activas del simulador de juego (JavaScript) y de los pipelines de datos (Python). Cada nueva funciÃ³n aÃ±adida debe registrarse aquÃ­.</p>
+                
+                <div class="func-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre de FunciÃ³n</th>
+                                <th>Entorno</th>
+                                <th>Fecha</th>
+                                <th>DescripciÃ³n y Funcionalidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- FUNCIONES JS DEL SIMULADOR -->
+                            <tr>
+                                <td><code>playSound(type)</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Generador de efectos sonoros mediante <strong>Web Audio API Synthesizer</strong>. Optimizado para crear y liberar osciladores de forma local, evitando beeps en bucle y fugas de memoria.</td>
+                            </tr>
+                            <tr>
+                                <td><code>showScreen(screenId)</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Alterna entre las pantallas de juego y estudio de casos. Utiliza <strong>srcdoc</strong> para inyectar dinÃ¡micamente el HTML en base64 en un iframe sin bloqueos locales del navegador.</td>
+                            </tr>
+                            <tr>
+                                <td><code>resetGame()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Limpia el localStorage, restablece vidas y niveles de forma fresca, y despliega el modal de Match.</td>
+                            </tr>
+                            <tr>
+                                <td><code>startLevel()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Inicializa las vidas del nivel correspondiente, limpia la caja del chat y renderiza las opciones iniciales.</td>
+                            </tr>
+                            <tr>
+                                <td><code>showMatchModal()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Carga los datos del nivel actual e inyecta la foto de la chica en el cÃ­rculo usando backgroundImage. Abre el modal inicial.</td>
+                            </tr>
+                            <tr>
+                                <td><code>showLevelUpModal()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Despliega el modal de cita lograda (Level Up), activa el canvas de confeti e inyecta la foto redonda de la chica.</td>
+                            </tr>
+                            <tr>
+                                <td><code>showFinalWinModal()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Activa el modal final de victoria cuando el usuario completa los 4 niveles del simulador.</td>
+                            </tr>
+                            <tr>
+                                <td><code>showGameOverModal()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Abre el modal de derrota cuando el usuario pierde todos los corazones (vidas).</td>
+                            </tr>
+                            <tr>
+                                <td><code>evaluateSelection()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>EvalÃºa la opciÃ³n de diÃ¡logo elegida y el Ã­ndice del slider de tiempo contra la respuesta correcta del JSON. Aplica penalizaciones, valida flexibilidad de tiempos (mismo tiempo o superior) y despliega el modal del Coach.</td>
+                            </tr>
+                            <tr>
+                                <td><code>closeCoachModal()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Cierra el modal de feedback del coach y calcula si se pasa de nivel, si se pierde o si avanza al siguiente paso del chat.</td>
+                            </tr>
+                            <tr>
+                                <td><code>renderStep()</code></td>
+                                <td><span class="badge badge-js">JS</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Dibuja las 4 tarjetas de diÃ¡logo y actualiza el slider de tiempos del panel inferior.</td>
+                            </tr>
+                            <tr>
+                                <td><code>rotateApiKey()</code></td>
+                                <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Alterna entre las claves API de Gemini cargadas en el simulador si se excede la cuota gratuita (Error 429), asegurando alta disponibilidad.</td>
+                            </tr>
+                            <tr>
+                                <td><code>toggleHelpModal()</code></td>
+                                <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Muestra u oculta el modal de ayuda del emulador v1.1. Activado desde el botÃ³n <code>?</code> en la barra de cabecera.</td>
+                            </tr>
+                            <tr>
+                                <td><code>rateStep(levelId, stepId, rating)</code></td>
+                                <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Guarda en <code>localStorage</code> el feedback (Me gusta ðŸ‘ / Cambiar ðŸ‘Ž) de cada paso para el entrenamiento futuro de la IA.</td>
+                            </tr>
+                            <tr>
+                                <td><code>renderFavoritos()</code></td>
+                                <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Filtra y despliega los favoritos en dos secciones en el manual (Me gustaron / No me gustaron) segÃºn los datos guardados.</td>
+                            </tr>
+                            
+                            <!-- FUNCIONES PYTHON PIPELINE -->
+                            <tr>
+                                <td><code>build_simulator.py</code></td>
+                                <td><span class="badge badge-py">Python</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Compilador central que lee <code>game_dialogues.json</code>, optimiza y comprime las imÃ¡genes a JPEG (calidad 55%, mÃ¡x. 300px) e inyecta dinÃ¡micamente todo en <code>simulador_v1.1.html</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>compile_html.py</code></td>
+                                <td><span class="badge badge-py">Python</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Genera el dashboard persistente de Casos Reales (<code>estudio_textgame_casos_reales.html</code>) comprimiendo imÃ¡genes a JPEG (calidad 40%, mÃ¡x. 420px).</td>
+                            </tr>
+                            <tr>
+                                <td><code>populate_chat_turns.py</code></td>
+                                <td><span class="badge badge-py">Python</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>Extrae las transcripciones de SQLite e indexa vectorialmente los diÃ¡logos en <strong>ChromaDB</strong>. Soporta esquemas de listas o diccionarios robustamente.</td>
+                            </tr>
+                            <tr>
+                                <td><code>reddit_sb_extractor.py</code></td>
+                                <td><span class="badge badge-py">Python</span></td>
+                                <td>27 Jun 2026</td>
+                                <td>MÃ³dulo que utiliza SeleniumBase UC y proxies residenciales para descargar hilos de chats reales de Reddit eludiendo protecciones antibots.</td>
+                            </tr>
+                            <tr>
+                                <td><code>image_to_base64(filepath)</code></td>
+                                <td><span class="badge badge-py">Python</span> <span class="badge badge-new">New</span></td>
+                                <td>28 Jun 2026</td>
+                                <td>FunciÃ³n de utilidad integrada en los scripts de compilaciÃ³n para redimensionar imÃ¡genes y comprimir su calidad (calidad 40%-55%), reduciendo el peso final de los archivos HTML en mÃ¡s de un 90%.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÃ‘A 4: SISTEMA DE PROXY (DATAIMPULSE) -->
+        <div id="tab-proxy" class="tab-content">
+            <div class="card">
+                <h2>1. Arquitectura de Red de Proxies Residenciales</h2>
+                <p>Para evitar baneos de Cloudflare y controles anti-scraping de Reddit, el extractor implementa un sistema dinÃ¡mico conectado a la red residencial de <strong>DataImpulse</strong>:</p>
+                <div class="highlight-box" style="background: rgba(59, 130, 246, 0.04); border-left-color: var(--accent-blue);">
+                    <strong>Esquema de ConexiÃ³n y RotaciÃ³n Activa:</strong>
+                    <ul>
+                        <li><strong>Servidor Proxy:</strong> <code>gw.dataimpulse.com:10001</code></li>
+                        <li><strong>Credenciales DinÃ¡micas:</strong> Se agrega un sufijo de sesiÃ³n aleatorio al usuario en cada hilo de ejecuciÃ³n (ej. <code>username_session-aBc123XyZ</code>). Esto obliga al balanceador de DataImpulse a desconectar el socket anterior y aprovisionar un nuevo nodo de salida residencial limpio.</li>
+                        <li><strong>Filtro Local de Content-Type:</strong> Para evitar el consumo excesivo de la cuota de proxy residencial, el script filtra los recursos en el navegador, bloqueando la carga de hojas de estilo (CSS), fuentes tipogrÃ¡ficas y scripts de tracking innecesarios, solicitando Ãºnicamente imÃ¡genes de chat y textos JSON.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="blue-title">2. GestiÃ³n de Cuota y Fallos en ProducciÃ³n</h2>
+                <p>En caso de saturaciÃ³n o lÃ­mite de peticiones (cÃ³digo HTTP 429), la arquitectura implementa:</p>
+                <ol>
+                    <li>RotaciÃ³n forzada del hash de sesiÃ³n local para cambiar de IP inmediatamente.</li>
+                    <li>IntroducciÃ³n de retrasos de tiempo adaptativos mediante <code>random.uniform(5, 10)</code> segundos entre descargas.</li>
+                    <li>Plan de contingencia offline: si el bloque del WAF es total, se descarga el audio en bruto con <code>yt-dlp</code> y se realiza transcripciÃ³n local con <code>Whisper</code>.</li>
+                </ol>
+                <p><strong>Cierre documental:</strong> la recuperaciÃ³n de imÃ¡genes Reddit desde URLs guardadas en <code>reddit_conversations.image_urls</code> queda registrada en <code>docs/reddit_image_recovery_dataimpulse.csv</code> y <code>docs/reddit_image_recovery_dataimpulse_summary.md</code>; el flujo usa DataImpulse y no depende de IA ni modelos para la descarga.</p>
+            </div>
+        </div>
+
+        <!-- PESTAÃ‘A 5: ROADMAP Y FASES -->
+        <div id="tab-roadmap" class="tab-content">
+            <div class="card">
+                <h2 class="green-title">Roadmap de Desarrollo de Estudio Text Game</h2>
+                <p>Fases del proyecto para la recopilaciÃ³n de datos reales de seducciÃ³n y el entrenamiento interactivo de la IA:</p>
+                <div class="highlight-box" style="background: rgba(16, 185, 129, 0.05); border-left-color: var(--accent-green);">
+                    <strong>Decision arquitectonica Natalia v1.2:</strong>
+                    <ul>
+                        <li><strong>Natalia-Persona:</strong> responde como la mujer del chat y solo debe imitar pares reales <code>Hombre -&gt; Mujer</code> compatibles por tema e intencion. No debe imitar transcripciones teoricas de YouTube ni documentos de coaching.</li>
+                        <li><strong>Ficha de persona por nivel:</strong> cada nivel define zona, trabajo y vida fuera de rutina para que Natalia no responda con datos genericos como "algo creativo". En Nivel 1 usa Brickell y marketing visual para restaurantes.</li>
+                        <li><strong>Natalia-Coach:</strong> evalua el mensaje del usuario, usa teoria, casos RAG y metricas pedagogicas, pero no habla como si fuera la mujer del chat.</li>
+                        <li><strong>Contexto visible autoritativo:</strong> ambos agentes reciben el ultimo mensaje real visible y el analisis compartido del turno para evitar saltos a guion oculto. Si el usuario hace una pregunta fuera del mapa fijo, se marca como <code>pregunta_contextual</code> y Natalia no puede saltar oportunistamente a vino, cita, contacto o ubicacion sin puente.</li>
+                        <li><strong>Temas humanos fuera del guion:</strong> el analizador reconoce musica, comida, viajes, mascotas y familia para que Natalia conteste como persona real antes de volver a logistica o cierre de cita. La misma logica existe en el fallback local del HTML para mantener coherencia si la API no responde.</li>
+                        <li><strong>Aislamiento Persona/Coach:</strong> Natalia-Persona no recibe texto libre del feedback pedagogico; solo recibe una postura normalizada (<code>open</code>, <code>neutral</code>, <code>pull_back</code>, <code>challenge</code>) y la calidad estimada del mensaje.</li>
+                        <li><strong>RAG cross-profile ponderado:</strong> en intenciones escasas como cierre de plan, contacto, humor o logistica, Natalia puede recuperar pares reales de otros perfiles con menor peso; para conversacion comun se mantiene el perfil exacto para evitar contaminacion de tono.</li>
+                        <li><strong>Contingencia 429:</strong> si Gemini satura cuota, el backend rota keys sin exponer secretos; si cualquier llave devuelve <code>429</code> durante la ronda, activa cooldown temporal y cae rapido a fallback contextual/RAG local para no bloquear el chat. El timeout HTTP respeta el minimo requerido por <code>google-genai</code> para evitar errores <code>400 INVALID_ARGUMENT</code> por deadline demasiado corto.</li>
+                        <li><strong>Modo operativo anti-cuelgue:</strong> el archivo <code>.env</code> puede apagar llamadas live con <code>GEMINI_LIVE_ENABLED=0</code> y consultas vectoriales runtime con <code>CHROMA_QUERY_ENABLED=0</code>. En ese modo, SQLite/RAG de pares reales sigue activo y el chat responde sin bloquearse.</li>
+                        <li><strong>Deteccion robusta de preguntas:</strong> el backend distingue preguntas reales de marcas <code>??</code> causadas por emojis degradados en Windows, evitando que el Coach penalice falsamente por "demasiadas preguntas".</li>
+                        <li><strong>Pregunta activa:</strong> antes de responder, el backend normaliza acentos reales y degradados como <code>qué</code>, <code>música</code>, <code>qu?</code>, <code>m?sica</code> o <code>c?moda</code> y toma el ultimo segmento de pregunta real. Asi Natalia responde musica/comida/trabajo si el usuario pregunta eso, aunque antes haya mencionado otro tema.</li>
+                        <li><strong>Coach sin ejemplos incompatibles:</strong> las opciones A/B/C aprendidas desde casos reales solo se usan si coinciden con la pregunta directa o el objetivo del turno; aperturas de semana/dia usan sugerencias pedagogicas locales, y los cierres de plan exigen señales concretas de coordinacion como dia, lugar, copa, WhatsApp, hora o cuadrar. Esto evita casos sueltos como vacaciones, paises fuera de contexto o ruido de scraping.</li>
+                        <li><strong>Retrieval separado por consumidor:</strong> Natalia-Persona recupera solo pares reales <code>Hombre -&gt; Mujer</code> desde SQLite para imitar conversacion humana; si el hombre hace una pregunta directa, filtra esos pares por el tema activo para evitar contaminacion de ejemplos incompatibles. En cierres de plan, tambien exige que la respuesta recuperada contenga señales concretas de dia, lugar, copa, plan, WhatsApp o coordinacion. Natalia-Coach recupera esos pares mas Reddit completo, YouTube y Chroma cuando este activo. La respuesta de <code>/api/simulate-turn</code> incluye <code>retrieval_summary</code> para auditar fuentes usadas en cada turno.</li>
+                        <li><strong>Compuerta de calidad para Natalia-Persona:</strong> antes de imitar un par real, el backend descarta OCR de perfiles/memes, textos no conversacionales, respuestas no compatibles o contenido inseguro/absurdo. <code>/api/training-status</code> separa <code>derived_training_pairs</code>, <code>persona_usable_pairs</code> y <code>persona_rejected_pairs</code>; en la auditoria actual hay 389 pares derivados, 320 usables para Persona y 69 rechazados. Asi la DB completa sigue disponible para estudio/Coach, pero la chica no habla usando basura de OCR.</li>
+                        <li><strong>Verificacion 2026-06-29:</strong> se corrigieron falsos positivos de temas que rompian el Coach (<code>soy de salsa</code> ya no es ubicacion; <code>interrogatorio</code> ya no es mascota; <code>copa</code> se considera parte del plan en cierre/contacto). Nivel 1 fue probado completo en Chrome con mensajes libres de gimnasio, trabajo, musica, comida, plan, WhatsApp y cierre: 10/10, Level Up, sin Game Over y sin penalizaciones de tema falso.</li>
+                        <li><strong>Modo live experimental 2026-06-29:</strong> el backend puede ejecutar Natalia-Persona con Gemini live y mantener Natalia-Coach local con <code>GEMINI_COACH_ENABLED=0</code> para ahorrar cuota. Natalia-Persona acepta JSON o texto plano corto si pasa validacion de idioma/coherencia. En la ultima prueba API de 10 turnos, 9 usaron <code>retrieval_summary.natalia_live_used=true</code> y 1 cayo a fallback local por guardrail de calidad, sin perder vidas. La lista de modelos fallback queda expuesta en <code>/health</code> como <code>gemini_model_candidates</code>.</li>
+                        <li><strong>Continuacion Nivel 1 2026-06-29:</strong> se agrego deteccion de telefono numerico, preguntas de deporte como ejercicio, prioridad de contacto sobre temas secundarios y una regla para no penalizar abridores que mencionan planes sin hilo previo. El contrato automatico de 10 turnos verifica que <code>interrogatorio</code> no active mascotas por contener <code>gato</code>. En Chrome, Nivel 1 completo termino en Level Up con respuestas coherentes para deporte, trabajo, musica, comida, plan, WhatsApp, numero y cierre.</li>
+                        <li><strong>Metricas pedagogicas por turno:</strong> <code>/api/simulate-turn</code> devuelve <code>turn_metrics</code> con calidad del mensaje, congruencia con contexto visible, objetivo/intencion, tono/emojis y timing. El modal del Coach muestra una <code>Lectura del Coach</code> con contexto, objetivo, emojis y riesgos para que el usuario vea la evaluacion sin contaminar la voz de Natalia-Persona.</li>
+                        <li><strong>Verificacion Chrome con metricas visibles:</strong> Nivel 1 fue probado en Chrome desde <code>127.0.0.3:8000</code> con mensajes libres y emoji calibrado. Resultado: Paso 10/10, <code>Cita Lograda</code>, Game Over falso, atraccion 100% y modales del Coach con <code>Lectura del Coach</code>.</li>
+                        <li><strong>Auditoria de fallback live:</strong> <code>retrieval_summary</code> expone <code>natalia_fallback_category</code> y <code>natalia_fallback_reason</code> para distinguir caidas por API/cuota (<code>api</code>) de rechazos por coherencia/calidad (<code>guardrail</code>). Esto evita diagnosticar como "mal entrenamiento" lo que en realidad es saturacion externa de Gemini.</li>
+                        <li><strong>Cierre pedagogico de nivel:</strong> al ganar, <code>levelup-summary</code> resume buenas respuestas, respuestas por mejorar, vidas perdidas, precision, mejor mensaje, mensaje a corregir y patron fuerte. Al perder, <code>gameover-summary</code> muestra el patron a corregir y ofrece <code>ESTUDIAR CASOS REALES</code> para volver al material de entrenamiento antes de reintentar.</li>
+                        <li><strong>Selectividad por nivel:</strong> el backend calcula <code>passing_score</code> segun el perfil: Nivel 1 requiere 6/10, Nivel 2 requiere 7/10, Nivel 3 requiere 8/10 y Nivel 4 requiere 9/10. Asi una respuesta aceptable para una mujer receptiva puede perder vida con una mujer de alta selectividad.</li>
+                        <li><strong>Voz local por selectividad:</strong> cuando Gemini live no esta disponible o una respuesta se rechaza por guardrail, el fallback local tambien respeta el perfil. En niveles 3-4 Natalia responde mas corta, menos disponible y mas exigente en preguntas de trabajo, dia, ejercicio, musica, comida, contacto y plan, para que la dificultad no dependa solo del Coach.</li>
+                        <li><strong>Estado de entrenamiento auditable:</strong> <code>/api/training-status</code> diferencia conversaciones con OCR de conversaciones realmente convertibles en pares. En la ultima auditoria local: 213 Reddit, 211 con JSON, 126 con pares, 389 pares derivados totales, 44 transcripciones YouTube exitosas.</li>
+                        <li><strong>Health operativo:</strong> <code>/health</code> reporta <code>gemini_live_enabled</code> y <code>chroma_query_enabled</code> para saber si Natalia esta usando modelo/vector live o modo fallback/RAG SQLite.</li>
+                        <li><strong>Integracion RAG success 2026-07-06:</strong> por aprobacion explicita del usuario, los 1.895 casos <code>candidate_qa</code> disponibles se indexaron en la coleccion operativa separada <code>natalia_success_cases</code> dentro de <code>chroma_db</code>. El script reproducible es <code>scratch/index_success_candidates_chroma.py</code> y el reporte quedo en <code>docs/natalia_success_chroma_index_20260706.json</code>.</li>
+                        <li><strong>Fuente de verdad anti-alucinacion:</strong> Chroma se usa solo como indice semantico. Al recuperar un caso de <code>natalia_success_cases</code>, el backend rehidrata la conversacion completa desde SQLite (<code>reddit_success_scrape_candidates</code>) por <code>post_id</code>. Natalia-Coach puede combinar success cases, Reddit antiguo, YouTube, libros y conversaciones de libros; Natalia-Persona usa pares reales y success cases solo como inspiracion de tono, sin inventar datos fuera del contexto visible.</li>
+                        <li><strong>QA RAG 20 preguntas:</strong> la validacion inicial genero <code>docs/natalia_rag_qa_20_20260706_192730.csv</code>, <code>.json</code> y <code>.html</code>. Cada respuesta exige fuentes recuperadas; si no hay evidencia suficiente, el comportamiento esperado es declarar falta de evidencia en vez de inventar.</li>
+                        <li><strong>QA de sesion limpia:</strong> el simulador acepta <code>?reset=1</code> para limpiar <code>localStorage</code> al abrir y probar una partida desde cero. La prueba Chrome de Nivel 1 usa ese modo para evitar estados viejos y valida Paso 10/10, Cita Lograda, Game Over falso y Coach cerrado antes del Level Up.</li>
+                        <li><strong>Calidad UI modal:</strong> los modales de ayuda, Coach, Game Over, Level Up y final bloquean el input del chat mientras estan abiertos para evitar estados incoherentes.</li>
+                    </ul>
+                </div>
+                <ul>
+                    <li><strong>Fase 1: ExtracciÃ³n Inicial (Completado):</strong> Scraping inicial de Reddit y transcripciÃ³n OCR. CreaciÃ³n del simulador v1.0.</li>
+                    <li><strong>Fase 2: OptimizaciÃ³n v1.1 (Completado):</strong>
+                        <ul>
+                            <li>CompresiÃ³n masiva de imÃ¡genes (ahorro del 91.3%, de 14.48MB a 1.27MB).</li>
+                            <li>Ajustes de UI (60% de altura de chat, botÃ³n Enviar con doble altura de fila de soporte).</li>
+                            <li>Modal de ayuda inicial <code>?</code> e inyecciÃ³n Base64 segura de Casos Reales.</li>
+                            <li>Filtros y dos secciones en pestaÃ±a de Favoritos ("Me gustaron" y "No me gustaron").</li>
+                            <li>LÃ³gica de sliders y flexibilidad de tiempos.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Fase 3: Base de Conocimientos (En Proceso):</strong>
+                        <ul>
+                            <li>Procesamiento por Codex de los 23 libros sobre text game y psicologÃ­a femenina.</li>
+                            <li>IntegraciÃ³n de ChromaDB independiente (<code>books_chroma/</code>) y SQLite FTS5 (<code>books_index.sqlite</code>).</li>
+                            <li>ExtracciÃ³n automÃ¡tica de conversaciones completas de libros formateadas en JSON para el simulador y Casos Reales sin fragmentar diÃ¡logos.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Fase 4: Simulador v1.2 y DinÃ¡micas FrÃ­as (Siguiente Paso):</strong>
+                        <ul>
+                            <li>AÃ±adir niveles de chicas frÃ­as y defensivas con shit-tests rigurosos.</li>
+                            <li>MÃ³dulo de re-engagement para chats ghosteados.</li>
+                            <li>RetroalimentaciÃ³n en tiempo real del coach usando llamadas directas a APIs de Gemini Flash.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Fase 5: Grafo de Conocimiento Natalia (Pendiente tras 5.000 casos):</strong>
+                        <ul>
+                            <li>Al completar y aprobar las 5.000 conversaciones exitosas nuevas, generar un grafo de conocimiento para organizar casos, objetivos, perfiles femeninos, tecnicas conversacionales, resultados, scores y fuentes originales.</li>
+                            <li>El grafo debe separar evidencia real de inferencias: post original, OCR, traduccion espanol latino, objetivo logrado, categoria, score, resumen justificativo y ruta de imagen/carrusel.</li>
+                            <li>Los outputs esperados son HTML navegable, JSON auditable y reporte en <code>docs/</code>, preferiblemente bajo <code>docs/grafo_natalia_success_cases/</code> o <code>graphify-out/</code>.</li>
+                            <li>Los casos nuevos no aprobados permanecen fuera de RAG/ChromaDB hasta QA. Excepcion ya aplicada el 2026-07-06: los 1.895 <code>candidate_qa</code> traducidos quedaron indexados en <code>natalia_success_cases</code>.</li>
+                            <li>El grafo se usa como capa de organizacion y QA antes de integrar el lote masivo al RAG/ChromaDB final de Natalia y Maximus.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JS para control de PestaÃ±as -->
+    <script>
+        function switchTab(tabId) {
+            // Desactivar todas las pestaÃ±as y contenidos
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Activar botÃ³n y contenido seleccionado
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

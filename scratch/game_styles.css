@@ -1,0 +1,942 @@
+/*
+ * Text Game Simulator - Mobile-First Dark Mode Styles
+ * --------------------------------------------------
+ * HTML Structure Outline:
+ * 
+ * <div class="app-container">
+ *   <!-- TOP BAR -->
+ *   <header class="top-bar">
+ *     <div class="stats">
+ *       <span class="rank">Rango: Novato 🔰</span>
+ *       <div class="investment-meter">
+ *         <span class="investment-text">Inversión: 50%</span>
+ *         <div class="progress-bar"><div class="progress" style="width: 50%"></div></div>
+ *       </div>
+ *     </div>
+ *   </header>
+ *
+ *   <!-- CHAT AREA -->
+ *   <main class="chat-area">
+ *     <div class="message her">
+ *       <div class="avatar"></div>
+ *       <div class="bubble">Hola, ¿qué tal?</div>
+ *     </div>
+ *     <div class="message user">
+ *       <div class="bubble">Todo bien, ¿y tú?</div>
+ *     </div>
+ *   </main>
+ *
+ *   <!-- BOTTOM PANEL (Double Selection) -->
+ *   <footer class="bottom-panel">
+ *     <div class="options-grid">
+ *       <label class="option-card">
+ *         <input type="radio" name="reply" value="A">
+ *         <span class="card-content"><span class="letter">A</span> Mensaje divertido</span>
+ *       </label>
+ *       <!-- Repeat for B, C, D -->
+ *     </div>
+ *     
+ *     <div class="time-selector">
+ *       <label class="time-label">Tiempo de espera</label>
+ *       <div class="slider-container">
+ *         <input type="range" min="1" max="5" value="1" class="time-slider">
+ *         <div class="time-ticks">
+ *           <span>Ahora</span><span>5m</span><span>1h</span><span>4h</span><span>1d</span>
+ *         </div>
+ *       </div>
+ *     </div>
+ *     
+ *     <button class="btn-send">ENVIAR RESPUESTA</button>
+ *   </footer>
+ * </div>
+ *
+ * <!-- COACH MODAL (hidden by default, add class 'active' to show) -->
+ * <div class="modal-overlay">
+ *   <div class="coach-modal">
+ *     <div class="coach-header">
+ *       <div class="coach-avatar">🤵</div>
+ *       <h3>Coach de Juego</h3>
+ *     </div>
+ *     <p class="coach-message">¡Buena elección! Responder rápido a este mensaje demuestra necesidad. Esperar 1 hora ha sido la decisión correcta.</p>
+ *     <button class="btn-close-modal">ENTENDIDO</button>
+ *   </div>
+ * </div>
+ */
+
+/* ==========================================================================
+   CSS Variables (Dark Mode Theme)
+   ========================================================================== */
+:root {
+  /* Backgrounds */
+  --bg-app: #0F0F13;
+  --bg-panel: #1A1A24;
+  --bg-card: #252533;
+  
+  /* Primary Accents (Tinder/Bumble premium vibe) */
+  --accent-primary: #FF3C6E; /* Vibrant Pink/Red */
+  --accent-gradient: linear-gradient(135deg, #FF3C6E, #FF7854);
+  --accent-glow: rgba(255, 60, 110, 0.4);
+  
+  /* Chat Colors */
+  --bubble-her: #252533;
+  --bubble-user: var(--accent-primary);
+  
+  /* Text */
+  --text-main: #FFFFFF;
+  --text-secondary: #A0A0B0;
+  
+  /* UI Elements */
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --transition: all 0.25s ease;
+}
+
+/* ==========================================================================
+   Base Reset
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #000;
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Mobile-first simulator container */
+.app-container {
+  width: 100%;
+  max-width: 430px; /* iPhone Pro Max width */
+  height: 100%;
+  max-height: 932px;
+  background-color: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* For desktop displays, curve the corners like a phone */
+@media (min-width: 450px) {
+  .app-container {
+    height: 95vh;
+    border-radius: 40px;
+    border: 8px solid #333;
+  }
+}
+
+/* ==========================================================================
+   Top Bar
+   ========================================================================== */
+.top-bar {
+  background-color: rgba(26, 26, 36, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 10;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.rank {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  background: var(--bg-card);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.level-progress {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  background: rgba(255, 60, 110, 0.15);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 60, 110, 0.2);
+  white-space: nowrap;
+}
+
+.investment-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.investment-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.progress-bar {
+  width: 70px;
+  height: 6px;
+  background-color: var(--bg-card);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar .progress {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: width 0.5s ease;
+}
+
+/* ==========================================================================
+   Chat Area
+   ========================================================================== */
+.chat-area {
+  flex: 1;
+  min-height: 0;
+  padding: 15px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+/* Floating Scroll Buttons */
+.scroll-buttons-container {
+  position: absolute;
+  right: 12px;
+  top: 40%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+
+.scroll-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(26, 26, 36, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  transition: var(--transition);
+}
+
+.scroll-btn:active {
+  transform: scale(0.9);
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.chat-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-area::-webkit-scrollbar-thumb {
+  background-color: var(--bg-card);
+  border-radius: 4px;
+}
+
+.message {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 85%;
+}
+
+.message.her {
+  align-self: flex-start;
+}
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message .avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-primary);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  background-color: var(--bg-card);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23A0A0B0"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
+  background-size: cover;
+  flex-shrink: 0;
+}
+
+.bubble {
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message.her .bubble {
+  background-color: var(--bubble-her);
+  color: var(--text-main);
+  border-radius: 20px 20px 20px 4px;
+}
+
+.message.user .bubble {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-radius: 20px 20px 4px 20px;
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+/* ==========================================================================
+   Bottom Panel (Double Selection)
+   ========================================================================== */
+.bottom-panel {
+  background-color: var(--bg-panel);
+  border-top-left-radius: var(--border-radius-lg);
+  border-top-right-radius: var(--border-radius-lg);
+  padding: 6px 12px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* 4 Options Grid */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.option-card {
+  position: relative;
+  cursor: pointer;
+}
+
+.option-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--bg-card);
+  padding: 10px 14px;
+  border-radius: var(--border-radius-md);
+  border: 2px solid transparent;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  height: auto;
+  min-height: 55px;
+  text-align: left;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.card-content .letter {
+  background-color: rgba(255, 255, 255, 0.1);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.option-card input[type="radio"]:checked + .card-content {
+  border-color: var(--accent-primary);
+  background-color: rgba(255, 60, 110, 0.1);
+  color: var(--text-main);
+}
+
+.option-card input[type="radio"]:checked + .card-content .letter {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+/* Time Selector */
+.time-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.time-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.slider-container {
+  padding: 0 10px;
+}
+
+.time-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 5px;
+  background: var(--bg-card);
+  border-radius: 3px;
+  outline: none;
+  margin-bottom: 4px;
+}
+
+.time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-main);
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  border: 3px solid var(--accent-primary);
+  transition: transform 0.1s;
+}
+
+.time-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+.time-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+/* Action Row & Buttons */
+.action-row {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.btn-send {
+  flex: 7;
+  background: var(--accent-gradient);
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: var(--border-radius-md);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px var(--accent-glow);
+  transition: var(--transition);
+  text-align: center;
+}
+
+.btn-send:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 5px var(--accent-glow);
+}
+
+.btn-reset {
+  flex: 3;
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: var(--border-radius-md);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn-reset:active {
+  transform: translateY(2px);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================================
+   Coach Modal
+   ========================================================================== */
+.modal-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  
+  /* Hidden by default */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.coach-modal {
+  background-color: var(--bg-panel);
+  border-radius: var(--border-radius-lg);
+  padding: 30px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .coach-modal {
+  transform: translateY(0);
+}
+
+.coach-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.coach-avatar {
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+}
+
+.coach-header h3 {
+  font-size: 1.4rem;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.coach-message {
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.btn-close-modal {
+  width: 100%;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-close-modal:hover,
+.btn-close-modal:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   New Features & Improvements
+   ========================================================================== */
+
+/* Time explanation under slider */
+.time-explanation {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+/* Red, bold, and larger text for waiting/respond times */
+.message-time-highlight {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-weight: normal;
+  font-size: 0.72rem;
+  display: block;
+  margin-top: 4px;
+  text-align: right;
+  font-style: italic;
+}
+
+/* Lightbox Modal (Zoom Avatar) */
+.lightbox-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(8px);
+  z-index: 110;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.lightbox-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.lightbox-content img {
+  max-width: 85%;
+  max-height: 70vh;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 3px solid var(--accent-primary);
+  object-fit: cover;
+  animation: zoomIn 0.3s ease-out;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-close-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Feedback Indicator Overlay */
+.feedback-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 95;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.feedback-overlay.active {
+  opacity: 1;
+}
+
+.feedback-icon {
+  font-size: 7rem;
+  transform: scale(0.3);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+.feedback-overlay.active .feedback-icon {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.feedback-success {
+  color: #10b981;
+  text-shadow: 0 0 40px rgba(16, 185, 129, 0.7);
+}
+
+.feedback-error {
+  color: #ef4444;
+  text-shadow: 0 0 40px rgba(239, 68, 68, 0.7);
+}
+
+/* Current step / level progress indicator */
+.progress-step-text {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+/* Chat area system notice */
+.chat-system-notice {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-card);
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  margin: 10px auto;
+  max-width: 90%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Girl avatar interactive hover pointer */
+.message.her .avatar {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.message.her .avatar:hover {
+  transform: scale(1.1);
+}
+
+/* ==========================================================================
+   Level Up Overlay and Animations
+   ========================================================================== */
+.level-up-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 105;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.level-up-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.level-up-modal {
+  background-color: var(--bg-panel);
+  border-radius: var(--border-radius-lg);
+  padding: 30px;
+  width: 100%;
+  max-width: 340px;
+  border: 2px solid var(--accent-primary);
+  box-shadow: 0 0 30px var(--accent-glow);
+  text-align: center;
+  transform: scale(0.85) translateY(30px);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+.level-up-overlay.active .level-up-modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.level-up-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+  animation: levelUpBounce 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes levelUpBounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-15px) scale(1.1); }
+}
+
+.level-up-modal h2 {
+  font-size: 1.8rem;
+  color: var(--accent-primary);
+  margin-bottom: 8px;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.level-up-modal p {
+  color: var(--text-main);
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+.btn-level-up-close {
+  width: 100%;
+  background: var(--accent-gradient);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px var(--accent-glow);
+  transition: var(--transition);
+}
+
+.btn-level-up-close:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 5px var(--accent-glow);
+}
+
+/* responsive mobile overrides to shrink elements and gain 25% chat height */
+@media (max-width: 480px), (max-height: 850px) {
+  .top-bar {
+    padding: 4px 8px !important;
+  }
+  .stats {
+    gap: 4px !important;
+  }
+  .rank {
+    font-size: 0.65rem !important;
+    padding: 2px 5px !important;
+  }
+  .level-progress {
+    font-size: 0.65rem !important;
+    padding: 2px 5px !important;
+  }
+  .investment-text {
+    font-size: 0.65rem !important;
+  }
+  .progress-bar {
+    width: 50px !important;
+    height: 5px !important;
+  }
+  .chat-area {
+    flex: 1 !important;
+    min-height: 0 !important;
+    padding: 8px !important;
+    gap: 8px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bubble {
+    font-size: 0.9rem !important;
+    padding: 8px 12px !important;
+  }
+  .message-time-highlight {
+    font-size: 0.65rem !important;
+  }
+  .bottom-panel {
+    padding: 3px 6px !important;
+    gap: 3px !important;
+    border-top-left-radius: var(--border-radius-md);
+    border-top-right-radius: var(--border-radius-md);
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+  .options-grid {
+    gap: 8px !important;
+  }
+  .card-content {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+    gap: 8px !important;
+    min-height: 48px !important;
+  }
+  .card-content .letter {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.75rem !important;
+    flex-shrink: 0 !important;
+  }
+  .time-selector {
+    gap: 0px !important;
+  }
+  .time-label {
+    font-size: 0.6rem !important;
+  }
+  .time-ticks span {
+    font-size: 0.5rem !important;
+  }
+  .slider-container {
+    padding: 0 4px !important;
+  }
+  .time-slider {
+    margin-bottom: 1px !important;
+    height: 3px !important;
+  }
+  .btn-send {
+    padding: 4px !important;
+    font-size: 0.65rem !important;
+    border-radius: var(--border-radius-sm);
+  }
+  .btn-reset {
+    padding: 4px !important;
+    font-size: 0.65rem !important;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  /* Coach modal custom responsive overrides */
+  .coach-modal {
+    padding: 16px !important;
+  }
+  .coach-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 24px !important;
+  }
+  .coach-header h3 {
+    font-size: 1.1rem !important;
+  }
+  .coach-message {
+    font-size: 0.85rem !important;
+    margin-bottom: 16px !important;
+  }
+  .btn-close-modal {
+    font-size: 0.9rem !important;
+    padding: 10px !important;
+  }
+
+  /* Level up modal overrides */
+  .level-up-modal {
+    padding: 20px !important;
+  }
+  .level-up-modal h2 {
+    font-size: 1.5rem !important;
+  }
+  .level-up-modal p {
+    font-size: 1rem !important;
+  }
+  .btn-level-up-close {
+    font-size: 0.95rem !important;
+    padding: 10px !important;
+  }
+}
+
+
