@@ -284,7 +284,7 @@ def load_chunks(conn: sqlite3.Connection) -> list[sqlite3.Row]:
         WHERE c.incluido_embedding = 1
           AND c.texto IS NOT NULL
           AND length(c.texto) > 160
-          AND COALESCE(b.categoria, '') IN ('text_game', 'psicologia_femenina')
+          AND COALESCE(b.categoria, '') IN ('text_game', 'psicologia_femenina', 'seduccion_general')
         ORDER BY c.book_id, c.chunk_index
         """
     ).fetchall()

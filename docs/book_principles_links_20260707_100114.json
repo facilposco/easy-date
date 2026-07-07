@@ -1,0 +1,303 @@
+{
+  "book_principles": 5530,
+  "principle_case_links": 10752,
+  "linked_principles": 5415,
+  "by_category": {
+    "psicologia_femenina_preferencias": 1112,
+    "cierre_transparente": 911,
+    "lectura_contexto_timing": 903,
+    "humor_tension_sana": 883,
+    "presentacion_perfil": 673,
+    "valor_congruencia": 583,
+    "agencia_limites": 164,
+    "comunicacion_escucha": 120,
+    "fuente_teoria_vs_caso": 116,
+    "reciprocidad_inversion": 61,
+    "influencia_riesgo_manipulacion": 4
+  },
+  "by_risk": {
+    "low": 4782,
+    "medium": 649,
+    "high": 99
+  },
+  "samples": [
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "low",
+      "principle": "Intención, porque si la chica no sabe que te gusta, es difícil mantener la conversación por el buen camino, y puedes parecer un poco falso si ella solo se da cuenta de tu «estrategia» al final de la conversación (y no, no creo en el juego indirecto, y nunca lo he visto funcionar bien).",
+      "source_reference": "Pick-Up-Artist-Method_-SEDUCTION_-DAYGAME | sin seccion | pag_estimada=n/d | chunk=16",
+      "post_id": "ak2g6p",
+      "objective": "cita",
+      "link_score": 18,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 6/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "low",
+      "principle": "Intención, porque si la chica no sabe que te gusta, es difícil mantener la conversación por el buen camino, y puedes parecer un poco falso si ella solo se da cuenta de tu «estrategia» al final de la conversación (y no, no creo en el juego indirecto, y nunca lo he visto funcionar bien).",
+      "source_reference": "Pick-Up-Artist-Method_-SEDUCTION_-DAYGAME | sin seccion | pag_estimada=n/d | chunk=16",
+      "post_id": "5ftftt",
+      "objective": "telefono, cita",
+      "link_score": 17,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "low",
+      "principle": "cosas como Cómo conseguir su número de teléfono RÁPIDO pero de forma eficaz (una parte importante de mi sistema) Cómo redactar el primer mensaje perfecto para que se entusiasme y quiera responder.",
+      "source_reference": "Text Game Mastery | sin seccion | pag_estimada=n/d | chunk=61",
+      "post_id": "1c02i8t",
+      "objective": "telefono, cita",
+      "link_score": 15,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "low",
+      "principle": "cosas como Cómo conseguir su número de teléfono RÁPIDO pero de forma eficaz (una parte importante de mi sistema) Cómo redactar el primer mensaje perfecto para que se entusiasme y quiera responder.",
+      "source_reference": "Text Game Mastery | sin seccion | pag_estimada=n/d | chunk=61",
+      "post_id": "5ftftt",
+      "objective": "telefono, cita",
+      "link_score": 15,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "low",
+      "principle": "Un hombre predecible que no logra sorprender a las mujeres será como mucho un \"chico bueno\" que no logrará crear atracción con la mujer que le gusta y se quedará en la categoría de amigos.",
+      "source_reference": "Verdades sobre las Mujeres que Nadie Quiere que Sepas | Sé un líder | pag_estimada=194 | chunk=188",
+      "post_id": "5ftftt",
+      "objective": "telefono, cita",
+      "link_score": 15,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "medium",
+      "principle": "2013 (43 mensajes que garantizan el sexo) con Race de Priest Algunos chicos son naturalmente muy habladores por mensaje, pero para los que no lo son, pueden usar algo como esto para saber cómo está ella.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=3",
+      "post_id": "55evwl",
+      "objective": "telefono, cita",
+      "link_score": 14,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "medium",
+      "principle": "8 43 MENSAJES DE TEXTO QUE GARANTIZAN EL SEXO con Race de Priest: usa estos mensajes probados para llevarte a CUALQUIER chica a la cama Solicitude s Enviar solicitudes funciona bien porque es algo que los chicos nunca hacen en las primeras etapas con una chica.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=4",
+      "post_id": "ilznfi",
+      "objective": "telefono",
+      "link_score": 14,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "low",
+      "principle": "Después de todo, si ves que puedes relacionarte con muchas mujeres (¡no necesariamente a la vez!), tendrás una mentalidad de abundancia y te comportarás de una manera mucho más relajada y al mismo tiempo segura cuando estés cerca de las mujeres que te atraen.",
+      "source_reference": "La Pildora Roja: Verdades sobre las Mujeres y la Atraccion | Cover | pag_estimada=64 | chunk=64",
+      "post_id": "5ftftt",
+      "objective": "telefono, cita",
+      "link_score": 14,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "low",
+      "principle": "A diferencia de nosotros, cuando una mujer quiere algo de un hombre, por lo general no lo pide, sino lo insinúa, manda señales o utiliza a terceros, esperando que la parte masculina se atreva a dar el primer gran paso.",
+      "source_reference": "La Psicologia Oscura detras de la Atraccion | c13C | pag_estimada=138 | chunk=140",
+      "post_id": "1gmjpro",
+      "objective": "cita",
+      "link_score": 14,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 7/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "low",
+      "principle": "No es lo mismo que la saques a bailar en una discoteca que hacerlo en una fiesta organizada en tu casa; no es lo mismo hablarle mientras ella está con su grupo de amigas que hacerlo cuando tú estás rodeado de tus propios amigos; no es lo mismo invitarla a salir en su país que hacerlo en tu país.",
+      "source_reference": "La Psicologia Oscura detras de la Atraccion | cXW | pag_estimada=229 | chunk=232",
+      "post_id": "h7hn59",
+      "objective": "telefono, cita",
+      "link_score": 14,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "low",
+      "principle": "Y en el caso poco probable de que no Dale te envíe su foto, bromea con ella diciéndole que es una cobarde y dile «ya está, te voy a meter en la zona de amigos» (en tono de broma) BONUS: JUEGA AL JUEGO DE ASOCIACIÓN DE PALABRAS.",
+      "source_reference": "11 texts to make her wet in excitement (Masculinitylibrary.sk, 1lib.sk, z-lib.sk) es-419 | sin seccion | pag_estimada=n/d | chunk=14",
+      "post_id": "1h3qmoh",
+      "objective": "cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "low",
+      "principle": "En cada ejemplo verás una descripción de lo que el mensaje pretende lograr, el mensaje en sí mismo y, a continuación, una explicación de por qué funciona.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=0",
+      "post_id": "1b7n6hm",
+      "objective": "cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "medium",
+      "principle": "2 43 MENSAJES DE TEXTO QUE GARANTIZAN EL SEXO con Race de Priest: usa estos mensajes probados para llevarte a CUALQUIER chica a la cama N.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=0",
+      "post_id": "ilznfi",
+      "objective": "telefono",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "medium",
+      "principle": "2 43 MENSAJES DE TEXTO QUE GARANTIZAN EL SEXO con Race de Priest: usa estos mensajes probados para llevarte a CUALQUIER chica a la cama N.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=0",
+      "post_id": "yu5kax",
+      "objective": "telefono",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "medium",
+      "principle": "2013 (43 mensajes que garantizan el sexo) con Race de Priest Bromas Cuando se trata de generar atracción entre conseguir el número y la primera cita, los mensajes de broma son la mejor opción.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=1",
+      "post_id": "cjmgx8",
+      "objective": "telefono, snapchat",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, snapchat, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "medium",
+      "principle": "8 43 MENSAJES DE TEXTO QUE GARANTIZAN EL SEXO con Race de Priest: usa estos mensajes probados para llevarte a CUALQUIER chica a la cama Solicitude s Enviar solicitudes funciona bien porque es algo que los chicos nunca hacen en las primeras etapas con una chica.",
+      "source_reference": "43 mensajes de texto sex | sin seccion | pag_estimada=n/d | chunk=4",
+      "post_id": "yu5kax",
+      "objective": "telefono",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "low",
+      "principle": "Aquí estoy, en una ciudad que no conozco, a solo unas horas de haber aterrizado, y aún no he tenido mi primera cita solo porque está lloviendo a cántaros.",
+      "source_reference": "Swipe Seduction The Ultimate Guide For Dating on Tinder | sin seccion | pag_estimada=n/d | chunk=14",
+      "post_id": "10t4an8",
+      "objective": "cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "low",
+      "principle": "Bueno, esta parte es importante, porque chicas guapas, chicas lindas...",
+      "source_reference": "Swipe Seduction The Ultimate Guide For Dating on Tinder | sin seccion | pag_estimada=n/d | chunk=75",
+      "post_id": "6yl7e2",
+      "objective": "telefono, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "low",
+      "principle": ":) Carrera Tal vez deberíamos hacer planes :) Envíame un mensaje de texto al (xxx) xxxxxxx, es más fácil así :) Me envió un mensaje de texto enseguida y esa misma noche pasamos la velada tomando algo en un bar cerca de mi hotel.",
+      "source_reference": "Swipe Seduction The Ultimate Guide For Dating on Tinder | sin seccion | pag_estimada=n/d | chunk=90",
+      "post_id": "q6rm4d",
+      "objective": "telefono, instagram, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque convierte humor y coqueteo en una cita concreta de brunch, con cierre de contacto cuando ella dice que le escriba."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "low",
+      "principle": "Le diste tu número Si le diste tu número usando los métodos de este libro, debería enviarte un mensaje de texto en menos de una hora diciendo algo como \"Hola, soy ______\".",
+      "source_reference": "Swipe Seduction The Ultimate Guide For Dating on Tinder | sin seccion | pag_estimada=n/d | chunk=93",
+      "post_id": "6tq7ta",
+      "objective": "telefono, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "cierre_transparente",
+      "risk_level": "medium",
+      "principle": "Me gusta ese plan :) Nota: Puedes experimentar con esto y añadir cosas al final (por ejemplo, Hagámoslo… salir… quiero decir… no sexo.",
+      "source_reference": "Text 2 Sex Turn Her on With Text | sin seccion | pag_estimada=n/d | chunk=61",
+      "post_id": "h7hn59",
+      "objective": "telefono, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "low",
+      "principle": "Carrera a las 14:48 Primero, no hay esperanza, y segundo, solo tengo dos manos, pero estoy bastante seguro de que puedo Nicole, 14:47 uno, la vista que estás teniendo, dos, hola estás haciendo una chica sexy (con suerte) en posición de perrito, y 3, ¿el cupcake?",
+      "source_reference": "Text 2 Sex Turn Her on With Text | sin seccion | pag_estimada=n/d | chunk=104",
+      "post_id": "1fq54ja",
+      "objective": "whatsapp, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de whatsapp, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "low",
+      "principle": "Si solo quieres ver a alguien dos noches al mes, pero quieres que siga formando parte de tu vida, necesitas una manera de comunicarte con esa persona de vez en cuando, de forma que se sienta feliz de tenerte en su vida y mantenga el interés.",
+      "source_reference": "Text Game Mastery | sin seccion | pag_estimada=n/d | chunk=38",
+      "post_id": "5ftftt",
+      "objective": "telefono, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "lectura_contexto_timing",
+      "risk_level": "high",
+      "principle": "Esto demuestra que tu tiempo es valioso (por lo tanto, ella te debe para ti), toda la situación no es gran cosa para ti y estás tomando el control Ya estamos planeando la próxima cita.",
+      "source_reference": "Texts To Get Her Back | sin seccion | pag_estimada=n/d | chunk=14",
+      "post_id": "by0ypz",
+      "objective": "telefono, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 8/10 segun objetivo, conexion y calidad del abridor."
+    },
+    {
+      "category": "humor_tension_sana",
+      "risk_level": "low",
+      "principle": "mañana) y cuando ella acepte otra cita, asegúrese de hacerlo algo un poco más importante de lo normal (¡de nuevo en tono de broma!).",
+      "source_reference": "Texts To Get Her Back | sin seccion | pag_estimada=n/d | chunk=22",
+      "post_id": "1c02i8t",
+      "objective": "telefono, cita",
+      "link_score": 13,
+      "confidence": "alta",
+      "evidence_summary": "Sirve para Natalia porque contiene señales de telefono, cita, tiene OCR conversacional y obtuvo un score heuristico de 9/10 segun objetivo, conexion y calidad del abridor."
+    }
+  ],
+  "generated_at": "20260707_100114",
+  "principles_built_this_run": 5534,
+  "links_built_attempted_this_run": 10752
+}

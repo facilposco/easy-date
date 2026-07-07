@@ -284,6 +284,68 @@ def clean_display(value: Any) -> str:
     return text
 
 
+REPORT_STOPWORDS = {
+    "para",
+    "pero",
+    "como",
+    "cuando",
+    "donde",
+    "porque",
+    "tambien",
+    "también",
+    "desde",
+    "hasta",
+    "este",
+    "esta",
+    "estos",
+    "estas",
+    "ellas",
+    "ellos",
+    "hacia",
+    "sobre",
+    "entre",
+    "tiene",
+    "tienes",
+    "puede",
+    "pueden",
+    "hacer",
+    "debe",
+    "debes",
+    "con",
+    "los",
+    "las",
+    "una",
+    "uno",
+    "del",
+    "que",
+}
+
+
+def report_tokens(text: str) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-záéíóúñü0-9]{4,}", clean_display(text).lower())
+        if token not in REPORT_STOPWORDS
+    }
+
+
+def parse_concept_tags(raw: Any) -> dict[str, list[str]]:
+    try:
+        data = json.loads(str(raw or "{}"))
+    except Exception:
+        data = []
+    if isinstance(data, dict):
+        tags = data.get("tags") if isinstance(data.get("tags"), list) else []
+        super_tags = data.get("super_tags") if isinstance(data.get("super_tags"), list) else []
+        return {
+            "tags": [clean_display(item) for item in tags if clean_display(item)],
+            "super_tags": [clean_display(item) for item in super_tags if clean_display(item)],
+        }
+    if isinstance(data, list):
+        return {"tags": [clean_display(item) for item in data if clean_display(item)], "super_tags": []}
+    return {"tags": [], "super_tags": []}
+
+
 def resolve_books(conn: sqlite3.Connection, selectors: list[str]) -> tuple[list[Book], list[str]]:
     books: list[Book] = []
     missing: list[str] = []
@@ -412,6 +474,100 @@ def build_items(
     return items
 
 
+def query_structured_principle(
+    conn: sqlite3.Connection,
+    book: Book,
+    query: str,
+    label: str,
+    tip: str,
+) -> dict[str, Any]:
+    try:
+        rows = conn.execute(
+            """
+            SELECT id, principle, category, concept_tags, risk_level, voice_policy,
+                   natalia_use, maximus_use, source_reference
+            FROM book_principles
+            WHERE book_id = ?
+            """,
+            (book.id,),
+        ).fetchall()
+    except sqlite3.Error:
+        return {"hit_count": 0, "principle": "", "category": "", "risk_level": "", "source_reference": "", "link": None}
+
+    query_tokens = report_tokens(f"{query} {label} {tip}")
+    scored: list[tuple[int, sqlite3.Row, dict[str, list[str]]]] = []
+    for row in rows:
+        concept_meta = parse_concept_tags(row["concept_tags"])
+        haystack = " ".join(
+            [
+                str(row["principle"] or ""),
+                str(row["category"] or ""),
+                " ".join(concept_meta["tags"]),
+                " ".join(concept_meta["super_tags"]),
+                str(row["source_reference"] or ""),
+            ]
+        )
+        common = len(query_tokens & report_tokens(haystack))
+        if common <= 0:
+            continue
+        score = common
+        if row["risk_level"] == "low":
+            score += 2
+        elif row["risk_level"] == "medium":
+            score += 1
+        if row["category"] and normalize(str(row["category"])) in normalize(f"{query} {label}"):
+            score += 2
+        scored.append((score, row, concept_meta))
+    scored.sort(key=lambda item: item[0], reverse=True)
+    if not scored:
+        return {"hit_count": 0, "principle": "", "category": "", "risk_level": "", "source_reference": "", "link": None}
+
+    score, row, concept_meta = scored[0]
+    link = conn.execute(
+        """
+        SELECT post_id, objective, link_score, confidence, evidence_summary
+        FROM principle_case_links
+        WHERE principle_id = ?
+        ORDER BY link_score DESC
+        LIMIT 1
+        """,
+        (row["id"],),
+    ).fetchone()
+    return {
+        "hit_count": len(scored),
+        "match_score": score,
+        "principle_id": row["id"],
+        "principle": clean_display(row["principle"]),
+        "category": clean_display(row["category"]),
+        "concepts": ", ".join(concept_meta["super_tags"] + concept_meta["tags"]),
+        "risk_level": clean_display(row["risk_level"]),
+        "voice_policy": clean_display(row["voice_policy"]),
+        "natalia_use": clean_display(row["natalia_use"]),
+        "maximus_use": clean_display(row["maximus_use"]),
+        "source_reference": clean_display(row["source_reference"]),
+        "link": dict(link) if link is not None else None,
+    }
+
+
+def build_v2_comparison_items(
+    conn: sqlite3.Connection,
+    book: Book,
+    templates: list[dict[str, str]],
+) -> list[dict[str, Any]]:
+    items = []
+    for index, template in enumerate(templates, start=1):
+        principle = query_structured_principle(conn, book, template["query"], template["label"], template["tip"])
+        items.append(
+            {
+                "index": index,
+                "label": template["label"],
+                "v1_tip": template["tip"],
+                "v2_principle": principle,
+            }
+        )
+    return items
+
+
 def specific_templates(book: Book, group: str) -> list[dict[str, str]]:
     payload = BOOK_SPECIFIC.get(book.slug, {})
     rows = payload.get(group, [])
@@ -422,6 +578,67 @@ def specific_templates(book: Book, group: str) -> list[dict[str, str]]:
 
 def td(value: Any) -> str:
     return f"<td>{html.escape(clean_display(value))}</td>"
+
+
+FRIENDLY_CATEGORIES = {
+    "psicologia_femenina_preferencias": "Psicologia femenina y preferencias",
+    "humor_tension_sana": "Humor y tension sana",
+    "lectura_contexto_timing": "Lectura de contexto y timing",
+    "cierre_transparente": "Cierre transparente",
+    "presentacion_perfil": "Presentacion y perfil",
+    "valor_congruencia": "Valor y congruencia",
+    "agencia_limites": "Agencia, consentimiento y limites",
+    "fuente_teoria_vs_caso": "Teoria aplicada a casos",
+    "comunicacion_escucha": "Comunicacion y escucha",
+    "reciprocidad_inversion": "Reciprocidad e inversion",
+    "influencia_riesgo_manipulacion": "Influencia de alto riesgo",
+}
+
+
+FRIENDLY_RISK = {
+    "low": "bajo",
+    "medium": "medio",
+    "high": "alto",
+}
+
+
+FRIENDLY_POLICY = {
+    "silent_strategy": "uso silencioso para Natalia",
+    "silent_strategy_guarded": "uso silencioso con cuidado",
+    "maximus_only_review": "solo revision de Maximus",
+}
+
+
+def friendly_category(value: Any) -> str:
+    raw = clean_display(value)
+    return FRIENDLY_CATEGORIES.get(raw, raw.replace("_", " ").strip())
+
+
+def friendly_risk_policy(risk: Any, policy: Any) -> str:
+    risk_text = FRIENDLY_RISK.get(clean_display(risk), clean_display(risk) or "s/d")
+    policy_text = FRIENDLY_POLICY.get(clean_display(policy), clean_display(policy) or "s/d")
+    return f"riesgo {risk_text}; {policy_text}"
+
+
+def human_source_reference(value: Any) -> str:
+    text = clean_display(value)
+    text = re.sub(r"\s*\|\s*pag_estimada=", " | pagina estimada ", text)
+    text = re.sub(r"\s*\|\s*chunk=", " | segmento ", text)
+    text = text.replace("sin seccion", "sin seccion registrada")
+    text = text.replace("n/d", "sin dato")
+    return text
+
+
+def human_case_link(link: dict[str, Any]) -> str:
+    if not link:
+        return "Sin caso real enlazado"
+    parts = [
+        f"Post {clean_display(link.get('post_id'))}",
+        f"objetivo: {clean_display(link.get('objective')) or 's/d'}",
+        f"confianza: {clean_display(link.get('confidence')) or 's/d'}",
+        f"score enlace: {clean_display(link.get('link_score')) or 's/d'}",
+    ]
+    return "; ".join(parts)
 
 
 def render_tip_table(items: list[dict[str, Any]]) -> str:
@@ -442,25 +659,64 @@ def render_tip_table(items: list[dict[str, Any]]) -> str:
     return "\n".join(rows)
 
 
+def render_v2_comparison_table(items: list[dict[str, Any]]) -> str:
+    rows = []
+    for item in items:
+        principle = item["v2_principle"]
+        link = principle.get("link") or {}
+        rows.append(
+            "<tr>"
+            + td(item["index"])
+            + td(item["label"])
+            + td(item["v1_tip"])
+            + td(principle.get("principle") or "Sin principio estructurado")
+            + td(friendly_category(principle.get("category") or ""))
+            + td(friendly_risk_policy(principle.get("risk_level"), principle.get("voice_policy")))
+            + td(human_source_reference(principle.get("source_reference") or ""))
+            + td(human_case_link(link))
+            + "</tr>"
+        )
+    return "\n".join(rows)
+
+
 def render_book_section(book_payload: dict[str, Any]) -> str:
     book = book_payload["book"]
     attraction_rows = render_tip_table(book_payload["attraction_tips"])
     psychology_rows = render_tip_table(book_payload["psychology_tips"])
+    v2_html = ""
+    if book_payload.get("attraction_v2") or book_payload.get("psychology_v2"):
+        attraction_v2_rows = render_v2_comparison_table(book_payload.get("attraction_v2", []))
+        psychology_v2_rows = render_v2_comparison_table(book_payload.get("psychology_v2", []))
+        v2_html = f"""
+  <h3>Comparacion v1 vs v2: principios estructurados enlazados a casos reales</h3>
+  <p class="note">V1 es la sintesis anterior del reporte. V2 muestra el principio estructurado recuperado de los libros y su enlace a caso real cuando existe. Natalia debe usarlo en silencio; Maximus puede explicarlo.</p>
+  <h4>10 tips de atraccion: v1 vs v2</h4>
+  <table>
+    <thead><tr><th>#</th><th>Tema</th><th>Respuesta v1</th><th>Principio v2 estructurado</th><th>Categoria v2</th><th>Uso recomendado</th><th>Fuente v2</th><th>Caso real enlazado</th></tr></thead>
+    <tbody>{attraction_v2_rows}</tbody>
+  </table>
+  <h4>5 tips de psicologia femenina: v1 vs v2</h4>
+  <table>
+    <thead><tr><th>#</th><th>Tema</th><th>Respuesta v1</th><th>Principio v2 estructurado</th><th>Categoria v2</th><th>Uso recomendado</th><th>Fuente v2</th><th>Caso real enlazado</th></tr></thead>
+    <tbody>{psychology_v2_rows}</tbody>
+  </table>
+"""
     return f"""
 <section class="book">
   <h2>{html.escape(book.title)}</h2>
   <p class="meta"><b>Autor:</b> {html.escape(book.author)} &middot; <b>Slug:</b> {html.escape(book.slug)} &middot; <b>Categoria:</b> {html.escape(book.category)} &middot; <b>Chunks:</b> {book.total_chunks}</p>
-  <p class="note">Nota: los tips son sintesis operativas basadas en recuperacion RAG; no son citas literales ni reemplazan el contexto completo del libro.</p>
+  <p class="note">Nota: los tips son sintesis operativas basadas en recuperacion local; no son citas literales ni reemplazan el contexto completo del libro.</p>
   <h3>10 tips de seduccion/atraccion</h3>
   <table>
-    <thead><tr><th>#</th><th>Principio</th><th>Sintesis</th><th>Libro + autor</th><th>section_title</th><th>page_estimate</th><th>chunk_index</th></tr></thead>
+    <thead><tr><th>#</th><th>Principio</th><th>Sintesis</th><th>Libro + autor</th><th>Seccion</th><th>Pagina estimada</th><th>Segmento</th></tr></thead>
     <tbody>{attraction_rows}</tbody>
   </table>
   <h3>5 tips para entender psicologia femenina</h3>
   <table>
-    <thead><tr><th>#</th><th>Principio</th><th>Sintesis</th><th>Libro + autor</th><th>section_title</th><th>page_estimate</th><th>chunk_index</th></tr></thead>
+    <thead><tr><th>#</th><th>Principio</th><th>Sintesis</th><th>Libro + autor</th><th>Seccion</th><th>Pagina estimada</th><th>Segmento</th></tr></thead>
     <tbody>{psychology_rows}</tbody>
   </table>
+  {v2_html}
 </section>
 """
 
@@ -486,7 +742,7 @@ def source_badges(payloads: list[dict[str, Any]]) -> str:
         badges.append(
             f"<li>S{idx}: {html.escape(source['book'])} - {html.escape(source['author'])}; "
             f"{html.escape(source['section_title'])}; pag. {html.escape(source['page_estimate'])}; "
-            f"chunk {html.escape(source['chunk_index'])}</li>"
+            f"segmento {html.escape(source['chunk_index'])}</li>"
         )
     return "\n".join(badges)
 
@@ -527,6 +783,59 @@ def render_final_framework(payloads: list[dict[str, Any]]) -> str:
 """
 
 
+def v2_stats(payload: dict[str, Any]) -> dict[str, int]:
+    total = 0
+    hits = 0
+    linked = 0
+    high_risk = 0
+    categories: set[str] = set()
+    for book_payload in payload["books"]:
+        for group in ("attraction_v2", "psychology_v2"):
+            for item in book_payload.get(group, []):
+                total += 1
+                principle = item["v2_principle"]
+                if principle.get("hit_count"):
+                    hits += 1
+                if principle.get("link"):
+                    linked += 1
+                if principle.get("risk_level") == "high":
+                    high_risk += 1
+                if principle.get("category"):
+                    categories.add(str(principle["category"]))
+    return {
+        "total": total,
+        "hits": hits,
+        "linked": linked,
+        "high_risk": high_risk,
+        "categories": len(categories),
+    }
+
+
+def render_v2_overview(payload: dict[str, Any]) -> str:
+    if not payload.get("include_v2"):
+        return ""
+    stats = v2_stats(payload)
+    original_size = OUTPUT_HTML.stat().st_size if OUTPUT_HTML.exists() else 0
+    return f"""
+<section class="final">
+  <h2>Comparacion global v1 vs v2</h2>
+  <p class="note">La v2 conserva la estructura del reporte original, pero agrega una capa de principios estructurados creada despues de integrar los 6 libros. La comparacion no inventa texto: contrasta la sintesis v1 contra principios guardados en la base local y enlaces a casos reales.</p>
+  <table>
+    <thead><tr><th>Metrica</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>Archivo original comparado</td><td>{html.escape(str(OUTPUT_HTML))}</td></tr>
+      <tr><td>Tamano HTML original</td><td>{original_size} bytes</td></tr>
+      <tr><td>Respuestas evaluadas en v2</td><td>{stats['total']}</td></tr>
+      <tr><td>Principios estructurados encontrados</td><td>{stats['hits']}/{stats['total']}</td></tr>
+      <tr><td>Principios con caso real enlazado</td><td>{stats['linked']}/{stats['total']}</td></tr>
+      <tr><td>Categorias superiores usadas</td><td>{stats['categories']}</td></tr>
+      <tr><td>Principios de riesgo alto visibles en comparacion</td><td>{stats['high_risk']} (solo para revision/Maximus; Natalia no debe imitarlos)</td></tr>
+    </tbody>
+  </table>
+</section>
+"""
+
+
 def render_html(payload: dict[str, Any]) -> str:
     book_sections = "\n".join(render_book_section(book_payload) for book_payload in payload["books"])
     missing = payload["missing"]
@@ -541,7 +850,9 @@ def render_html(payload: dict[str, Any]) -> str:
 </section>
 """
     final_framework = render_final_framework(payload["books"])
+    v2_overview = render_v2_overview(payload)
     generated_at = html.escape(payload["generated_at"])
+    suffix = " v2" if payload.get("include_v2") else ""
     return f"""<!doctype html>
 <html lang="es">
 <head>
@@ -579,11 +890,12 @@ def render_html(payload: dict[str, Any]) -> str:
 </head>
 <body>
   <header>
-    <h1>Resumen de 6 libros: psicologia femenina, seduccion y atraccion</h1>
-    <p class="meta">Generado: {generated_at}. Fuente local: SQLite + Chroma. No contiene texto completo de libros ni citas literales.</p>
+    <h1>Resumen de 6 libros: psicologia femenina, seduccion y atraccion{suffix}</h1>
+    <p class="meta">Generado: {generated_at}. Fuente: base local de libros y recuperacion semantica. No contiene texto completo de libros ni citas literales.</p>
   </header>
   <main>
     {missing_html}
+    {v2_overview}
     {book_sections}
     {final_framework}
   </main>
@@ -592,25 +904,32 @@ def render_html(payload: dict[str, Any]) -> str:
 """
 
 
-def build_report(selectors: list[str]) -> dict[str, Any]:
+def build_report(selectors: list[str], include_v2: bool = False) -> dict[str, Any]:
     with connect() as conn:
         books, missing = resolve_books(conn, selectors)
         client = chromadb.PersistentClient(path=str(BOOKS_CHROMA))
         collection = client.get_collection(COLLECTION_NAME)
         payload_books = []
         for book in books:
+            attraction_templates = specific_templates(book, "attraction")
+            psychology_templates = specific_templates(book, "psychology")
+            book_payload = {
+                "book": book,
+                "attraction_tips": build_items(conn, collection, book, attraction_templates),
+                "psychology_tips": build_items(conn, collection, book, psychology_templates),
+            }
+            if include_v2:
+                book_payload["attraction_v2"] = build_v2_comparison_items(conn, book, attraction_templates)
+                book_payload["psychology_v2"] = build_v2_comparison_items(conn, book, psychology_templates)
             payload_books.append(
-                {
-                    "book": book,
-                    "attraction_tips": build_items(conn, collection, book, specific_templates(book, "attraction")),
-                    "psychology_tips": build_items(conn, collection, book, specific_templates(book, "psychology")),
-                }
+                book_payload
             )
     return {
         "generated_at": datetime.now().replace(microsecond=0).isoformat(),
         "selectors": selectors,
         "missing": missing,
         "books": payload_books,
+        "include_v2": include_v2,
     }
 
 
@@ -622,18 +941,32 @@ def parse_args() -> argparse.Namespace:
         dest="books",
         help="Slug or title to include. Repeat up to 6 times. Defaults to the built-in six-book list.",
     )
+    parser.add_argument(
+        "--output",
+        default=str(OUTPUT_HTML),
+        help="HTML output path. Defaults to the original report path.",
+    )
+    parser.add_argument(
+        "--v2",
+        action="store_true",
+        help="Include the v1 vs v2 comparison against structured book_principles and linked cases.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     selectors = (args.books or DEFAULT_BOOKS)[:6]
-    DOCS.mkdir(parents=True, exist_ok=True)
-    payload = build_report(selectors)
-    OUTPUT_HTML.write_text(render_html(payload), encoding="utf-8")
+    output = Path(args.output)
+    if not output.is_absolute():
+        output = ROOT / output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    payload = build_report(selectors, include_v2=args.v2)
+    output.write_text(render_html(payload), encoding="utf-8")
 
     status = {
-        "html": str(OUTPUT_HTML),
+        "html": str(output),
+        "v2": bool(args.v2),
         "requested_books": len(selectors),
         "included_books": len(payload["books"]),
         "missing": payload["missing"],
@@ -645,6 +978,14 @@ def main() -> int:
             if item["hit_count"]
         ),
         "expected_sources": len(payload["books"]) * 15,
+        "v2_principles_found": sum(
+            1
+            for book_payload in payload["books"]
+            for group in ("attraction_v2", "psychology_v2")
+            for item in book_payload.get(group, [])
+            if item["v2_principle"].get("hit_count")
+        ),
+        "v2_expected_principles": len(payload["books"]) * 15 if args.v2 else 0,
         "note": "Sintesis, no citas literales. Contenido adulto/manipulador tratado con consentimiento y respeto.",
     }
     print(json.dumps(status, ensure_ascii=False, indent=2))
