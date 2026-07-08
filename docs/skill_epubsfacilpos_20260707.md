@@ -1,8 +1,8 @@
-# Skill: easy-date-book-batch-rag
+# Skill: epubsfacilpos
 
 Ruta activa local:
 
-`C:\Users\New\.codex\skills\easy-date-book-batch-rag`
+`C:\Users\New\.codex\skills\epubsfacilpos`
 
 Uso:
 
