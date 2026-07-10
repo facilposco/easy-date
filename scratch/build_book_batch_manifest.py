@@ -29,6 +29,15 @@ BOOKS_DB = ROOT / "books_kb" / "books_index.sqlite"
 DOCS = ROOT / "docs"
 DEFAULT_INPUT = Path(r"C:\Users\New\Documents\Libros epub")
 SUPPORTED_EXTENSIONS = {".epub", ".txt", ".md", ".html", ".htm", ".pdf"}
+EXCLUDED_DIRECTORY_NAMES = {
+    ".git",
+    ".venv",
+    "__pycache__",
+    "books_kb",
+    "docs",
+    "scratch",
+    "traducidos",
+}
 
 
 @dataclass
@@ -156,33 +165,53 @@ def category_guess(text: str, filename: str) -> str:
     return "pendiente_revision"
 
 
-def load_existing_books() -> tuple[set[str], set[str]]:
+def load_existing_books() -> tuple[set[str], set[str], dict[str, str]]:
     hashes: set[str] = set()
     titles: set[str] = set()
+    source_paths: dict[str, str] = {}
     if not BOOKS_DB.exists():
-        return hashes, titles
+        return hashes, titles, source_paths
     with sqlite3.connect(BOOKS_DB) as conn:
         conn.row_factory = sqlite3.Row
-        for row in conn.execute("SELECT titulo, autor, hash_md5 FROM books"):
+        for row in conn.execute("SELECT titulo, autor, hash_md5, archivo_original FROM books"):
             if row["hash_md5"]:
                 hashes.add(str(row["hash_md5"]).lower())
             titles.add(normalize(f"{row['titulo']} {row['autor']}"))
-    return hashes, titles
+            if row["archivo_original"]:
+                source_paths[str(Path(row["archivo_original"]).resolve()).lower()] = str(row["hash_md5"] or "").lower()
+    return hashes, titles, source_paths
 
 
 def iter_files(inputs: Iterable[Path]) -> list[Path]:
     files: list[Path] = []
     for item in inputs:
         if item.is_dir():
-            files.extend(path for path in item.rglob("*") if path.suffix.lower() in SUPPORTED_EXTENSIONS)
+            files.extend(
+                path
+                for path in item.rglob("*")
+                if path.is_file()
+                and path.suffix.lower() in SUPPORTED_EXTENSIONS
+                and not any(part.lower() in EXCLUDED_DIRECTORY_NAMES for part in path.relative_to(item).parts[:-1])
+            )
         elif item.is_file() and item.suffix.lower() in SUPPORTED_EXTENSIONS:
             files.append(item)
     return sorted(dict.fromkeys(files), key=lambda p: str(p).lower())
 
 
-def duplicate_check(md5: str, title: str, author: str, existing_hashes: set[str], existing_titles: set[str]) -> tuple[str, str]:
+def duplicate_check(
+    path: Path,
+    md5: str,
+    title: str,
+    author: str,
+    existing_hashes: set[str],
+    existing_titles: set[str],
+    source_paths: dict[str, str],
+) -> tuple[str, str]:
     if md5.lower() in existing_hashes:
         return "duplicate", "hash_md5 already exists in books_index.sqlite"
+    source_hash = source_paths.get(str(path.resolve()).lower())
+    if source_hash is not None:
+        return "possible_duplicate", "same original source path exists in books_index.sqlite with a different hash"
     title_key = normalize(f"{title} {author}")
     if title_key and title_key in existing_titles:
         return "possible_duplicate", "normalized title/author already exists"
@@ -204,7 +233,7 @@ def action_for(row: ManifestRow) -> tuple[str, str]:
 
 
 def build_manifest(inputs: list[Path]) -> list[ManifestRow]:
-    existing_hashes, existing_titles = load_existing_books()
+    existing_hashes, existing_titles, source_paths = load_existing_books()
     rows: list[ManifestRow] = []
     for index, path in enumerate(iter_files(inputs), start=1):
         md5 = file_md5(path)
@@ -212,7 +241,9 @@ def build_manifest(inputs: list[Path]) -> list[ManifestRow]:
         title = title or path.stem
         language = language_guess(sample, path.name)
         category = category_guess(sample, path.name)
-        duplicate_status, duplicate_reason = duplicate_check(md5, title, author, existing_hashes, existing_titles)
+        duplicate_status, duplicate_reason = duplicate_check(
+            path, md5, title, author, existing_hashes, existing_titles, source_paths
+        )
         row = ManifestRow(
             index=index,
             path=str(path),
