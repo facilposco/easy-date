@@ -259,6 +259,13 @@ def collect_gemini_keys() -> list[str]:
     value = os.getenv("GEMINI_API_KEY", "").strip()
     if value and value not in seen:
         keys.append(value)
+    try:
+        offset = int(os.getenv("GEMINI_TRANSLATION_KEY_OFFSET", "0"))
+    except ValueError:
+        offset = 0
+    if keys and offset:
+        offset %= len(keys)
+        keys = keys[offset:] + keys[:offset]
     return keys
 
 
