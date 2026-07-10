@@ -42,6 +42,7 @@ import process_books as pb
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
 SOURCE_BOOKS_DIR = BASE_DIR / "source_books"
+MAX_CHROMA_DOCUMENT_CHARS = 4_500
 
 CONCEPT_PATTERNS = {
     "confianza": ["confianza", "seguridad", "arrogancia", "necesitado", "aprobacion"],
@@ -391,6 +392,30 @@ def clean_translated_text(text: str) -> str:
     return pb.clean_text(text)
 
 
+def enforce_chroma_document_limit(chunks: list[dict]) -> tuple[list[dict], int]:
+    """Split malformed overlong EPUB sentences before Chroma receives them."""
+    bounded: list[dict] = []
+    split_count = 0
+    encoder = pb.token_encoder()
+    for chunk in chunks:
+        text = str(chunk.get("texto", "")).strip()
+        if len(text) <= MAX_CHROMA_DOCUMENT_CHARS:
+            bounded.append(chunk)
+            continue
+        split_count += 1
+        remaining = text
+        while len(remaining) > MAX_CHROMA_DOCUMENT_CHARS:
+            boundary = remaining.rfind(" ", 0, MAX_CHROMA_DOCUMENT_CHARS + 1)
+            if boundary < MAX_CHROMA_DOCUMENT_CHARS // 2:
+                boundary = MAX_CHROMA_DOCUMENT_CHARS
+            part = remaining[:boundary].strip()
+            bounded.append({"texto": part, "tokens": pb.count_tokens(part, encoder)})
+            remaining = remaining[boundary:].strip()
+        if remaining:
+            bounded.append({"texto": remaining, "tokens": pb.count_tokens(remaining, encoder)})
+    return bounded, split_count
+
+
 def translation_quality_flags(text: str) -> list[str]:
     flags: list[str] = []
     if any(marker in text for marker in ["Ã", "â€", "Â"]):
@@ -680,7 +705,7 @@ def main() -> int:
         raw_path.write_text(translated_text, encoding="utf-8")
         (pb.RAW_DIR / f"libro_{book.id:02d}_translated_latam.txt").write_text(translated_text, encoding="utf-8")
 
-        chunks = pb.chunk_text(translated_text)
+        chunks, oversized_chunks_split = enforce_chroma_document_limit(pb.chunk_text(translated_text))
         chunks_path = pb.CHUNKS_DIR / f"libro_{book.id:02d}_chunks.json"
         write_json(chunks_path, chunks)
 
@@ -736,6 +761,7 @@ def main() -> int:
         "translation_quality_flags": book_translation_flags,
         "translation_audit": translation_audit,
         "chunks": len(chunks),
+        "oversized_chunks_split": oversized_chunks_split,
         "conversations": 0,
         "quality_score": score,
         "chroma_indexed": not args.skip_chroma,
