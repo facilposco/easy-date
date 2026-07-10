@@ -311,6 +311,10 @@ class LocalGeminiTranslator:
                     last_error = exc
                     status = str(exc)
                     print(f"[GeminiTranslate] retry model={model_name} key={key_index}/{len(self.keys)} err={status[:90]}")
+                    if os.getenv("GEMINI_FAIL_FAST_429", "").strip() == "1" and (
+                        "429" in status or "RESOURCE_EXHAUSTED" in status
+                    ):
+                        raise RuntimeError("Gemini quota exhausted; use configured translation fallback") from exc
                     time.sleep(1.0)
         raise RuntimeError(f"All Gemini translation attempts failed: {last_error}")
 
