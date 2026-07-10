@@ -68,11 +68,15 @@ def eligible_rows(manifest: dict, min_words: int) -> tuple[list[dict], list[dict
 
 
 def report_from_stdout(stdout: str) -> tuple[int | None, str]:
-    try:
-        payload = json.loads(stdout)
-    except json.JSONDecodeError:
-        return None, ""
-    return payload.get("book_id"), str(payload.get("report_path", ""))
+    # Gemini retries can print progress before the final JSON report.
+    starts = [index for index, char in enumerate(stdout) if char == "{" and (index == 0 or stdout[index - 1] == "\n")]
+    for start in reversed(starts):
+        try:
+            payload = json.loads(stdout[start:])
+        except json.JSONDecodeError:
+            continue
+        return payload.get("book_id"), str(payload.get("report_path", ""))
+    return None, ""
 
 
 def main() -> int:
