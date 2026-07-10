@@ -89,13 +89,11 @@ def main() -> int:
     parser.add_argument("--allow-google-fallback", action="store_true")
     parser.add_argument("--limit", type=int, default=0, help="0 means process every eligible EPUB.")
     parser.add_argument("--resume-report", type=Path)
+    parser.add_argument("--semantic-qa-report", type=Path, help="Only ingest books that passed this semantic QA report.")
     args = parser.parse_args()
 
     manifest = read_json(args.manifest)
     eligible, deferred = eligible_rows(manifest, args.min_native_words)
-    if args.limit:
-        eligible = eligible[: args.limit]
-
     label = args.label or args.manifest.stem.replace("book_batch_manifest_", "")
     report_path = args.resume_report or DOCS / f"book_batch_ingestion_{label}_{stamp()}.json"
     existing = read_json(report_path) if report_path.exists() else {}
@@ -105,6 +103,21 @@ def main() -> int:
         if item.get("status") == "ok" and item.get("md5")
     }
     results = [item for item in existing.get("results", []) if item.get("status") == "ok"]
+    semantic_deferred: list[dict] = []
+    if args.semantic_qa_report:
+        semantic_payload = read_json(args.semantic_qa_report)
+        allowed_titles = {
+            str(row.get("book"))
+            for row in semantic_payload.get("books", [])
+            if row.get("status") in {"pass", "skipped_source_spanish"}
+        }
+        semantic_deferred = [
+            row for row in eligible
+            if row.get("md5") not in completed_hashes and row.get("title_guess") not in allowed_titles
+        ]
+        eligible = [row for row in eligible if row.get("md5") in completed_hashes or row.get("title_guess") in allowed_titles]
+    if args.limit:
+        eligible = eligible[: args.limit]
 
     for row in deferred:
         results.append({
@@ -119,6 +132,21 @@ def main() -> int:
             "book_id": "",
             "report_path": "",
             "error": "Native text extraction below batch threshold; do not index as text-only.",
+        })
+
+    for row in semantic_deferred:
+        results.append({
+            "md5": row.get("md5"),
+            "filename": row.get("filename"),
+            "title": row.get("title_guess"),
+            "author": row.get("author_guess"),
+            "language": row.get("language_guess"),
+            "category": row.get("category_guess"),
+            "native_words_est": row.get("native_words_est"),
+            "status": "deferred_semantic_qa_review",
+            "book_id": "",
+            "report_path": "",
+            "error": "Semantic QA did not pass or the book was not staged for review.",
         })
 
     for row in eligible:
@@ -157,6 +185,7 @@ def main() -> int:
             "batch_label": label,
             "translation_provider": args.translation_provider,
             "allow_google_fallback": args.allow_google_fallback,
+            "semantic_qa_report": str(args.semantic_qa_report) if args.semantic_qa_report else "",
             "results": results,
         })
 
@@ -170,6 +199,9 @@ def main() -> int:
         "failed": sum(item.get("status") == "failed" for item in results),
         "deferred_requires_ocr_or_manual_review": sum(
             item.get("status") == "deferred_requires_ocr_or_manual_review" for item in results
+        ),
+        "deferred_semantic_qa_review": sum(
+            item.get("status") == "deferred_semantic_qa_review" for item in results
         ),
     }
     save_json(report_path, payload)
