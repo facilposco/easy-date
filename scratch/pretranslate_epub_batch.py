@@ -64,6 +64,7 @@ def main() -> int:
     parser.add_argument("--min-native-words", type=int, default=500)
     parser.add_argument("--translation-provider", choices=["gemini", "google"], default="gemini")
     parser.add_argument("--allow-google-fallback", action="store_true")
+    parser.add_argument("--only-md5", action="append", default=[], help="Process only these manifest hashes; can repeat.")
     args = parser.parse_args()
     if not 0 <= args.worker_id < args.workers:
         raise SystemExit("worker-id must be between 0 and workers - 1")
@@ -78,6 +79,9 @@ def main() -> int:
         and int(row.get("native_words_est") or 0) >= args.min_native_words
         and row.get("md5") not in completed
     ]
+    forced_hashes = set(args.only_md5)
+    if forced_hashes:
+        candidates = [row for row in candidates if row.get("md5") in forced_hashes]
     selected = balanced_worker_rows(candidates, args.workers, args.worker_id)
     stage_path = args.stage_dir / f"worker_{args.worker_id + 1:02d}.json"
     previous = json.loads(stage_path.read_text(encoding="utf-8")) if stage_path.exists() else {"results": []}
@@ -85,7 +89,7 @@ def main() -> int:
     staged_hashes = {row.get("md5") for row in results}
 
     for row in selected:
-        if row.get("md5") in staged_hashes:
+        if row.get("md5") in staged_hashes and row.get("md5") not in forced_hashes:
             continue
         try:
             epub = Path(row["path"])
