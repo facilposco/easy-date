@@ -151,6 +151,8 @@ def main() -> int:
     reviewer = None if args.dry_run else ingest.LocalGeminiTranslator()
     samples: list[dict] = []
     books: list[dict] = []
+    quota_pending = False
+    quota_error = ""
     try:
         for row in manifest.get("rows", []):
             staged_row = staged.get(str(row.get("md5")))
@@ -182,10 +184,22 @@ def main() -> int:
                             item["status"] = "review"
                             book_status = "review"
                     except Exception as exc:  # noqa: BLE001 - report individual reviewer failures
-                        item.update({"status": "review", "error": str(exc)[-500:]})
-                        book_status = "review"
+                        error = str(exc)
+                        if "429" in error or "RESOURCE_EXHAUSTED" in error or "quota exhausted" in error.lower():
+                            item.update({"status": "pending_quota", "error": error[-500:]})
+                            book_status = "pending_quota"
+                            quota_pending = True
+                            quota_error = error[-500:]
+                        else:
+                            item.update({"status": "review", "error": error[-500:]})
+                            book_status = "review"
                 samples.append(item)
+                if quota_pending:
+                    break
             books.append({"book": row["title_guess"], "status": book_status, "samples": len(indices)})
+            print(json.dumps({"book": row["title_guess"], "status": book_status}, ensure_ascii=False), flush=True)
+            if quota_pending:
+                break
     finally:
         if old_model is None:
             os.environ.pop("GEMINI_MODEL", None)
@@ -204,18 +218,22 @@ def main() -> int:
         "books": len(books),
         "books_pass": sum(book["status"] == "pass" for book in books),
         "books_review": sum(book["status"] == "review" for book in books),
+        "books_pending_quota": sum(book["status"] == "pending_quota" for book in books),
         "books_source_spanish": sum(book["status"] == "skipped_source_spanish" for book in books),
         "samples": len(samples),
         "samples_pass": sum(sample["status"] == "pass" for sample in samples),
         "samples_review": sum(sample["status"] == "review" for sample in samples),
+        "samples_pending_quota": sum(sample["status"] == "pending_quota" for sample in samples),
     }
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     prefix = args.output_prefix or f"book_semantic_qa_{stamp}"
     json_path, html_path = DOCS / f"{prefix}.json", DOCS / f"{prefix}.html"
-    payload = {"created_at": datetime.now().isoformat(timespec="seconds"), "model": args.model, "sample_ratio": args.sample_ratio, "dry_run": args.dry_run, "summary": summary, "books": books, "samples": samples}
+    payload = {"created_at": datetime.now().isoformat(timespec="seconds"), "model": args.model, "sample_ratio": args.sample_ratio, "dry_run": args.dry_run, "quota_pending": quota_pending, "quota_error": quota_error, "summary": summary, "books": books, "samples": samples}
     write_json(json_path, payload)
     render_html(html_path, payload)
     print(json.dumps({"json": str(json_path), "html": str(html_path), **summary}, ensure_ascii=False))
+    if quota_pending:
+        return 3
     return 0 if summary["books_review"] == 0 and summary["samples_review"] == 0 else 2
 
 

@@ -179,6 +179,7 @@
 - El QA local acepta `--stage-dir` repetido para consolidar el stage principal y un stage de reparacion creado con `--only-md5`. La reparacion vuelve a pasar por la misma compuerta sin re-traducir ni invalidar los demas libros del lote.
 - El QA semantico tambien acepta `--stage-dir` repetido. Audita la muestra consolidada con Gemini antes de que la ingesta serial pueda reutilizar los caches reparados.
 - El QA semantico activa `GEMINI_FAIL_FAST_429=1` durante su ejecucion: ante la primera cuota agotada detiene la muestra, deja la compuerta pendiente y no rota innecesariamente las siete claves.
+- Una cuota agotada se registra como `pending_quota`, no como `REVIEW`: el proceso escribe el reporte parcial y termina tras el primer 429. Esto evita falsos problemas de calidad y permite reanudar una auditoria limpia cuando Gemini este disponible.
 
 ## Verificacion minima antes de reportar cambios
 
