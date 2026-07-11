@@ -174,6 +174,12 @@
   - Ingesta 6 libros psicologia femenina/seduccion 2026-07-07: se agregaron como libros `id=25..30`: `Verdades sobre las Mujeres que Nadie Quiere que Sepas` (54.988 palabras, 258 chunks), `La Pildora Roja: Verdades sobre las Mujeres y la Atraccion` (55.933 palabras, 269 chunks), `Speed Seduction Book` (23.630 palabras traducidas, 126 chunks), `El cerebro femenino` (99.889 palabras, 558 chunks), `La evolucion del deseo` (107.526 palabras, 540 chunks) y `La Psicologia Oscura detras de la Atraccion` (55.628 palabras, 264 chunks). Los libros en espanol se conservaron sin traduccion innecesaria; Ross Jeffries se tradujo con Google Translate por bloques. Todos quedaron en SQLite al 100%, con referencias EPUB estimadas y embeddings en `natalia_books_kb`. Reporte final v1: `docs\resumen_6_libros_psicologia_femenina.html`; reporte comparativo v2: `docs\resumen_6_libros_psicologia_femenina_v2.html`, con 6/6 libros, 90/90 fuentes recuperadas, 90/90 principios estructurados, 90/90 casos reales enlazados, 10 tips de atraccion y 5 de psicologia femenina por libro, formula para apps y roleplay de 7 turnos. Contenido adulto/manipulador no se omite del RAC, pero se marca con `voice_policy` para que Natalia no lo imite daninamente y Maximus lo use como analisis con consentimiento/respeto.
   - Importante: el backend actual sigue usando `C:\desarrollos\Codex\Easy Date\chroma_db` como Chroma operativo. `books_kb\chroma_books` queda como RAC de libros staged; no fusionar ni sobreescribir `chroma_db` sin backup, QA y decision explicita.
 
+## QA de reparacion de EPUB
+
+- El QA local acepta `--stage-dir` repetido para consolidar el stage principal y un stage de reparacion creado con `--only-md5`. La reparacion vuelve a pasar por la misma compuerta sin re-traducir ni invalidar los demas libros del lote.
+- El QA semantico tambien acepta `--stage-dir` repetido. Audita la muestra consolidada con Gemini antes de que la ingesta serial pueda reutilizar los caches reparados.
+- El QA semantico activa `GEMINI_FAIL_FAST_429=1` durante su ejecucion: ante la primera cuota agotada detiene la muestra, deja la compuerta pendiente y no rota innecesariamente las siete claves.
+
 ## Verificacion minima antes de reportar cambios
 
 - Probar salud backend con `/health`.

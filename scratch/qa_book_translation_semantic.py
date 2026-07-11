@@ -45,12 +45,13 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def stage_results(stage_dir: Path) -> dict[str, dict]:
+def stage_results(stage_dirs: list[Path]) -> dict[str, dict]:
     rows: dict[str, dict] = {}
-    for path in sorted(stage_dir.glob("worker_*.json")):
-        for row in load_json(path).get("results", []):
-            if row.get("md5"):
-                rows[str(row["md5"])] = row
+    for stage_dir in stage_dirs:
+        for path in sorted(stage_dir.glob("worker_*.json")):
+            for row in load_json(path).get("results", []):
+                if row.get("md5"):
+                    rows[str(row["md5"])] = row
     return rows
 
 
@@ -121,7 +122,13 @@ def render_html(path: Path, payload: dict) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--stage-dir", type=Path, required=True)
+    parser.add_argument(
+        "--stage-dir",
+        type=Path,
+        action="append",
+        required=True,
+        help="Stage directory to include; repeat to include a focused repair stage.",
+    )
     parser.add_argument("--sample-ratio", type=float, default=0.12)
     parser.add_argument("--min-samples", type=int, default=3)
     parser.add_argument("--max-samples", type=int, default=12)
@@ -136,8 +143,11 @@ def main() -> int:
     manifest = load_json(args.manifest)
     staged = stage_results(args.stage_dir)
     old_model, old_fallback = os.getenv("GEMINI_MODEL"), os.getenv("GEMINI_MODEL_FALLBACKS")
+    old_fail_fast = os.getenv("GEMINI_FAIL_FAST_429")
     os.environ["GEMINI_MODEL"] = args.model
     os.environ["GEMINI_MODEL_FALLBACKS"] = args.fallback_model
+    # A semantic gate must stop at the first quota outage instead of burning all keys.
+    os.environ["GEMINI_FAIL_FAST_429"] = "1"
     reviewer = None if args.dry_run else ingest.LocalGeminiTranslator()
     samples: list[dict] = []
     books: list[dict] = []
@@ -185,6 +195,10 @@ def main() -> int:
             os.environ.pop("GEMINI_MODEL_FALLBACKS", None)
         else:
             os.environ["GEMINI_MODEL_FALLBACKS"] = old_fallback
+        if old_fail_fast is None:
+            os.environ.pop("GEMINI_FAIL_FAST_429", None)
+        else:
+            os.environ["GEMINI_FAIL_FAST_429"] = old_fail_fast
 
     summary = {
         "books": len(books),

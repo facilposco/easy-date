@@ -39,12 +39,13 @@ def write_json(path: Path, payload: dict) -> None:
     temp.replace(path)
 
 
-def staged_hashes(stage_dir: Path) -> set[str]:
+def staged_hashes(stage_dirs: list[Path]) -> set[str]:
     hashes: set[str] = set()
-    for path in stage_dir.glob("worker_*.json"):
-        for row in load_json(path).get("results", []):
-            if row.get("status") == "ok" and row.get("md5"):
-                hashes.add(str(row["md5"]))
+    for stage_dir in stage_dirs:
+        for path in stage_dir.glob("worker_*.json"):
+            for row in load_json(path).get("results", []):
+                if row.get("status") == "ok" and row.get("md5"):
+                    hashes.add(str(row["md5"]))
     return hashes
 
 
@@ -96,7 +97,13 @@ def render_html(path: Path, payload: dict) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--stage-dir", type=Path, required=True)
+    parser.add_argument(
+        "--stage-dir",
+        type=Path,
+        action="append",
+        required=True,
+        help="Stage directory to include; repeat to combine a repair stage with the original stage.",
+    )
     parser.add_argument("--output-prefix", default=None)
     args = parser.parse_args()
     staged = staged_hashes(args.stage_dir)

@@ -1009,5 +1009,16 @@
             document.getElementById('tab-' + tabId).classList.add('active');
         }
     </script>
+    <section id="epub-repair-qa" style="margin:32px; padding:20px; border:1px solid #334155; border-radius:8px;">
+        <h2>QA Consolidado de Reparaciones EPUB</h2>
+        <p>Si una mejora de segmentacion cambia los bloques de cache, se repara solo el libro afectado con <code>pretranslate_epub_batch.py --only-md5</code> en un stage separado. El QA local recibe ambos stages con <code>--stage-dir</code> repetido, para validar el lote completo antes del QA semantico y de la unica ingesta serial SQLite/Chroma.</p>
+        <table><thead><tr><th>Etapa</th><th>Escritura</th><th>Compuerta</th></tr></thead><tbody>
+        <tr><td>Stage principal y reparacion</td><td>Solo cache y JSON de stage</td><td>No modifica SQLite ni Chroma.</td></tr>
+        <tr><td>QA local consolidado</td><td>Reportes JSON/HTML</td><td>Bloques faltantes, mojibake, marcadores tecnicos y longitud anomala deben quedar sin bloqueos.</td></tr>
+        <tr><td>QA semantico</td><td>Reportes JSON/HTML</td><td>Gemini debe validar fidelidad, gramatica LATAM, contexto, omisiones y agregados. Tambien recibe ambos stages para revisar una reparacion junto al lote principal y corta en el primer 429 para no consumir la rotacion de claves.</td></tr>
+        <tr><td>Ingesta final</td><td>SQLite y Chroma, una sola vez y en serie</td><td>Solo despues de aprobar ambas compuertas.</td></tr>
+        </tbody></table>
+    </section>
+    <!-- QA consolidado de stages EPUB: la reparacion selectiva vuelve a la misma compuerta local antes del QA semantico y de la ingesta serial. -->
 </body>
 </html>
