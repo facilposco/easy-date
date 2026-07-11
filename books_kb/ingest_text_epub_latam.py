@@ -193,7 +193,18 @@ def split_for_translation(text: str, max_chars: int = 1800) -> list[str]:
     chunks: list[str] = []
     current: list[str] = []
     current_len = 0
+    normalized_paragraphs: list[str] = []
     for paragraph in paragraphs:
+        remaining = paragraph
+        while len(remaining) > max_chars:
+            boundary = remaining.rfind(" ", 0, max_chars + 1)
+            if boundary < max_chars // 2:
+                boundary = max_chars
+            normalized_paragraphs.append(remaining[:boundary].strip())
+            remaining = remaining[boundary:].strip()
+        if remaining:
+            normalized_paragraphs.append(remaining)
+    for paragraph in normalized_paragraphs:
         extra = len(paragraph) + 2
         if current and current_len + extra > max_chars:
             chunks.append("\n\n".join(current))
