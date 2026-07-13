@@ -1016,6 +1016,7 @@
         <tr><td>Stage principal y reparacion</td><td>Solo cache y JSON de stage</td><td>No modifica SQLite ni Chroma.</td></tr>
         <tr><td>QA local consolidado</td><td>Reportes JSON/HTML</td><td>Bloques faltantes, mojibake, marcadores tecnicos y longitud anomala deben quedar sin bloqueos.</td></tr>
         <tr><td>QA semantico</td><td>Reportes JSON/HTML</td><td>Gemini debe validar fidelidad, gramatica LATAM, contexto, omisiones y agregados. Tambien recibe ambos stages para revisar una reparacion junto al lote principal. Corta en el primer 429 y reporta <code>pending_quota</code>, no un falso REVIEW.</td></tr>
+        <tr><td>Reparacion semantica dirigida</td><td><code>repair_semantic_translation_blocks.py</code></td><td>Corrige solo bloques con REVIEW, conserva original, version previa, hallazgo y correccion en el reporte de auditoria; luego exige repetir QA semantico.</td></tr>
         <tr><td>Ingesta final</td><td>SQLite y Chroma, una sola vez y en serie</td><td>Solo despues de aprobar ambas compuertas.</td></tr>
         </tbody></table>
     </section>
