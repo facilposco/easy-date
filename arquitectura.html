@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EspecificaciÃ³n de Arquitectura: Estudio Text Game</title>
+    <title>Especificación de Arquitectura: Estudio Text Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -42,9 +42,10 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 25px;
         }
-        /* PestaÃ±as Premium */
+        /* Pestañas Premium */
         .tabs-header {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 10px;
             margin-bottom: 30px;
@@ -116,6 +117,13 @@
             font-family: monospace;
             color: #ff7854;
             font-size: 0.9rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         .highlight-box {
             background: rgba(255, 60, 110, 0.04);
@@ -136,6 +144,7 @@
         }
         table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             text-align: left;
             font-size: 0.9rem;
@@ -143,6 +152,8 @@
         th, td {
             padding: 12px 16px;
             border-bottom: 1px solid var(--border);
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         th {
             background: rgba(255, 255, 255, 0.04);
@@ -152,6 +163,33 @@
         }
         tr:hover {
             background: rgba(255, 255, 255, 0.02);
+        }
+        body > section {
+            box-sizing: border-box;
+            max-width: 1000px;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        @media (max-width: 640px) {
+            body {
+                padding: 18px 10px;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            .tab-btn {
+                flex: 1 1 140px;
+                justify-content: center;
+                padding: 9px 12px;
+            }
+            .card,
+            body > section {
+                padding: 16px !important;
+            }
+            th, td {
+                padding: 8px 6px;
+                font-size: 0.78rem;
+            }
         }
         .badge {
             display: inline-block;
@@ -167,27 +205,30 @@
     </style>
 </head>
 <body>
+    <aside style="margin:20px auto; width:min(1200px, calc(100% - 32px)); padding:16px; border-left:4px solid #2563eb; background:#eff6ff; color:#172033;">
+        <strong>Estado vigente (13 Jul 2026):</strong> la referencia operativa actual es la seccion <a href="#rag-v2-integral">RAG v2 Integral para Natalia y Maximus</a>, junto con <code>docs/rag_v2_final_latest.html</code> y <code>docs/mapa_db_natalia.html</code>. Las cifras anteriores de 22/23 libros y colecciones legacy se conservan solo como historial; el corpus vigente tiene 33 libros, cuatro colecciones Chroma v2 operativas y una coleccion v3 staged.
+    </aside>
     <div class="container">
-        <h1>EspecificaciÃ³n TÃ©cnica de la Arquitectura</h1>
+        <h1>Especificación Técnica de la Arquitectura</h1>
         
-        <!-- NavegaciÃ³n de PestaÃ±as -->
+        <!-- Navegación de Pestañas -->
         <div class="tabs-header">
-            <button class="tab-btn active" onclick="switchTab('arch')">âš™ï¸ Pipeline y DiseÃ±o</button>
-            <button class="tab-btn" onclick="switchTab('block')">ðŸ›¡ï¸ EvasiÃ³n de Bloqueos</button>
+            <button class="tab-btn active" onclick="switchTab('arch')">⚙️ Pipeline y Diseño</button>
+            <button class="tab-btn" onclick="switchTab('block')">🛡️ Evasión de Bloqueos</button>
             <button class="tab-btn" onclick="switchTab('funcs')">âš¡ Funciones del Sistema</button>
-            <button class="tab-btn" onclick="switchTab('proxy')">ðŸŒ Sistema de Proxy</button>
-            <button class="tab-btn" onclick="switchTab('roadmap')">ðŸš€ Roadmap y Fases</button>
+            <button class="tab-btn" onclick="switchTab('proxy')">🌐 Sistema de Proxy</button>
+            <button class="tab-btn" onclick="switchTab('roadmap')">🚀 Roadmap y Fases</button>
         </div>
 
-        <!-- PESTAÃ‘A 1: PIPELINE Y DISEÃ‘O -->
+        <!-- PESTAÑA 1: PIPELINE Y DISEÑO -->
         <div id="tab-arch" class="tab-content active">
             <div class="card">
                 <h2>1. Flujo de Datos del Sistema (Pipeline)</h2>
-                <p>El sistema se compone de tres fases automatizadas que operan en base a datos reales, respetando la regla estricta de cero datos sintÃ©ticos o inventados:</p>
+                <p>El sistema se compone de tres fases automatizadas que operan en base a datos reales, respetando la regla estricta de cero datos sintéticos o inventados:</p>
                 <ol>
-                    <li><strong>ExtracciÃ³n (Scraping):</strong> <code>reddit_sb_extractor.py</code> consume las imÃ¡genes y diÃ¡logos de Reddit respetando los intervalos de evasiÃ³n y los almacena en SQLite (<code>textgame.db</code>).</li>
-                    <li><strong>Procesamiento MultilingÃ¼e (RAG):</strong> El subagente asÃ­ncrono procesa y traduce los turnos al espaÃ±ol de LatinoamÃ©rica casual, indexando los vectores en la base vectorial <code>ChromaDB</code> para el cerebro de Natalia.</li>
-                    <li><strong>CompilaciÃ³n:</strong> <code>build_simulator.py</code> toma los diÃ¡logos validados e inyecta imÃ¡genes comprimidas Base64 y los casos de estudio en un Ãºnico HTML estÃ¡tico portable.</li>
+                    <li><strong>Extracción (Scraping):</strong> <code>reddit_sb_extractor.py</code> consume las imágenes y diálogos de Reddit respetando los intervalos de evasión y los almacena en SQLite (<code>textgame.db</code>).</li>
+                    <li><strong>Procesamiento Multilingüe (RAG):</strong> El subagente asíncrono procesa y traduce los turnos al español de Latinoamérica casual, indexando los vectores en la base vectorial <code>ChromaDB</code> para el cerebro de Natalia.</li>
+                    <li><strong>Compilación:</strong> <code>build_simulator.py</code> toma los diálogos validados e inyecta imágenes comprimidas Base64 y los casos de estudio en un único HTML estático portable.</li>
                 </ol>
             </div>
 
@@ -671,19 +712,19 @@
             </div>
 
             <div class="card">
-                <h2 class="blue-title">2. Arquitectura de OrquestaciÃ³n y Enrutamiento de Modelos</h2>
-                <p>Con el objetivo de maximizar la eficiencia de tokens y la duraciÃ³n de la sesiÃ³n, se implementa una arquitectura de agentes orquestadores:</p>
+                <h2 class="blue-title">2. Arquitectura de Orquestación y Enrutamiento de Modelos</h2>
+                <p>Con el objetivo de maximizar la eficiencia de tokens y la duración de la sesión, se implementa una arquitectura de agentes orquestadores:</p>
                 <ul>
                     <li><strong>Enrutamiento de Modelos:</strong>
                         <ul>
-                            <li>Las tareas complejas de lÃ³gica de juego, algoritmos y diseÃ±o de arquitectura se enrutan a <code>Gemini Pro 1.5</code>.</li>
-                            <li>Las tareas bÃ¡sicas de diseÃ±o CSS, maquetaciÃ³n visual, traducciones, generaciÃ³n de boilerplate y transcripciÃ³n OCR repetitiva de scraping se delegan a <code>Gemini Flash 3.5 (low tier)</code>.</li>
+                            <li>Las tareas complejas de lógica de juego, algoritmos y diseño de arquitectura se enrutan a <code>Gemini Pro 1.5</code>.</li>
+                            <li>Las tareas básicas de diseño CSS, maquetación visual, traducciones, generación de boilerplate y transcripción OCR repetitiva de scraping se delegan a <code>Gemini Flash 3.5 (low tier)</code>.</li>
                         </ul>
                     </li>
-                    <li><strong>RotaciÃ³n y Resiliencia de APIs (Gemini API Keys):</strong>
+                    <li><strong>Rotación y Resiliencia de APIs (Gemini API Keys):</strong>
                         <ul>
-                            <li>Se configuran mÃºltiples claves de API gratuitas (<code>GEMINI_API_KEY_1</code>, <code>GEMINI_API_KEY_2</code>, etc.) en el archivo <code>.env</code>.</li>
-                            <li>Cada clave pertenece a un proyecto de Google Cloud independiente, lo que multiplica de forma gratuita los lÃ­mites de solicitudes por minuto (RPM) y solicitudes por dÃ­a (RPD).</li>
+                            <li>Se configuran múltiples claves de API gratuitas (<code>GEMINI_API_KEY_1</code>, <code>GEMINI_API_KEY_2</code>, etc.) en el archivo <code>.env</code>.</li>
+                            <li>Cada clave pertenece a un proyecto de Google Cloud independiente, lo que multiplica de forma gratuita los límites de solicitudes por minuto (RPM) y solicitudes por día (RPD).</li>
                             <li>La rotacion activa vive en <code>backend/server.py</code>: carga <code>GEMINI_API_KEY_1</code>, <code>GEMINI_API_KEY_2</code> y <code>GEMINI_API_KEY_3</code>, y cambia de clave si Gemini devuelve <code>429 (Resource Exhausted)</code>.</li>
                             <li><code>/health</code> confirma modelo, cantidad de llaves cargadas y conexion con ChromaDB sin revelar secretos.</li>
                             <li><code>tests/verify_local_server.py</code> deja una verificacion reproducible: valida <code>/health</code> contra <code>http://localhost:8000</code> y prueba <code>/api/evaluate</code> en proceso con fakes para no consumir cuota Gemini.</li>
@@ -696,62 +737,62 @@
                             <li>La verificacion local documentada en <code>README.md</code> no conecta el RAC/RAG de libros; solo valida el servidor, llaves cargadas por conteo, ChromaDB del simulador y el flujo evaluate sin llamada externa.</li>
                         </ul>
                     </li>
-                    <li><strong>Scraping de Contexto MÃ­nimo:</strong>
+                    <li><strong>Scraping de Contexto Mínimo:</strong>
                         <ul>
-                            <li>Se prohÃ­be pasar el DOM HTML completo a los modelos de lenguaje.</li>
-                            <li>Se aplica un pre-filtro local (offline) en Python (sin IA) para recortar imÃ¡genes/textos de Reddit y envÃ­a fragmentos pequeÃ±os (chunks) exclusivamente al modelo Gemini Flash 3.5.</li>
+                            <li>Se prohíbe pasar el DOM HTML completo a los modelos de lenguaje.</li>
+                            <li>Se aplica un pre-filtro local (offline) en Python (sin IA) para recortar imágenes/textos de Reddit y envía fragmentos pequeños (chunks) exclusivamente al modelo Gemini Flash 3.5.</li>
                         </ul>
                     </li>
-                    <li><strong>IntegraciÃ³n en un solo archivo (Single-HTML):</strong>
+                    <li><strong>Integración en un solo archivo (Single-HTML):</strong>
                         <ul>
-                            <li>El simulador y el visualizador de casos reales se compilan en un Ãºnico archivo HTML portable. El visualizador se inyecta en Base64 y se renderiza en un iframe aislado usando <code>srcdoc</code> para evitar bloqueos del navegador.</li>
+                            <li>El simulador y el visualizador de casos reales se compilan en un único archivo HTML portable. El visualizador se inyecta en Base64 y se renderiza en un iframe aislado usando <code>srcdoc</code> para evitar bloqueos del navegador.</li>
                         </ul>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <!-- PESTAÃ‘A 2: EVASIÃ“N DE BLOQUEOS -->
+        <!-- PESTAÑA 2: EVASIÓN DE BLOQUEOS -->
         <div id="tab-block" class="tab-content">
             <div class="card">
-                <h2>1. AnÃ¡lisis de DetecciÃ³n en Sitios de Alta Resistencia</h2>
+                <h2>1. Análisis de Detección en Sitios de Alta Resistencia</h2>
                 <div class="highlight-box">
-                    <strong>Â¿Por quÃ© bloquean las redes a pesar de usar un Proxy?</strong><br>
-                    Los sistemas de seguridad de Cloudflare y Reddit utilizan mÃºltiples capas de heurÃ­stica que van mÃ¡s allÃ¡ del origen de la IP:
+                    <strong>¿Por qué bloquean las redes a pesar de usar un Proxy?</strong><br>
+                    Los sistemas de seguridad de Cloudflare y Reddit utilizan múltiples capas de heurística que van más allá del origen de la IP:
                     <ul>
-                        <li><strong>Ausencia de Latencia Humana:</strong> El script original ejecutaba peticiones secuenciales inmediatas. Hacer mÃ¡s de 30 consultas en pocos segundos es un indicador inmediato de automatizaciÃ³n.</li>
-                        <li><strong>TLS Fingerprinting:</strong> La librerÃ­a <code>requests</code> de Python tiene una firma TLS fija y conocida. Las capas de protecciÃ³n identifican esta firma como un bot de Python en lugar de un navegador real, sin importar que la IP sea residencial.</li>
-                        <li><strong>Calidad del Pool de IPs:</strong> Los proxies residenciales de DataImpulse son compartidos. Si otro usuario los saturÃ³ minutos antes, entran en "lista gris".</li>
+                        <li><strong>Ausencia de Latencia Humana:</strong> El script original ejecutaba peticiones secuenciales inmediatas. Hacer más de 30 consultas en pocos segundos es un indicador inmediato de automatización.</li>
+                        <li><strong>TLS Fingerprinting:</strong> La librería <code>requests</code> de Python tiene una firma TLS fija y conocida. Las capas de protección identifican esta firma como un bot de Python en lugar de un navegador real, sin importar que la IP sea residencial.</li>
+                        <li><strong>Calidad del Pool de IPs:</strong> Los proxies residenciales de DataImpulse son compartidos. Si otro usuario los saturó minutos antes, entran en "lista gris".</li>
                     </ul>
                 </div>
             </div>
 
             <div class="card">
-                <h2 class="blue-title">2. Nuevas Reglas de EvasiÃ³n de Bloqueos (MitigaciÃ³n)</h2>
+                <h2 class="blue-title">2. Nuevas Reglas de Evasión de Bloqueos (Mitigación)</h2>
                 <p>Para futuros escaneos masivos en YouTube y otras fuentes, se han definido y programado las siguientes directrices:</p>
                 <ul>
-                    <li><strong>Delays Aleatorios (Sleeps):</strong> Introducir una espera de entre <code>5 a 10 segundos</code> generada de forma aleatoria (<code>random.uniform</code>) entre peticiÃ³n y peticiÃ³n.</li>
-                    <li><strong>RotaciÃ³n Activa de SesiÃ³n en Proxy:</strong> Forzar la rotaciÃ³n del IP en el proveedor agregando un identificador de sesiÃ³n Ãºnico en el string de conexiÃ³n del proxy (ej. <code>username-session-XXXX</code>) en cada consulta.</li>
+                    <li><strong>Delays Aleatorios (Sleeps):</strong> Introducir una espera de entre <code>5 a 10 segundos</code> generada de forma aleatoria (<code>random.uniform</code>) entre petición y petición.</li>
+                    <li><strong>Rotación Activa de Sesión en Proxy:</strong> Forzar la rotación del IP en el proveedor agregando un identificador de sesión único en el string de conexión del proxy (ej. <code>username-session-XXXX</code>) en cada consulta.</li>
                     <li><strong>Spoofing de Cabeceras e InnerTube Client:</strong> Inyectar cabeceras HTTP que simulen ser un navegador moderno (incluyendo <code>Accept-Language</code>, <code>sec-ch-ua</code> y <code>User-Agent</code> real de Chrome).</li>
-                    <li><strong>Plan de Contingencia (Whisper local):</strong> En caso de bloqueo total, el sistema descargarÃ¡ el audio crudo mediante <code>yt-dlp</code> y se transcribirÃ¡ localmente de forma offline usando modelos Whisper.</li>
+                    <li><strong>Plan de Contingencia (Whisper local):</strong> En caso de bloqueo total, el sistema descargará el audio crudo mediante <code>yt-dlp</code> y se transcribirá localmente de forma offline usando modelos Whisper.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- PESTAÃ‘A 3: FUNCIONES DEL SISTEMA -->
+        <!-- PESTAÑA 3: FUNCIONES DEL SISTEMA -->
         <div id="tab-funcs" class="tab-content">
             <div class="card">
                 <h2 class="green-title">Funciones Registradas en el Sistema</h2>
-                <p>Lista oficial de las funciones activas del simulador de juego (JavaScript) y de los pipelines de datos (Python). Cada nueva funciÃ³n aÃ±adida debe registrarse aquÃ­.</p>
+                <p>Lista oficial de las funciones activas del simulador de juego (JavaScript) y de los pipelines de datos (Python). Cada nueva función añadida debe registrarse aquí.</p>
                 
                 <div class="func-table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>Nombre de FunciÃ³n</th>
+                                <th>Nombre de Función</th>
                                 <th>Entorno</th>
                                 <th>Fecha</th>
-                                <th>DescripciÃ³n y Funcionalidad</th>
+                                <th>Descripción y Funcionalidad</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -766,7 +807,7 @@
                                 <td><code>showScreen(screenId)</code></td>
                                 <td><span class="badge badge-js">JS</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Alterna entre las pantallas de juego y estudio de casos. Utiliza <strong>srcdoc</strong> para inyectar dinÃ¡micamente el HTML en base64 en un iframe sin bloqueos locales del navegador.</td>
+                                <td>Alterna entre las pantallas de juego y estudio de casos. Utiliza <strong>srcdoc</strong> para inyectar dinámicamente el HTML en base64 en un iframe sin bloqueos locales del navegador.</td>
                             </tr>
                             <tr>
                                 <td><code>resetGame()</code></td>
@@ -784,7 +825,7 @@
                                 <td><code>showMatchModal()</code></td>
                                 <td><span class="badge badge-js">JS</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Carga los datos del nivel actual e inyecta la foto de la chica en el cÃ­rculo usando backgroundImage. Abre el modal inicial.</td>
+                                <td>Carga los datos del nivel actual e inyecta la foto de la chica en el círculo usando backgroundImage. Abre el modal inicial.</td>
                             </tr>
                             <tr>
                                 <td><code>showLevelUpModal()</code></td>
@@ -808,7 +849,7 @@
                                 <td><code>evaluateSelection()</code></td>
                                 <td><span class="badge badge-js">JS</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>EvalÃºa la opciÃ³n de diÃ¡logo elegida y el Ã­ndice del slider de tiempo contra la respuesta correcta del JSON. Aplica penalizaciones, valida flexibilidad de tiempos (mismo tiempo o superior) y despliega el modal del Coach.</td>
+                                <td>Evalúa la opción de diálogo elegida y el índice del slider de tiempo contra la respuesta correcta del JSON. Aplica penalizaciones, valida flexibilidad de tiempos (mismo tiempo o superior) y despliega el modal del Coach.</td>
                             </tr>
                             <tr>
                                 <td><code>closeCoachModal()</code></td>
@@ -820,7 +861,7 @@
                                 <td><code>renderStep()</code></td>
                                 <td><span class="badge badge-js">JS</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Dibuja las 4 tarjetas de diÃ¡logo y actualiza el slider de tiempos del panel inferior.</td>
+                                <td>Dibuja las 4 tarjetas de diálogo y actualiza el slider de tiempos del panel inferior.</td>
                             </tr>
                             <tr>
                                 <td><code>rotateApiKey()</code></td>
@@ -832,19 +873,19 @@
                                 <td><code>toggleHelpModal()</code></td>
                                 <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Muestra u oculta el modal de ayuda del emulador v1.1. Activado desde el botÃ³n <code>?</code> en la barra de cabecera.</td>
+                                <td>Muestra u oculta el modal de ayuda del emulador v1.1. Activado desde el botón <code>?</code> en la barra de cabecera.</td>
                             </tr>
                             <tr>
                                 <td><code>rateStep(levelId, stepId, rating)</code></td>
                                 <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Guarda en <code>localStorage</code> el feedback (Me gusta ðŸ‘ / Cambiar ðŸ‘Ž) de cada paso para el entrenamiento futuro de la IA.</td>
+                                <td>Guarda en <code>localStorage</code> el feedback (Me gusta 👍 / Cambiar 👎) de cada paso para el entrenamiento futuro de la IA.</td>
                             </tr>
                             <tr>
                                 <td><code>renderFavoritos()</code></td>
                                 <td><span class="badge badge-js">JS</span> <span class="badge badge-new">New</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Filtra y despliega los favoritos en dos secciones en el manual (Me gustaron / No me gustaron) segÃºn los datos guardados.</td>
+                                <td>Filtra y despliega los favoritos en dos secciones en el manual (Me gustaron / No me gustaron) según los datos guardados.</td>
                             </tr>
                             
                             <!-- FUNCIONES PYTHON PIPELINE -->
@@ -852,31 +893,31 @@
                                 <td><code>build_simulator.py</code></td>
                                 <td><span class="badge badge-py">Python</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Compilador central que lee <code>game_dialogues.json</code>, optimiza y comprime las imÃ¡genes a JPEG (calidad 55%, mÃ¡x. 300px) e inyecta dinÃ¡micamente todo en <code>simulador_v1.1.html</code>.</td>
+                                <td>Compilador central que lee <code>game_dialogues.json</code>, optimiza y comprime las imágenes a JPEG (calidad 55%, máx. 300px) e inyecta dinámicamente todo en <code>simulador_v1.1.html</code>.</td>
                             </tr>
                             <tr>
                                 <td><code>compile_html.py</code></td>
                                 <td><span class="badge badge-py">Python</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Genera el dashboard persistente de Casos Reales (<code>estudio_textgame_casos_reales.html</code>) comprimiendo imÃ¡genes a JPEG (calidad 40%, mÃ¡x. 420px).</td>
+                                <td>Genera el dashboard persistente de Casos Reales (<code>estudio_textgame_casos_reales.html</code>) comprimiendo imágenes a JPEG (calidad 40%, máx. 420px).</td>
                             </tr>
                             <tr>
                                 <td><code>populate_chat_turns.py</code></td>
                                 <td><span class="badge badge-py">Python</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>Extrae las transcripciones de SQLite e indexa vectorialmente los diÃ¡logos en <strong>ChromaDB</strong>. Soporta esquemas de listas o diccionarios robustamente.</td>
+                                <td>Extrae las transcripciones de SQLite e indexa vectorialmente los diálogos en <strong>ChromaDB</strong>. Soporta esquemas de listas o diccionarios robustamente.</td>
                             </tr>
                             <tr>
                                 <td><code>reddit_sb_extractor.py</code></td>
                                 <td><span class="badge badge-py">Python</span></td>
                                 <td>27 Jun 2026</td>
-                                <td>MÃ³dulo que utiliza SeleniumBase UC y proxies residenciales para descargar hilos de chats reales de Reddit eludiendo protecciones antibots.</td>
+                                <td>Módulo que utiliza SeleniumBase UC y proxies residenciales para descargar hilos de chats reales de Reddit eludiendo protecciones antibots.</td>
                             </tr>
                             <tr>
                                 <td><code>image_to_base64(filepath)</code></td>
                                 <td><span class="badge badge-py">Python</span> <span class="badge badge-new">New</span></td>
                                 <td>28 Jun 2026</td>
-                                <td>FunciÃ³n de utilidad integrada en los scripts de compilaciÃ³n para redimensionar imÃ¡genes y comprimir su calidad (calidad 40%-55%), reduciendo el peso final de los archivos HTML en mÃ¡s de un 90%.</td>
+                                <td>Función de utilidad integrada en los scripts de compilación para redimensionar imágenes y comprimir su calidad (calidad 40%-55%), reduciendo el peso final de los archivos HTML en más de un 90%.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -884,38 +925,38 @@
             </div>
         </div>
 
-        <!-- PESTAÃ‘A 4: SISTEMA DE PROXY (DATAIMPULSE) -->
+        <!-- PESTAÑA 4: SISTEMA DE PROXY (DATAIMPULSE) -->
         <div id="tab-proxy" class="tab-content">
             <div class="card">
                 <h2>1. Arquitectura de Red de Proxies Residenciales</h2>
-                <p>Para evitar baneos de Cloudflare y controles anti-scraping de Reddit, el extractor implementa un sistema dinÃ¡mico conectado a la red residencial de <strong>DataImpulse</strong>:</p>
+                <p>Para evitar baneos de Cloudflare y controles anti-scraping de Reddit, el extractor implementa un sistema dinámico conectado a la red residencial de <strong>DataImpulse</strong>:</p>
                 <div class="highlight-box" style="background: rgba(59, 130, 246, 0.04); border-left-color: var(--accent-blue);">
-                    <strong>Esquema de ConexiÃ³n y RotaciÃ³n Activa:</strong>
+                    <strong>Esquema de Conexión y Rotación Activa:</strong>
                     <ul>
                         <li><strong>Servidor Proxy:</strong> <code>gw.dataimpulse.com:10001</code></li>
-                        <li><strong>Credenciales DinÃ¡micas:</strong> Se agrega un sufijo de sesiÃ³n aleatorio al usuario en cada hilo de ejecuciÃ³n (ej. <code>username_session-aBc123XyZ</code>). Esto obliga al balanceador de DataImpulse a desconectar el socket anterior y aprovisionar un nuevo nodo de salida residencial limpio.</li>
-                        <li><strong>Filtro Local de Content-Type:</strong> Para evitar el consumo excesivo de la cuota de proxy residencial, el script filtra los recursos en el navegador, bloqueando la carga de hojas de estilo (CSS), fuentes tipogrÃ¡ficas y scripts de tracking innecesarios, solicitando Ãºnicamente imÃ¡genes de chat y textos JSON.</li>
+                        <li><strong>Credenciales Dinámicas:</strong> Se agrega un sufijo de sesión aleatorio al usuario en cada hilo de ejecución (ej. <code>username_session-aBc123XyZ</code>). Esto obliga al balanceador de DataImpulse a desconectar el socket anterior y aprovisionar un nuevo nodo de salida residencial limpio.</li>
+                        <li><strong>Filtro Local de Content-Type:</strong> Para evitar el consumo excesivo de la cuota de proxy residencial, el script filtra los recursos en el navegador, bloqueando la carga de hojas de estilo (CSS), fuentes tipográficas y scripts de tracking innecesarios, solicitando únicamente imágenes de chat y textos JSON.</li>
                     </ul>
                 </div>
             </div>
 
             <div class="card">
-                <h2 class="blue-title">2. GestiÃ³n de Cuota y Fallos en ProducciÃ³n</h2>
-                <p>En caso de saturaciÃ³n o lÃ­mite de peticiones (cÃ³digo HTTP 429), la arquitectura implementa:</p>
+                <h2 class="blue-title">2. Gestión de Cuota y Fallos en Producción</h2>
+                <p>En caso de saturación o límite de peticiones (código HTTP 429), la arquitectura implementa:</p>
                 <ol>
-                    <li>RotaciÃ³n forzada del hash de sesiÃ³n local para cambiar de IP inmediatamente.</li>
-                    <li>IntroducciÃ³n de retrasos de tiempo adaptativos mediante <code>random.uniform(5, 10)</code> segundos entre descargas.</li>
-                    <li>Plan de contingencia offline: si el bloque del WAF es total, se descarga el audio en bruto con <code>yt-dlp</code> y se realiza transcripciÃ³n local con <code>Whisper</code>.</li>
+                    <li>Rotación forzada del hash de sesión local para cambiar de IP inmediatamente.</li>
+                    <li>Introducción de retrasos de tiempo adaptativos mediante <code>random.uniform(5, 10)</code> segundos entre descargas.</li>
+                    <li>Plan de contingencia offline: si el bloque del WAF es total, se descarga el audio en bruto con <code>yt-dlp</code> y se realiza transcripción local con <code>Whisper</code>.</li>
                 </ol>
-                <p><strong>Cierre documental:</strong> la recuperaciÃ³n de imÃ¡genes Reddit desde URLs guardadas en <code>reddit_conversations.image_urls</code> queda registrada en <code>docs/reddit_image_recovery_dataimpulse.csv</code> y <code>docs/reddit_image_recovery_dataimpulse_summary.md</code>; el flujo usa DataImpulse y no depende de IA ni modelos para la descarga.</p>
+                <p><strong>Cierre documental:</strong> la recuperación de imágenes Reddit desde URLs guardadas en <code>reddit_conversations.image_urls</code> queda registrada en <code>docs/reddit_image_recovery_dataimpulse.csv</code> y <code>docs/reddit_image_recovery_dataimpulse_summary.md</code>; el flujo usa DataImpulse y no depende de IA ni modelos para la descarga.</p>
             </div>
         </div>
 
-        <!-- PESTAÃ‘A 5: ROADMAP Y FASES -->
+        <!-- PESTAÑA 5: ROADMAP Y FASES -->
         <div id="tab-roadmap" class="tab-content">
             <div class="card">
                 <h2 class="green-title">Roadmap de Desarrollo de Estudio Text Game</h2>
-                <p>Fases del proyecto para la recopilaciÃ³n de datos reales de seducciÃ³n y el entrenamiento interactivo de la IA:</p>
+                <p>Fases del proyecto para la recopilación de datos reales de seducción y el entrenamiento interactivo de la IA:</p>
                 <div class="highlight-box" style="background: rgba(16, 185, 129, 0.05); border-left-color: var(--accent-green);">
                     <strong>Decision arquitectonica Natalia v1.2:</strong>
                     <ul>
@@ -952,21 +993,21 @@
                     </ul>
                 </div>
                 <ul>
-                    <li><strong>Fase 1: ExtracciÃ³n Inicial (Completado):</strong> Scraping inicial de Reddit y transcripciÃ³n OCR. CreaciÃ³n del simulador v1.0.</li>
-                    <li><strong>Fase 2: OptimizaciÃ³n v1.1 (Completado):</strong>
+                    <li><strong>Fase 1: Extracción Inicial (Completado):</strong> Scraping inicial de Reddit y transcripción OCR. Creación del simulador v1.0.</li>
+                    <li><strong>Fase 2: Optimización v1.1 (Completado):</strong>
                         <ul>
-                            <li>CompresiÃ³n masiva de imÃ¡genes (ahorro del 91.3%, de 14.48MB a 1.27MB).</li>
-                            <li>Ajustes de UI (60% de altura de chat, botÃ³n Enviar con doble altura de fila de soporte).</li>
-                            <li>Modal de ayuda inicial <code>?</code> e inyecciÃ³n Base64 segura de Casos Reales.</li>
-                            <li>Filtros y dos secciones en pestaÃ±a de Favoritos ("Me gustaron" y "No me gustaron").</li>
-                            <li>LÃ³gica de sliders y flexibilidad de tiempos.</li>
+                            <li>Compresión masiva de imágenes (ahorro del 91.3%, de 14.48MB a 1.27MB).</li>
+                            <li>Ajustes de UI (60% de altura de chat, botón Enviar con doble altura de fila de soporte).</li>
+                            <li>Modal de ayuda inicial <code>?</code> e inyección Base64 segura de Casos Reales.</li>
+                            <li>Filtros y dos secciones en pestaña de Favoritos ("Me gustaron" y "No me gustaron").</li>
+                            <li>Lógica de sliders y flexibilidad de tiempos.</li>
                         </ul>
                     </li>
                     <li><strong>Fase 3: Base de Conocimientos (En Proceso):</strong>
                         <ul>
-                            <li>Procesamiento por Codex de los 23 libros sobre text game y psicologÃ­a femenina.</li>
-                            <li>IntegraciÃ³n de ChromaDB independiente (<code>books_chroma/</code>) y SQLite FTS5 (<code>books_index.sqlite</code>).</li>
-                            <li>ExtracciÃ³n automÃ¡tica de conversaciones completas de libros formateadas en JSON para el simulador y Casos Reales sin fragmentar diÃ¡logos.</li>
+                            <li>Procesamiento por Codex de los 23 libros sobre text game y psicología femenina.</li>
+                            <li>Integración de ChromaDB independiente (<code>books_chroma/</code>) y SQLite FTS5 (<code>books_index.sqlite</code>).</li>
+                            <li>Extracción automática de conversaciones completas de libros formateadas en JSON para el simulador y Casos Reales sin fragmentar diálogos.</li>
                             <li><strong>Ingesta texto-only 2026-07-07:</strong> se agrego <code>Understanding Women: A Simple Guide to Conquering Women</code> como libro <code>id=24</code> en el RAC de libros. Flujo: EPUB fuente en <code>books_kb/source_books/</code>, original ingles en <code>books_kb/raw_texts/libro_24_original_en.txt</code>, traduccion LATAM en <code>books_kb/raw_texts/libro_24_translated_latam.txt</code>, chunks en <code>books_kb/chunks/libro_24_chunks.json</code> y embeddings en <code>books_kb/chroma_books/natalia_books_kb</code>. Resultado: 30.182 palabras originales, 29.069 traducidas, 145 chunks, 0 imagenes procesadas y 0 OCR por instruccion del usuario. La coleccion <code>natalia_books_kb</code> queda en 2.481 documentos. QA: <code>docs/understanding_women_rag_qa_20260707_005435.*</code>, 10/10 preguntas indirectas recuperaron este libro como top1/top5.</li>
                             <li><strong>Citacion EPUB por chunk:</strong> cada chunk del libro <code>id=24</code> ahora guarda <code>epub_doc_index</code>, <code>epub_doc_name</code>, <code>section_title</code>, <code>page_estimate</code> y <code>reference_quality</code> tanto en SQLite como en metadatos Chroma. Para compatibilidad tambien se actualizan <code>capitulo</code>, <code>pagina_inicio</code> y <code>pagina_fin</code>. La referencia es estimada desde el orden del EPUB y 250 palabras por pagina, no pagina impresa real. Script: <code>scratch/backfill_book_chunk_references.py</code>; QA con referencias: <code>docs/understanding_women_rag_qa_20260707_014422.*</code>.</li>
                             <li><strong>Regla de traduccion de libros:</strong> usar Gemini/Google AI Studio como primera opcion con rotacion de claves; si hay <code>429</code>, <code>503</code> o timeouts persistentes, completar con fallback auditado solo para no dejar el RAG incompleto. Todo texto final debe pasar limpieza de mojibake con <code>ftfy</code>, eliminacion de fugas tecnicas del prompt y reindexacion antes de afirmar que Natalia lo puede consultar.</li>
@@ -975,11 +1016,11 @@
                             <li><strong>Ingesta 6 libros psicologia femenina/seduccion 2026-07-07:</strong> se agregaron <code>id=25..30</code>: <code>Verdades sobre las Mujeres que Nadie Quiere que Sepas</code> (54.988 palabras, 258 chunks), <code>La Pildora Roja: Verdades sobre las Mujeres y la Atraccion</code> (55.933 palabras, 269 chunks), <code>Speed Seduction Book</code> (23.630 palabras traducidas, 126 chunks), <code>El cerebro femenino</code> (99.889 palabras, 558 chunks), <code>La evolucion del deseo</code> (107.526 palabras, 540 chunks) y <code>La Psicologia Oscura detras de la Atraccion</code> (55.628 palabras, 264 chunks). Los EPUBs que ya estaban en espanol se conservaron sin traduccion innecesaria; Ross Jeffries se tradujo por bloques. Todos quedaron con referencias EPUB estimadas, <code>concept_tags</code>, <code>voice_policy</code>, <code>natalia_use</code> y <code>maximus_use</code>. El contenido adulto/manipulador no se omite del RAC; se etiqueta para que Natalia no lo imite daninamente y Maximus lo explique con consentimiento/respeto. Reporte final v1: <code>docs/resumen_6_libros_psicologia_femenina.html</code>. Reporte comparativo v2: <code>docs/resumen_6_libros_psicologia_femenina_v2.html</code>, generado por <code>scratch/report_6_libros_psicologia_femenina.py --v2</code>, con 6/6 libros, 90/90 fuentes recuperadas, 90/90 principios estructurados y 90/90 casos reales enlazados.</li>
                         </ul>
                     </li>
-                    <li><strong>Fase 4: Simulador v1.2 y DinÃ¡micas FrÃ­as (Siguiente Paso):</strong>
+                    <li><strong>Fase 4: Simulador v1.2 y Dinámicas Frías (Siguiente Paso):</strong>
                         <ul>
-                            <li>AÃ±adir niveles de chicas frÃ­as y defensivas con shit-tests rigurosos.</li>
-                            <li>MÃ³dulo de re-engagement para chats ghosteados.</li>
-                            <li>RetroalimentaciÃ³n en tiempo real del coach usando llamadas directas a APIs de Gemini Flash.</li>
+                            <li>Añadir niveles de chicas frías y defensivas con shit-tests rigurosos.</li>
+                            <li>Módulo de re-engagement para chats ghosteados.</li>
+                            <li>Retroalimentación en tiempo real del coach usando llamadas directas a APIs de Gemini Flash.</li>
                         </ul>
                     </li>
                     <li><strong>Fase 5: Grafo de Conocimiento Natalia (Pendiente tras 5.000 casos):</strong>
@@ -997,14 +1038,14 @@
 
     </div>
 
-    <!-- JS para control de PestaÃ±as -->
+    <!-- JS para control de Pestañas -->
     <script>
         function switchTab(tabId) {
-            // Desactivar todas las pestaÃ±as y contenidos
+            // Desactivar todas las pestañas y contenidos
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // Activar botÃ³n y contenido seleccionado
+            // Activar botón y contenido seleccionado
             event.currentTarget.classList.add('active');
             document.getElementById('tab-' + tabId).classList.add('active');
         }
@@ -1015,11 +1056,161 @@
         <table><thead><tr><th>Etapa</th><th>Escritura</th><th>Compuerta</th></tr></thead><tbody>
         <tr><td>Stage principal y reparacion</td><td>Solo cache y JSON de stage</td><td>No modifica SQLite ni Chroma.</td></tr>
         <tr><td>QA local consolidado</td><td>Reportes JSON/HTML</td><td>Bloques faltantes, mojibake, marcadores tecnicos y longitud anomala deben quedar sin bloqueos.</td></tr>
-        <tr><td>QA semantico</td><td>Reportes JSON/HTML</td><td>Gemini debe validar fidelidad, gramatica LATAM, contexto, omisiones y agregados. Tambien recibe ambos stages para revisar una reparacion junto al lote principal. Corta en el primer 429 y reporta <code>pending_quota</code>, no un falso REVIEW.</td></tr>
+        <tr><td>QA semantico</td><td>Reportes JSON/HTML</td><td>Gemini valida fidelidad, gramatica LATAM, contexto, omisiones y agregados. Agrupa las muestras de cada libro en una solicitud JSON, conservando la cobertura y reduciendo solicitudes. Recibe ambos stages y corta en el primer 429 con <code>pending_quota</code>, no un falso REVIEW.</td></tr>
         <tr><td>Reparacion semantica dirigida</td><td><code>repair_semantic_translation_blocks.py</code></td><td>Corrige solo bloques con REVIEW, conserva original, version previa, hallazgo y correccion en el reporte de auditoria; luego exige repetir QA semantico. Si hay <code>pending_quota</code>, reanuda solo bloques restantes.</td></tr>
         <tr><td>Ingesta final</td><td>SQLite y Chroma, una sola vez y en serie</td><td>Solo despues de aprobar ambas compuertas.</td></tr>
         </tbody></table>
     </section>
     <!-- QA consolidado de stages EPUB: la reparacion selectiva vuelve a la misma compuerta local antes del QA semantico y de la ingesta serial. -->
+    <section id="rag-v2-integral" style="margin:32px; padding:24px; border:1px solid #334155; border-radius:8px; background:#ffffff; color:#172033;">
+        <h2>RAG v2 Integral para Natalia y Maximus (13 Jul 2026)</h2>
+        <p>La memoria comun cubre ahora <code>seduccion_general</code>, <code>psicologia_femenina</code>, <code>comunicacion_relaciones</code> y <code>text_game</code>. Natalia y Maximus comparten indices, pero aplican politicas de voz y evidencia distintas. La psicologia femenina se trata como patrones e hipotesis con variacion individual, nunca como una verdad universal sobre todas las mujeres.</p>
+        <h3>Arquitectura operativa</h3>
+        <table>
+            <thead><tr><th>Capa</th><th>Implementacion</th><th>Estado final</th></tr></thead>
+            <tbody>
+                <tr><td>Embeddings</td><td><code>sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2</code>, cosine, 384d</td><td>Modelo y version explicitos; fallback legacy apagado por defecto.</td></tr>
+                <tr><td>Libros parent-child</td><td>4.719 padres y 19.681 hijos, maximo 96 tokens, overlap 16</td><td>El hijo localiza; el padre o ventana devuelve contexto continuo.</td></tr>
+                <tr><td>Conversaciones de libros</td><td>74 auditadas; 4 elegibles; 70 en cuarentena</td><td>403 ventanas vectoriales, sin convertir fragmentos dudosos en dialogos reales.</td></tr>
+                <tr><td>OCR conversacional</td><td>200 candidatos; 165 elegibles; 35 revision; 2.783 turnos</td><td>Solo chats auditados entran al indice; roles desconocidos no son SFT.</td></tr>
+                <tr><td>Casos reales</td><td>4.806 ventanas exitosas y 1.781 negativas</td><td>Los negativos quedan aislados de la voz de Natalia y disponibles para analisis de Maximus.</td></tr>
+                <tr><td>Principios</td><td>1.598 principios y 2.984 enlaces sin huerfanos</td><td>Los enlaces son similitud de recuperacion, no evidencia causal.</td></tr>
+            </tbody>
+        </table>
+        <h3>Colecciones Chroma v2</h3>
+        <table>
+            <thead><tr><th>Coleccion</th><th>Registros</th><th>Uso principal</th></tr></thead>
+            <tbody>
+                <tr><td><code>natalia_books_v2</code></td><td>19.681</td><td>Teoria, psicologia, relaciones, seduccion y text game.</td></tr>
+                <tr><td><code>natalia_book_conversations_v2</code></td><td>403</td><td>Ventanas de conversaciones de libros auditadas.</td></tr>
+                <tr><td><code>natalia_success_cases_v2</code></td><td>4.806</td><td>Ejemplos con resultado positivo y trazabilidad.</td></tr>
+                <tr><td><code>natalia_negative_cases_v2</code></td><td>1.781</td><td>Errores, contraejemplos y analisis preventivo para Maximus.</td></tr>
+            </tbody>
+        </table>
+        <p>Cada coleccion usa metadatos ricos y aliases: <code>book_id</code>, <code>title/titulo_libro</code>, <code>author/autor</code>, <code>domains/temas</code>, <code>difficulty/dificultad</code>, <code>profile/perfil_chica</code>, <code>source_reliability</code>, <code>evidence_type</code>, riesgo y politica de uso.</p>
+        <h3>Politica de conocimiento y roles</h3>
+        <ul>
+            <li><strong>Natalia-Persona:</strong> imita solamente pares conversacionales auditados y compatibles con el contexto visible; no recita teoria.</li>
+            <li><strong>Natalia-Coach:</strong> usa principios y fuentes permitidas en silencio para orientar mensajes, citas, limites, rechazo y relaciones.</li>
+            <li><strong>Maximus:</strong> explica, compara y atribuye; puede revisar material anecdotico o manipulador como antipatron, con advertencia y alternativas respetuosas.</li>
+            <li><strong>Fiabilidad:</strong> se distingue entre libro informado por investigacion, practicante identificado, PUA anecdotico y fuente desconocida/marketing.</li>
+            <li><strong>Guardrails:</strong> quedan bloqueados consejos de coercion, celos fabricados, retirada instrumental de atencion, confusion intencional, dominio y generalizaciones universales.</li>
+        </ul>
+        <h3>Entrenamiento, consulta y QA</h3>
+        <p><code>search_kb.NataliaKB</code> ofrece <code>buscar_teoria()</code>, <code>buscar_ejemplos_chat()</code> y <code>obtener_conversacion_completa()</code>. El dataset final esta en <code>docs/training_v2_final/</code>: Natalia tiene 56 registros, 50 aprobados para fine-tuning; Maximus tiene 4.662 registros para RAG/evaluacion y ninguno aprobado para SFT directo.</p>
+        <p>Benchmark: 24 consultas, 18 OK, routing 100%, aislamiento de negativos 100% y recall@3 58,33%. El resultado no se presenta como perfecto: seis consultas abiertas siguen marcadas para mejora. Ver <code>docs/natalia_rag_gold_v2_20260713_100833.html</code> y <code>docs/rag_v2_final_latest.html</code>.</p>
+        <p>Verificacion automatica: SQLite <code>integrity_check=ok</code>, 0 errores de claves foraneas, JSONL valido 56/56 y 4.662/4.662, y 199 pruebas aprobadas (81 no-backend + 118 backend). Reconstruccion reproducible mediante los scripts <code>*_v2.py</code> de <code>scratch/</code>.</p>
+    </section>
+    <section id="advisor-benchmark-v3" style="margin:32px; padding:24px; border:1px solid #334155; border-radius:8px; background:#ffffff; color:#172033;">
+        <h2>Evaluacion dual y entrenamiento supervisado v3 (13 Jul 2026)</h2>
+        <p>Se agrego una capa de evaluacion reproducible para Natalia-Coach y Maximus. El objetivo no es probar a Natalia-Persona como pareja virtual, sino medir a los dos asesores frente a preguntas de seduccion, psicologia femenina, comunicacion, relaciones y text game. Cada pregunta recupera evidencia del RAG v2 antes de generar las dos respuestas.</p>
+
+        <h3>Diseno del catalogo</h3>
+        <table>
+            <thead><tr><th>Dimension</th><th>Distribucion</th><th>Control</th></tr></thead>
+            <tbody>
+                <tr><td>Preguntas</td><td>200 unicas</td><td>20 temas con 10 preguntas cada uno.</td></tr>
+                <tr><td>Dominios</td><td>50 por dominio</td><td><code>seduccion_general</code>, <code>psicologia_femenina</code>, <code>comunicacion_relaciones</code> y <code>text_game</code>.</td></tr>
+                <tr><td>Dificultad</td><td>50 por nivel</td><td><code>basica</code>, <code>intermedia</code>, <code>avanzada</code> y <code>adversarial</code>.</td></tr>
+                <tr><td>Split</td><td>160 train / 40 holdout</td><td>320 respuestas train y 80 holdout; el holdout nunca se exporta ni vectoriza como entrenamiento.</td></tr>
+                <tr><td>Agentes</td><td>2 respuestas por pregunta</td><td>200 Natalia-Coach + 200 Maximus = 400 respuestas.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Flujo de generacion y evaluacion</h3>
+        <table>
+            <thead><tr><th>Etapa</th><th>Implementacion</th><th>Resultado o compuerta</th></tr></thead>
+            <tbody>
+                <tr><td>1. Recuperacion</td><td><code>NataliaKB.buscar_teoria()</code> y <code>buscar_ejemplos_chat()</code></td><td>Hasta 6 evidencias normalizadas por agente, con IDs y fiabilidad.</td></tr>
+                <tr><td>2. Generacion dual</td><td>Una llamada devuelve respuestas separadas para Natalia-Coach y Maximus</td><td>5 preguntas se generaron con <code>gemini-2.5-flash-lite</code> y 195 con <code>gemini-3.1-flash-lite</code>; 400/400 respuestas validas.</td></tr>
+                <tr><td>3. Juez LLM</td><td>Llamada separada con <code>gemini-3.1-flash-lite</code> y prompt de rol v3.1</td><td>Evalua relevancia, grounding, rol, claridad, accion, seguridad y prudencia epistemica.</td></tr>
+                <tr><td>4. Evaluador por reglas</td><td>35% del score final</td><td>Bloquea coercion real, estereotipos universales, rol incorrecto y ciencia no sustentada.</td></tr>
+                <tr><td>5. Evaluador semantico</td><td>25% del score final</td><td>Compara pregunta-respuesta, respuesta-evidencia y cobertura de conceptos.</td></tr>
+                <tr><td>6. Juez LLM</td><td>40% del score final</td><td>La llamada de juicio no puede aprobar por si sola.</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Formula:</strong> <code>0.35 * rule_score + 0.25 * semantic_score + 0.40 * judge_score</code>. Para promover se exige score final &gt;= 8,5, reglas &gt;= 8, semantica &gt;= 7, juez &gt;= 8, grounding y seguridad minimos, diferencia juez-reglas &lt;= 1,5, proveedor Gemini en ambas llamadas, cero banderas criticas y pertenecer al split train.</p>
+
+        <h3>Resultado medido</h3>
+        <table>
+            <thead><tr><th>Agente</th><th>Respuestas</th><th>Media</th><th>Train / holdout</th><th>Candidatos</th><th>Fallos criticos</th></tr></thead>
+            <tbody>
+                <tr><td>Natalia-Coach</td><td>200</td><td>8,7612</td><td>8,7818 / 8,6786</td><td>85</td><td>2</td></tr>
+                <tr><td>Maximus</td><td>200</td><td>8,9352</td><td>8,9548 / 8,8568</td><td>100</td><td>3</td></tr>
+                <tr><td><strong>Total</strong></td><td><strong>400</strong></td><td>-</td><td>320 / 80 respuestas</td><td><strong>185</strong></td><td>5</td></tr>
+            </tbody>
+        </table>
+        <p>Los 185 candidatos tienen score entre 8,507 y 10, media 9,231, evidencia no vacia, hashes unicos y cobertura balanceada: 45 de seduccion general, 54 de psicologia femenina, 44 de comunicacion/relaciones y 42 de text game. La auditoria final encontro 0 coercion directa, 0 generalizaciones universales y 0 afirmaciones pseudocientificas en los candidatos.</p>
+
+        <h3>Persistencia y aislamiento</h3>
+        <table>
+            <thead><tr><th>Artefacto</th><th>Registros</th><th>Funcion</th></tr></thead>
+            <tbody>
+                <tr><td><code>advisor_eval_runs_v3</code></td><td>1</td><td>Versiones, modelos, umbral, estado y rutas de reporte.</td></tr>
+                <tr><td><code>advisor_eval_results_v3</code></td><td>400</td><td>Respuesta, sub-scores, metadatos, hashes, flags y decision para ambos splits.</td></tr>
+                <tr><td><code>advisor_training_candidates_v3</code> (SQLite)</td><td>185</td><td>Mensajes estructurados, evidencia, procedencia y revision humana pendiente.</td></tr>
+                <tr><td><code>advisor_training_candidates_v3</code> (Chroma)</td><td>185</td><td>Quinta coleccion semantica, separada de las cuatro colecciones operativas v2.</td></tr>
+                <tr><td><code>docs/advisor_benchmark_v3_final/</code></td><td>JSONL + JSON + HTML</td><td>Catalogo, 400 resultados, 185 candidatos, manifiesto, reporte y validacion.</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Aislamiento obligatorio:</strong> todos los candidatos tienen <code>human_review_status=pending</code>, <code>ready_for_finetune=false</code> y <code>evaluation_excluded=true</code>. La coleccion no entra automaticamente al retrieval live de Natalia o Maximus; evita un bucle de autoentrenamiento y la contaminacion de futuras evaluaciones. <code>/health</code> y <code>/api/training-status</code> reportan su conteo y <code>advisor_training_live_retrieval=false</code>.</p>
+
+        <h3>Consulta, reanudacion y validacion</h3>
+        <p><code>NataliaKB.buscar_respuestas_evaluadas(query, limit=3, agente="maximus", incluir_pendientes=True)</code> permite revisar semanticamente los candidatos. Con <code>incluir_pendientes=False</code> solo devuelve registros aprobados por una persona y listos para ajuste fino; actualmente devuelve cero por diseno.</p>
+        <ol>
+            <li><code>scratch/advisor_question_catalog_v3.py</code>: crea y valida las 200 preguntas estratificadas.</li>
+            <li><code>scratch/run_advisor_200_benchmark_v3.py --resume</code>: guarda progreso por pregunta y rota 7 claves Gemini ante limites o fallos temporales. Los limites por proyecto/modelo siguen siendo compartidos.</li>
+            <li><code>scratch/merge_advisor_benchmark_v3.py ... --apply --replace-collection</code>: exige las 400 respuestas, reaplica la compuerta global, crea backup y persiste.</li>
+            <li><code>scratch/validate_advisor_benchmark_v3.py</code>: verifica archivos, split, duplicados, SQLite, Chroma y metadatos. Resultado final: <code>passed=true</code>.</li>
+        </ol>
+        <p>Backup previo: <code>books_kb/backups/books_index_before_advisor_v3_20260713_124214.sqlite</code>. Reporte visual: <code>docs/advisor_benchmark_v3_final/report_latest.html</code>. Validacion: <code>docs/advisor_benchmark_v3_final/validation.json</code>.</p>
+        <p><strong>Pruebas finales:</strong> 81/81 no-backend y 118/118 backend, 199/199 en total. Las advertencias observadas son deprecaciones conocidas de FastAPI/Starlette y no representan fallos funcionales.</p>
+    </section>
+    <section id="rag-chat-frontend" style="margin:32px; padding:24px; border:1px solid #334155; border-radius:8px; background:#ffffff; color:#172033;">
+        <h2>Frontend de diagnostico RAG v2 (13 Jul 2026)</h2>
+        <p><code>rag_chat.html</code> agrega una consola operativa para consultar el RAG comun sin depender del estado del simulador. FastAPI la publica en <code>GET /rag-chat</code> y recibe consultas en <code>POST /api/rag-chat</code>. La URL local es <code>http://127.0.0.1:8011/rag-chat</code>. Esta version corrige la diferencia entre el benchmark offline y la consulta live: el endpoint interpreta preguntas libres, recupera evidencia orientada a la tarea y exige una respuesta Gemini fundamentada.</p>
+
+        <h3>Flujo de una consulta</h3>
+        <table>
+            <thead><tr><th>Etapa</th><th>Implementacion</th><th>Salida visible</th></tr></thead>
+            <tbody>
+                <tr><td>1. Configuracion</td><td>Selector <code>advisor</code>/<code>roleplay</code>. El asesor permite <code>natalia_coach</code>/<code>maximus</code>; el rol permite <code>boy</code>/<code>girl</code>. Perfil, historial y estado Gemini permanecen visibles.</td><td>Politica de recuperacion explicita y papel opuesto confirmado antes de escribir.</td></tr>
+                <tr><td>2. Plan de consulta</td><td><code>build_rag_chat_query_plan()</code> detecta intencion, cantidad, sinonimos y familias preferidas sin eliminar la pregunta original.</td><td>Preguntas libres con rutas optimizadas y fallback semantico general.</td></tr>
+                <tr><td>3. Recuperacion</td><td>Libros y chats v2, principios SQLite, casos positivos, pares conversacionales y, solo para Maximus, negativos como antipatrones.</td><td>Pool amplio reordenado por <code>rerank_rag_chat_cases()</code>: semantica, FTS, objetivo, fiabilidad, riesgo y politica.</td></tr>
+                <tr><td>4. Staged opcional</td><td><code>advisor_training_candidates_v3</code> se consulta solo con <code>include_staged=true</code>.</td><td>La tarjeta queda marcada como staged y conserva revision humana pendiente.</td></tr>
+                <tr><td>5. Respuesta</td><td><code>gemini-3.1-flash-lite</code> sintetiza evidencia con <code>build_grounded_rag_chat_prompt()</code> y <code>validate_rag_chat_payload()</code>.</td><td>Respuesta directa; si se piden N opciones, se exigen exactamente N.</td></tr>
+                <tr><td>6. Trazabilidad</td><td>Normalizacion con fuente, familia, ID, riesgo, fiabilidad, score, extracto y texto acotado.</td><td><code>citations</code> dentro de cada respuesta y panel expandible de evidencia.</td></tr>
+                <tr><td>7. Roll play</td><td><code>build_roleplay_rag_prompt()</code> usa conversaciones auditadas, casos positivos e historial; excluye negativos y staged. <code>validate_roleplay_payload()</code> impide consejo meta, coercion y nombres internos inventados.</td><td>Uno a tres mensajes como el papel opuesto, sin explicaciones del asesor y con fuentes visibles fuera del personaje.</td></tr>
+                <tr><td>8. Evaluacion del usuario</td><td>La misma generacion devuelve <code>roleplay_score</code> y <code>roleplay_feedback</code>. Puntua coherencia, naturalidad, especificidad, reciprocidad, avance y limites. Una orden de inicio devuelve score 0.</td><td>Tarjeta separada con nota 1-10, acierto y mejora breve; no interrumpe la voz del personaje.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Contrato API</h3>
+        <table>
+            <thead><tr><th>Direccion</th><th>Campos</th><th>Reglas</th></tr></thead>
+            <tbody>
+                <tr><td>Request</td><td><code>message</code>, <code>agent</code>, <code>mode=advisor|roleplay</code>, <code>user_role=boy|girl</code>, <code>level</code>, <code>history</code>, <code>include_staged</code>; <code>generate_answer</code> queda solo por compatibilidad.</td><td>Mensaje entre 3 y 3.000 caracteres; el chat fuerza generacion Gemini.</td></tr>
+                <tr><td>Response</td><td><code>answer</code>, <code>roleplay_score</code>, <code>roleplay_feedback</code>, <code>suggestions</code>, <code>citations</code>, <code>evidence</code>, <code>mode</code>, <code>user_role</code>, <code>assistant_role</code>, conteos, plan, modelo y latencia.</td><td>Cada respuesta muestra evaluacion y fuentes; ausencia de fuente queda visible.</td></tr>
+                <tr><td>Salud</td><td><code>gemini_connection_status</code>, modelo activo, siete claves, ultimo exito y ultimo error.</td><td><code>configured</code> no se confunde con <code>connected</code>; conectado exige una llamada real exitosa.</td></tr>
+                <tr><td>Seguridad</td><td>Guardrail dedicado <code>validate_rag_chat_payload()</code> y politicas RAG v2.</td><td>Bloquea coercion, generalizaciones universales y respuestas incompletas por cantidad.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Aislamiento y operacion</h3>
+        <ul>
+            <li>La opcion staged inicia apagada y no modifica <code>advisor_training_live_retrieval=false</code>.</li>
+            <li>Los 185 candidatos siguen con <code>human_review_status=pending</code>, <code>ready_for_finetune=false</code> y <code>evaluation_excluded=true</code>.</li>
+            <li>Operacion prevista: <code>GEMINI_LIVE_ENABLED=1</code>, <code>GEMINI_MAX_ATTEMPTS_PER_MODEL=3</code>, modelo principal <code>gemini-3.1-flash-lite</code> y fallback <code>gemini-2.5-flash-lite</code>.</li>
+            <li>El prompt sintetiza la evidencia relevante, ignora fragmentos ajenos, declara incertidumbre y no inventa citas, numeros ni intenciones.</li>
+            <li>Responsive verificado: tres columnas con scroll interno en escritorio; evidencia inferior en tableta; controles compactos y estado Gemini visible en movil. Cero overflow horizontal.</li>
+            <li>QA live: 9/9 preguntas de aperturas, pickup lines, respuesta, cita, contacto, interes, ritmo, rechazo y conflicto usaron Gemini y devolvieron seis citas cada una. Las dos pruebas de apertura devolvieron 5/5 ejemplos en 7-8 s.</li>
+            <li>Baseline: 124/124 pruebas backend y 81/81 no-backend. Se agregaron y aprobaron cuatro casos de roll play; la coleccion vigente contiene 209 pruebas. La prueba de coherencia de sesion completa tarda aproximadamente 140 s por si sola.</li>
+            <li>El benchmark offline de 400 respuestas no equivale al endpoint live: recibia conceptos esperados y usaba Gemini como generador/juez. Sus medias se conservan como QA offline, no como score de produccion.</li>
+            <li>Roll play validado en ambos sentidos: usuario chica/IA chico y usuario chico/IA chica. Una sesion real de dos turnos mantuvo el personaje, uso historial y mostro seis fuentes por respuesta.</li>
+            <li>Responsive del roll play: 1280 px y 390 px sin overflow; cambio de modo no desplaza la pantalla al compositor. Suite recogida: 209 pruebas; cuatro casos nuevos cubren plan, prompt, contrato, papel opuesto y validacion.</li>
+            <li>Reporte reproducible: <code>docs/rag_chat_roleplay_qa_20260713.json</code>.</li>
+            <li>Evaluacion live del usuario: el comando inicial se normaliza a score 0 sin tarjeta; el segundo turno real devolvio 9/10, comentario de dos frases, personaje consistente y seis fuentes. La tarjeta fue verificada en 1280 px y 390 px sin overflow.</li>
+        </ul>
+    </section>
 </body>
 </html>

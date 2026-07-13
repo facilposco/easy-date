@@ -182,6 +182,7 @@
 - Una cuota agotada se registra como `pending_quota`, no como `REVIEW`: el proceso escribe el reporte parcial y termina tras el primer 429. Esto evita falsos problemas de calidad y permite reanudar una auditoria limpia cuando Gemini este disponible.
 - Todo `REVIEW` semantico confirmado se repara por bloque con `scratch\\repair_semantic_translation_blocks.py`: conserva original, traduccion anterior, hallazgo y version corregida en JSON de auditoria, actualiza solo el cache del bloque y obliga a repetir QA semantico antes de cualquier ingesta.
 - El reparador semantico es reanudable: conserva bloques `repaired` en su reporte y en una corrida posterior procesa solamente los `REVIEW` restantes despues de un `pending_quota`.
+- La auditoria semantica agrupa todas las muestras seleccionadas de un mismo libro en una solicitud JSON estructurada. Mantiene el 12% de cobertura (minimo 3, maximo 12), pero reduce solicitudes de una por bloque a una por libro, evitando que la cuota limite una revision larga antes de cubrir el lote.
 
 ## Verificacion minima antes de reportar cambios
 
@@ -189,3 +190,67 @@
 - Correr `pytest -q tests -p no:cacheprovider -rs` cuando se cambie backend, logica del simulador o flujo de Nivel 1.
 - Si se modifica experiencia visual o flujo de chat, validar el simulador en Chrome.
 - Documentar resultados importantes en `docs/`.
+
+## RAG v2 integral Natalia y Maximus - 2026-07-13
+
+- Alcance: el RAG comun ya no esta limitado a text game. Enruta y recupera conocimiento de `seduccion_general`, `psicologia_femenina`, `comunicacion_relaciones` y `text_game` para asesorar sobre atraccion, seleccion, limites, rechazo, conflicto, citas y mensajeria.
+- Roles separados sobre una memoria comun:
+  - Natalia-Persona conversa como la mujer del simulador y solo imita ejemplos conversacionales auditados compatibles con el contexto.
+  - Natalia-Coach usa evidencia permitida de forma silenciosa para orientar mensajes y decisiones.
+  - Maximus explica estrategias, compara fuentes, muestra incertidumbre y puede revisar material riesgoso como critica o antipatron.
+- Regla epistemica: `psicologia_femenina` significa patrones e hipotesis atribuibles a fuentes y al caso concreto, con variacion individual. Nunca presentar afirmaciones universales sobre mujeres como hechos ni aconsejar coercion, celos fabricados, retirada instrumental de atencion, confusion intencional o dominio.
+- Modelo vectorial unico y explicito: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, 384 dimensiones, cosine, version `easy-date-rag-v2-2026-07`. El fallback a colecciones legacy esta apagado; solo se habilita deliberadamente con `RAG_V2_ALLOW_LEGACY_FALLBACK=1`.
+- Colecciones operativas en `chroma_db`: `natalia_books_v2` (19.681), `natalia_book_conversations_v2` (403 ventanas), `natalia_success_cases_v2` (4.806) y `natalia_negative_cases_v2` (1.781). Todos los metadatos conservan claves inglesas y aliases en espanol: `titulo_libro`, `autor`, `temas`, `dificultad` y `perfil_chica`.
+- Parent-child: 4.719 chunks fuente actuan como padres y producen 19.681 hijos de maximo 96 tokens, overlap 16. La recuperacion usa el hijo para precision y rehidrata el padre/ventana para contexto.
+- Fiabilidad de fuente: `research_informed_book`, `identified_practitioner`, `anecdotal_pua` y `unknown_or_marketing`. Natalia no recibe automaticamente las dos ultimas; Maximus puede verlas con etiqueta, penalizacion y atribucion.
+- Principios estructurados: `book_principles_v2` tiene 1.598 filas y `principle_case_links_v2` 2.984 enlaces sin huerfanos. Los enlaces son `retrieval_similarity_noncausal`: sirven para recuperar casos relacionados, no prueban causalidad.
+- Politicas de voz de principios: 987 `strategy`, 79 `strategy_guarded`, 499 `maximus_context_only` y 33 `maximus_only_review`.
+- Conversaciones de libros: 74 auditadas; 4 elegibles y 70 en cuarentena. OCR conversacional reconstruido: 200 candidatos, 165 elegibles, 35 revision manual y 2.783 turnos. Solo `training_eligible` entra en Chroma; roles izquierda/derecha desconocidos no se convierten en etiquetas SFT directas.
+- Dataset de entrenamiento: `docs\training_v2_final\`. Natalia contiene 56 registros, 50 aptos para fine-tuning y 6 bloqueados/revision. Maximus contiene 4.662 registros para RAG/evaluacion y 0 aprobados para SFT directo: su pericia se construye con recuperacion atribuida, no memorizando ciegamente libros de fiabilidad desigual.
+- Benchmark abierto: `docs\natalia_rag_gold_v2_20260713_100833.*`, 24 consultas, 18 OK y 6 por revisar; routing 100%, aislamiento de negativos 100%, recall@3 58,33%. El hit exacto de IDs sigue bajo y no debe describirse como benchmark perfecto.
+- Reportes autoritativos: `docs\rag_v2_final_latest.html/json`, `docs\mapa_db_natalia.html`, `docs\REPORTE_FINAL_RAG_V2.md` y `books_kb\REPORTE_FINAL.md`.
+- API publica: `search_kb.NataliaKB` expone `buscar_teoria(query, limit=5, agente=...)`, `buscar_ejemplos_chat(query, limit=3, agente=...)` y `obtener_conversacion_completa(id)`.
+- Reconstruccion reproducible, en orden: `scratch\audit_book_conversations_v2.py`, `scratch\reconstruct_chat_ocr_v2.py`, `scratch\build_book_principles_v2.py`, `scratch\rebuild_rag_v2.py`, `scratch\export_agent_training_v2.py`, `scratch\build_rag_gold_catalog_v2.py`, `scratch\qa_rag_gold_v2.py` y `scratch\report_rag_v2_final.py`.
+- Verificacion final: integridad SQLite `ok`, 0 errores de claves foraneas, JSONL estricto 56/56 y 4.662/4.662, pruebas `81/81` no-backend y `118/118` backend (199 totales).
+
+## Benchmark dual y candidatos de entrenamiento v3 - 2026-07-13
+
+- Catalogo reproducible: `scratch\advisor_question_catalog_v3.py` genera 200 preguntas unicas, 20 temas x 10, cuatro dominios x 50 y cuatro dificultades x 50. Split fijo: 160 train y 40 holdout.
+- Se evaluaron Natalia-Coach y Maximus sobre cada pregunta: 400 respuestas. Natalia-Persona queda fuera porque su contrato es conversar como la mujer del simulador, no dar asesoria.
+- Generacion: 5 preguntas con `gemini-2.5-flash-lite` y 195 con `gemini-3.1-flash-lite`. Juicio final: llamada separada con `gemini-3.1-flash-lite`, complementada por evaluador de reglas (35%) y semantico (25%); el juez LLM pesa 40%.
+- Compuerta: score final >= 8,5, reglas >= 8, semantica >= 7, juez >= 8, grounding/seguridad minimos, desacuerdo <= 1,5, cero banderas criticas y split train. Advertencias contra presion/manipulacion no se confunden con recomendaciones coercitivas.
+- Resultado: Natalia-Coach 8,7612 de media y 85 candidatos; Maximus 8,9352 y 100 candidatos. Total: 185, score medio 9,231, rango 8,507-10.
+- Persistencia SQLite: `advisor_eval_runs_v3` (1), `advisor_eval_results_v3` (400) y `advisor_training_candidates_v3` (185). Chroma: quinta coleccion `advisor_training_candidates_v3` (185).
+- El holdout nunca se exporta ni indexa. Todos los candidatos siguen con `human_review_status=pending`, `ready_for_finetune=false` y `evaluation_excluded=true`; no activar retrieval live ni fine-tuning sin revision humana.
+- API de revision: `NataliaKB.buscar_respuestas_evaluadas(query, limit=3, agente=..., incluir_pendientes=True)`. Con `incluir_pendientes=False` solo devuelve aprobados humanos; actualmente son 0.
+- Ejecucion y cierre: `scratch\run_advisor_200_benchmark_v3.py`, `scratch\merge_advisor_benchmark_v3.py` y `scratch\validate_advisor_benchmark_v3.py`. El runner reanuda por JSONL y rota las 7 claves Gemini con offsets distintos; las cuotas por proyecto/modelo siguen siendo compartidas.
+- Artefactos autoritativos: `docs\advisor_benchmark_v3_final\report_latest.html`, `manifest.json`, `all_results.jsonl`, `training_candidates.jsonl` y `validation.json` (`passed=true`). Backup: `books_kb\backups\books_index_before_advisor_v3_20260713_124214.sqlite`.
+- `backend\server.py` solo expone conteo/estado de la coleccion v3. `advisor_training_live_retrieval=false` evita autoentrenamiento y contaminacion de futuras evaluaciones.
+- Suite completa tras integrar v3: 81 pruebas no-backend + 118 backend = 199 aprobadas. Las advertencias son deprecaciones conocidas de FastAPI/Starlette, sin fallos funcionales.
+
+## Frontend de diagnostico RAG - 2026-07-13
+
+- URL local: `http://127.0.0.1:8011/rag-chat`. Archivo: `rag_chat.html`; FastAPI lo sirve con `GET /rag-chat`.
+- Contrato: `POST /api/rag-chat` recibe `message`, `agent`, `mode`, `user_role`, `level`, `history` e `include_staged`; `generate_answer` se conserva por compatibilidad, pero el laboratorio obliga a generar con Gemini. Devuelve respuesta, sugerencias, `citations`, evidencia normalizada, conteos por fuente/familia, papel de la IA, modo de generacion y latencia.
+- Agentes: `natalia_coach` consulta teoria segura, conversaciones auditadas y casos positivos; `maximus` puede sumar casos negativos como antipatrones. Ninguno simula a Natalia-Persona en esta vista.
+- Capas consultables: `natalia_books_v2`, `natalia_book_conversations_v2`, `natalia_success_cases_v2`, `natalia_negative_cases_v2`, principios SQLite y pares conversacionales. La coleccion `advisor_training_candidates_v3` solo entra cuando el usuario activa `include_staged`.
+- Aislamiento v3: el toggle staged empieza apagado. Mostrar esos 185 candidatos en el laboratorio no cambia `advisor_training_live_retrieval=false`, `human_review_status=pending`, `ready_for_finetune=false` ni `evaluation_excluded=true`.
+- Comprension de preguntas libres: `build_rag_chat_query_plan()` detecta intencion, cantidad solicitada, sinonimos y familias preferidas. `rerank_rag_chat_cases()` combina consulta original + expansion, penaliza evidencia ajena o riesgosa y conserva una ruta semantica general para preguntas no catalogadas.
+- Intenciones optimizadas: aperturas, respuesta a mensajes, transicion a cita, intercambio de contacto, perfil, senales de interes, ritmo, limites/rechazo y conflictos de relacion. No son un catalogo cerrado: la consulta original siempre entra en vector + FTS.
+- Gemini obligatorio: proceso local con `GEMINI_LIVE_ENABLED=1`, modelo principal `gemini-3.1-flash-lite`, siete claves y maximo tres intentos por modelo. `/health` distingue `configured`, `connected`, `degraded`, `disabled` y `unavailable`; solo `connected` significa que una llamada real termino bien.
+- Guardrail propio: el chat usa `validate_rag_chat_payload()`, separado del validador del simulador. Si el usuario pide N opciones, la respuesta solo se acepta con N elementos completos.
+- Fuentes visibles: cada mensaje del asesor incluye una lista `Fuentes RAG utilizadas`; el panel lateral conserva extracto, texto, ID, riesgo, fiabilidad y score. Si no hay fuente, se muestra de forma explicita.
+- Responsive: escritorio usa tres columnas con scroll interno estable; tableta mueve evidencia a una banda inferior; movil compacta configuracion, mantiene visible el estado Gemini y evita desbordamiento horizontal.
+- QA real: 9/9 preguntas diversas generadas con Gemini y con seis citas por respuesta; las consultas de cinco abridores y de `pickup lines` devolvieron exactamente cinco. Frontend escritorio y movil: cero errores, fuentes visibles, modo IA y cero overflow horizontal. Baseline: 124/124 backend y 81/81 no-backend; luego se agregaron y aprobaron cuatro casos de roll play. La coleccion vigente contiene 209 pruebas.
+- Advertencia sobre el benchmark v3: las medias 8,7612 y 8,9352 corresponden al flujo offline con Gemini, preguntas estructuradas y conceptos esperados; no deben citarse como score del endpoint live. La validacion de produccion debe ejecutar preguntas libres contra `/api/rag-chat`.
+
+## Roll play RAG - 2026-07-13
+
+- `mode=roleplay` separa la actuacion conversacional del modo `advisor`. `user_role=boy|girl` fija el papel del usuario y `roleplay_assistant_role()` asigna automaticamente el opuesto.
+- `build_roleplay_rag_prompt()` exige respuestas breves y exclusivamente en personaje. Si el usuario pide iniciar, Gemini escribe el primer mensaje; en turnos posteriores usa hasta diez entradas del historial.
+- La recuperacion prioriza conversaciones auditadas y casos positivos. Excluye negativos y `advisor_training_v3_staged`, aunque el toggle hubiera quedado activo antes de cambiar de modo.
+- `validate_roleplay_payload()` bloquea consejo meta, coercion, generalizaciones, respuestas excesivamente largas y nombres internos inventados como Natalia o Maximus. Las fuentes RAG siguen visibles fuera del texto actuado.
+- Frontend: selector `Asesor`/`Roll play`, selector `Soy el chico`/`Soy la chica`, etiquetas Chico/Chica y subtitulo que muestra el papel opuesto. Cambiar modo o papel reinicia el historial para no mezclar personajes.
+- QA: ambos sentidos de papel y una continuidad de dos turnos usaron `gemini_roleplay_grounded` con seis citas. Responsive validado en 1280 px y 390 px sin overflow. Hay 209 pruebas recogidas; las cuatro nuevas pruebas de rol pasan. Reporte: `docs/rag_chat_roleplay_qa_20260713.json`.
+- Evaluacion del usuario: la misma llamada Gemini devuelve `roleplay_score` (1-10) y `roleplay_feedback` (maximo dos frases) para cada respuesta real. Mide coherencia, naturalidad, especificidad, reciprocidad, avance y respeto de limites. Las ordenes de inicio usan score 0 y no muestran tarjeta para evitar una nota ficticia.
+- El frontend presenta la nota en una tarjeta separada del texto en personaje. Colores: 8-10 verde, 5-7 ambar y 1-4 rojo; las fuentes permanecen debajo. QA real: orden inicial sin nota y segundo turno con 9/10, feedback y seis citas; ancho movil 390 px sin overflow.

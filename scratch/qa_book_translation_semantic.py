@@ -82,21 +82,25 @@ def parse_json_response(text: str) -> dict:
     return json.loads(clean[start : end + 1])
 
 
-def review_pair(translator: ingest.LocalGeminiTranslator, source: str, translation: str) -> dict:
-    prompt = f"""Audita una traduccion para un sistema educativo de conversaciones.
-Compara original y traduccion sin reescribirlos. Evalua fidelidad semantica y espanol latino.
-Devuelve SOLO JSON valido con estas claves:
-fidelity_1_10 (numero), latam_1_10 (numero), omission (string corto o vacio),
-addition (string corto o vacio), terminology_issue (string corto o vacio),
-verdict (PASS o REVIEW), rationale (maximo 35 palabras).
-Marca REVIEW si se cambia el sentido, se omite algo relevante, se agrega una idea o el tono latino es poco natural.
+def review_book_pairs(translator: ingest.LocalGeminiTranslator, pairs: list[dict]) -> dict[int, dict]:
+    rendered = "\n\n".join(
+        f"BLOQUE {pair['block']}\nORIGINAL:\n{pair['source']}\n\nTRADUCCION:\n{pair['translation']}"
+        for pair in pairs
+    )
+    prompt = f"""Audita traducciones para un sistema educativo de conversaciones.
+Compara cada original y traduccion sin reescribirlos. Evalua fidelidad semantica y espanol latino.
+Devuelve SOLO JSON valido con la forma exacta:
+{{"reviews":[{{"block":numero,"fidelity_1_10":numero,"latam_1_10":numero,"omission":"","addition":"","terminology_issue":"","verdict":"PASS o REVIEW","rationale":"maximo 35 palabras"}}]}}
+Incluye una entrada por cada bloque. Marca REVIEW si cambia el sentido, omite algo relevante,
+agrega una idea o el tono latino es poco natural. Conserva nombres propios, marcas y terminos
+de apps como Tinder, Bumble, Hinge, match, WhatsApp e Instagram.
 
-ORIGINAL:
-{source}
-
-TRADUCCION:
-{translation}"""
-    return parse_json_response(translator.generate(prompt))
+{rendered}"""
+    payload = parse_json_response(translator.generate(prompt))
+    reviews = payload.get("reviews")
+    if not isinstance(reviews, list):
+        raise ValueError("Reviewer did not return a reviews array")
+    return {int(review["block"]): review for review in reviews if isinstance(review, dict) and "block" in review}
 
 
 def render_html(path: Path, payload: dict) -> None:
@@ -167,6 +171,8 @@ def main() -> int:
             sample_count = min(args.max_samples, max(args.min_samples, math.ceil(len(blocks) * args.sample_ratio)))
             indices = sampled_indices(blocks, sample_count, str(row["md5"]))
             book_status = "pass"
+            book_items: list[dict] = []
+            pairs: list[dict] = []
             for zero_index in indices:
                 source = blocks[zero_index]
                 translation = cached_translation(row["title_guess"], zero_index + 1, source)
@@ -177,25 +183,36 @@ def main() -> int:
                 elif args.dry_run:
                     item["review"] = {"verdict": "DRY_RUN"}
                 else:
-                    try:
-                        review = review_pair(reviewer, source, translation)
+                    pairs.append({"block": zero_index + 1, "source": source, "translation": translation})
+                book_items.append(item)
+            if pairs and not args.dry_run:
+                try:
+                    reviews = review_book_pairs(reviewer, pairs)
+                    for item in book_items:
+                        if item["block"] not in reviews:
+                            item.update({"status": "review", "error": "Reviewer omitted this block."})
+                            book_status = "review"
+                            continue
+                        review = reviews[item["block"]]
                         item["review"] = review
                         if review.get("verdict") != "PASS" or float(review.get("fidelity_1_10", 0)) < 8 or float(review.get("latam_1_10", 0)) < 8:
                             item["status"] = "review"
                             book_status = "review"
-                    except Exception as exc:  # noqa: BLE001 - report individual reviewer failures
-                        error = str(exc)
-                        if "429" in error or "RESOURCE_EXHAUSTED" in error or "quota exhausted" in error.lower():
-                            item.update({"status": "pending_quota", "error": error[-500:]})
-                            book_status = "pending_quota"
-                            quota_pending = True
-                            quota_error = error[-500:]
-                        else:
-                            item.update({"status": "review", "error": error[-500:]})
-                            book_status = "review"
-                samples.append(item)
-                if quota_pending:
-                    break
+                except Exception as exc:  # noqa: BLE001 - preserve a quota gate without creating false reviews
+                    error = str(exc)
+                    if "429" in error or "RESOURCE_EXHAUSTED" in error or "quota exhausted" in error.lower():
+                        quota_pending = True
+                        quota_error = error[-500:]
+                        book_status = "pending_quota"
+                        for item in book_items:
+                            if item["block"] in {pair["block"] for pair in pairs}:
+                                item.update({"status": "pending_quota", "error": quota_error})
+                    else:
+                        book_status = "review"
+                        for item in book_items:
+                            if item["block"] in {pair["block"] for pair in pairs}:
+                                item.update({"status": "review", "error": error[-500:]})
+            samples.extend(book_items)
             books.append({"book": row["title_guess"], "status": book_status, "samples": len(indices)})
             print(json.dumps({"book": row["title_guess"], "status": book_status}, ensure_ascii=False), flush=True)
             if quota_pending:
