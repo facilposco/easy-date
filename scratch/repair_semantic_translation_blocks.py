@@ -70,7 +70,12 @@ def main() -> int:
     args = parser.parse_args()
 
     semantic = read_json(args.semantic_report)
-    wanted = [item for item in semantic.get("samples", []) if item.get("status") == "review"]
+    all_reviewed = [item for item in semantic.get("samples", []) if item.get("status") == "review"]
+    output = DOCS / f"{args.output_prefix}.json"
+    previous = read_json(output) if output.exists() else {"results": []}
+    results: list[dict] = [row for row in previous.get("results", []) if row.get("status") == "repaired"]
+    already_repaired = {(str(row.get("book")), int(row.get("block"))) for row in results if row.get("book") and row.get("block")}
+    wanted = [item for item in all_reviewed if (str(item.get("book")), int(item.get("block"))) not in already_repaired]
     if args.limit:
         wanted = wanted[: args.limit]
     manifest = read_json(args.manifest)
@@ -79,7 +84,6 @@ def main() -> int:
     os.environ["GEMINI_MODEL"] = args.model
     os.environ["GEMINI_MODEL_FALLBACKS"] = args.fallback_model
     os.environ["GEMINI_FAIL_FAST_429"] = "1"
-    results: list[dict] = []
     quota_pending = False
     try:
         translator = ingest.LocalGeminiTranslator()
@@ -124,13 +128,13 @@ def main() -> int:
                 os.environ[key] = value
 
     summary = {
-        "requested": len(wanted),
+        "requested": len(all_reviewed),
+        "remaining_before_run": len(wanted),
         "repaired": sum(row["status"] == "repaired" for row in results),
         "failed": sum(row["status"] == "failed" for row in results),
         "pending_quota": sum(row["status"] == "pending_quota" for row in results),
     }
     payload = {"created_at": datetime.now().isoformat(timespec="seconds"), "semantic_report": str(args.semantic_report), "quota_pending": quota_pending, "summary": summary, "results": results}
-    output = DOCS / f"{args.output_prefix}.json"
     write_json(output, payload)
     print(json.dumps({"json": str(output), **summary}, ensure_ascii=False))
     return 3 if quota_pending else (0 if summary["failed"] == 0 else 2)

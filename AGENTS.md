@@ -181,6 +181,7 @@
 - El QA semantico activa `GEMINI_FAIL_FAST_429=1` durante su ejecucion: ante la primera cuota agotada detiene la muestra, deja la compuerta pendiente y no rota innecesariamente las siete claves.
 - Una cuota agotada se registra como `pending_quota`, no como `REVIEW`: el proceso escribe el reporte parcial y termina tras el primer 429. Esto evita falsos problemas de calidad y permite reanudar una auditoria limpia cuando Gemini este disponible.
 - Todo `REVIEW` semantico confirmado se repara por bloque con `scratch\\repair_semantic_translation_blocks.py`: conserva original, traduccion anterior, hallazgo y version corregida en JSON de auditoria, actualiza solo el cache del bloque y obliga a repetir QA semantico antes de cualquier ingesta.
+- El reparador semantico es reanudable: conserva bloques `repaired` en su reporte y en una corrida posterior procesa solamente los `REVIEW` restantes despues de un `pending_quota`.
 
 ## Verificacion minima antes de reportar cambios
 
