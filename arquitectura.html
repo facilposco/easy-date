@@ -1056,7 +1056,7 @@
         <table><thead><tr><th>Etapa</th><th>Escritura</th><th>Compuerta</th></tr></thead><tbody>
         <tr><td>Stage principal y reparacion</td><td>Solo cache y JSON de stage</td><td>No modifica SQLite ni Chroma.</td></tr>
         <tr><td>QA local consolidado</td><td>Reportes JSON/HTML</td><td>Bloques faltantes, mojibake, marcadores tecnicos y longitud anomala deben quedar sin bloqueos.</td></tr>
-        <tr><td>QA semantico</td><td>Reportes JSON/HTML</td><td>Gemini valida fidelidad, gramatica LATAM, contexto, omisiones y agregados. Agrupa las muestras de cada libro en una solicitud JSON, conservando la cobertura y reduciendo solicitudes. Recibe ambos stages y corta en el primer 429 con <code>pending_quota</code>, no un falso REVIEW.</td></tr>
+        <tr><td>QA semantico</td><td>Reportes JSON/HTML</td><td>Gemini valida fidelidad, gramatica LATAM, contexto, omisiones y agregados. Agrupa las muestras de cada libro en una solicitud JSON, conservando la cobertura y reduciendo solicitudes. Prefiere Flash; si no sostiene dos pruebas largas, Flash Lite audita el lote y Flash queda para revision selectiva posterior. Recibe ambos stages y corta en el primer 429 con <code>pending_quota</code>, no un falso REVIEW.</td></tr>
         <tr><td>Reparacion semantica dirigida</td><td><code>repair_semantic_translation_blocks.py</code></td><td>Corrige solo bloques con REVIEW, conserva original, version previa, hallazgo y correccion en el reporte de auditoria; luego exige repetir QA semantico. Si hay <code>pending_quota</code>, reanuda solo bloques restantes.</td></tr>
         <tr><td>Ingesta final</td><td>SQLite y Chroma, una sola vez y en serie</td><td>Solo despues de aprobar ambas compuertas.</td></tr>
         </tbody></table>
@@ -1189,7 +1189,7 @@
         <table>
             <thead><tr><th>Direccion</th><th>Campos</th><th>Reglas</th></tr></thead>
             <tbody>
-                <tr><td>Request</td><td><code>message</code>, <code>agent</code>, <code>mode=advisor|roleplay</code>, <code>user_role=boy|girl</code>, <code>level</code>, <code>history</code>, <code>include_staged</code>; <code>generate_answer</code> queda solo por compatibilidad.</td><td>Mensaje entre 3 y 3.000 caracteres; el chat fuerza generacion Gemini.</td></tr>
+                <tr><td>Request</td><td><code>message</code>, <code>agent</code>, <code>mode=advisor|roleplay</code>, <code>user_role=boy|girl</code>, <code>level</code>, <code>history</code>, <code>include_staged</code>; <code>generate_answer</code> queda solo por compatibilidad.</td><td><code>roleplay</code> acepta cualquier mensaje no vacio; <code>advisor</code> exige tres caracteres. Maximo general: 3.000.</td></tr>
                 <tr><td>Response</td><td><code>answer</code>, <code>roleplay_score</code>, <code>roleplay_feedback</code>, <code>suggestions</code>, <code>citations</code>, <code>evidence</code>, <code>mode</code>, <code>user_role</code>, <code>assistant_role</code>, conteos, plan, modelo y latencia.</td><td>Cada respuesta muestra evaluacion y fuentes; ausencia de fuente queda visible.</td></tr>
                 <tr><td>Salud</td><td><code>gemini_connection_status</code>, modelo activo, siete claves, ultimo exito y ultimo error.</td><td><code>configured</code> no se confunde con <code>connected</code>; conectado exige una llamada real exitosa.</td></tr>
                 <tr><td>Seguridad</td><td>Guardrail dedicado <code>validate_rag_chat_payload()</code> y politicas RAG v2.</td><td>Bloquea coercion, generalizaciones universales y respuestas incompletas por cantidad.</td></tr>
@@ -1204,13 +1204,29 @@
             <li>El prompt sintetiza la evidencia relevante, ignora fragmentos ajenos, declara incertidumbre y no inventa citas, numeros ni intenciones.</li>
             <li>Responsive verificado: tres columnas con scroll interno en escritorio; evidencia inferior en tableta; controles compactos y estado Gemini visible en movil. Cero overflow horizontal.</li>
             <li>QA live: 9/9 preguntas de aperturas, pickup lines, respuesta, cita, contacto, interes, ritmo, rechazo y conflicto usaron Gemini y devolvieron seis citas cada una. Las dos pruebas de apertura devolvieron 5/5 ejemplos en 7-8 s.</li>
-            <li>Baseline: 124/124 pruebas backend y 81/81 no-backend. Se agregaron y aprobaron cuatro casos de roll play; la coleccion vigente contiene 209 pruebas. La prueba de coherencia de sesion completa tarda aproximadamente 140 s por si sola.</li>
+            <li>Baseline: 124/124 pruebas backend y 81/81 no-backend. Se agregaron casos de roll play y cuatro variantes de mensaje corto; la coleccion vigente contiene 213 pruebas. La prueba de coherencia de sesion completa tarda aproximadamente 140 s por si sola.</li>
             <li>El benchmark offline de 400 respuestas no equivale al endpoint live: recibia conceptos esperados y usaba Gemini como generador/juez. Sus medias se conservan como QA offline, no como score de produccion.</li>
             <li>Roll play validado en ambos sentidos: usuario chica/IA chico y usuario chico/IA chica. Una sesion real de dos turnos mantuvo el personaje, uso historial y mostro seis fuentes por respuesta.</li>
-            <li>Responsive del roll play: 1280 px y 390 px sin overflow; cambio de modo no desplaza la pantalla al compositor. Suite recogida: 209 pruebas; cuatro casos nuevos cubren plan, prompt, contrato, papel opuesto y validacion.</li>
+            <li>Responsive del roll play: 1280 px y 390 px sin overflow; cambio de modo no desplaza la pantalla al compositor. Suite recogida: 213 pruebas.</li>
             <li>Reporte reproducible: <code>docs/rag_chat_roleplay_qa_20260713.json</code>.</li>
             <li>Evaluacion live del usuario: el comando inicial se normaliza a score 0 sin tarjeta; el segundo turno real devolvio 9/10, comentario de dos frases, personaje consistente y seis fuentes. La tarjeta fue verificada en 1280 px y 390 px sin overflow.</li>
+            <li>Mensajes ultracortos: <code>.</code>, <code>ok</code>, <code>:)</code> y un emoji pasan el endpoint. <code>short_roleplay_evaluation()</code> limita signos solos a 2/10 y senales breves a 4/10, con feedback fijo de baja informacion incluso si Gemini omite o infla la nota.</li>
         </ul>
+    </section>
+    <section id="produccion-vps" style="margin:32px; padding:24px; border:1px solid #334155; border-radius:8px; background:#ffffff; color:#172033;">
+        <h2>Produccion en VPS y Cloudflare (13 Jul 2026)</h2>
+        <p>La URL canonica es <code>https://date.facilpos.co/rag-chat</code>. La aplicacion ya no depende del equipo local ni de Cloudflare Tunnel: el registro A proxied apunta a <code>172.233.174.71</code>, Traefik termina TLS y enruta el trafico al contenedor <code>easy-date-rag</code> por la red Docker <code>zeus-network</code>.</p>
+        <table>
+            <thead><tr><th>Capa</th><th>Implementacion</th><th>Control operativo</th></tr></thead>
+            <tbody>
+                <tr><td>Acceso</td><td>Cloudflare Access, aplicacion <code>Easy Date RAG</code>, politica <code>Solo admins</code>.</td><td>Codigo de un solo uso enviado a <code>mercadeo3@nuevainformatica.com</code>. Google SSO nativo requiere credenciales OAuth adicionales.</td></tr>
+                <tr><td>Red y TLS</td><td>DNS A proxied, Cloudflare Edge y Traefik con redireccion HTTP a HTTPS.</td><td>No ejecutar <code>cloudflared</code> ni crear rutas Tunnel para este dominio.</td></tr>
+                <tr><td>Aplicacion</td><td>FastAPI en el contenedor <code>easy-date-rag</code>, puerto interno 8011, healthcheck Docker.</td><td>Politica <code>unless-stopped</code>; limite 2.5 GB RAM, 3.5 GB con swap y 1.6 CPU.</td></tr>
+                <tr><td>RAG</td><td>Codigo, SQLite y ChromaDB en <code>/opt/easy-date-rag/app</code>.</td><td>Montaje escribible: Chroma necesita bloqueos y metadatos SQLite durante la consulta.</td></tr>
+                <tr><td>Secretos</td><td><code>/opt/easy-date-rag/.env</code>, fuera de la imagen.</td><td>Permisos 600; siete claves Gemini rotables sin exponer su valor.</td></tr>
+            </tbody>
+        </table>
+        <p>Verificacion del cierre: contenedor <code>running</code>, health <code>healthy</code>, reinicio <code>unless-stopped</code>, Gemini <code>connected</code>, RAG v2 cargado y acceso publico redirigido al login de Cloudflare. Los artefactos reproducibles viven en <code>deploy/vps/</code>.</p>
     </section>
 </body>
 </html>

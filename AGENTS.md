@@ -183,6 +183,7 @@
 - Todo `REVIEW` semantico confirmado se repara por bloque con `scratch\\repair_semantic_translation_blocks.py`: conserva original, traduccion anterior, hallazgo y version corregida en JSON de auditoria, actualiza solo el cache del bloque y obliga a repetir QA semantico antes de cualquier ingesta.
 - El reparador semantico es reanudable: conserva bloques `repaired` en su reporte y en una corrida posterior procesa solamente los `REVIEW` restantes despues de un `pending_quota`.
 - La auditoria semantica agrupa todas las muestras seleccionadas de un mismo libro en una solicitud JSON estructurada. Mantiene el 12% de cobertura (minimo 3, maximo 12), pero reduce solicitudes de una por bloque a una por libro, evitando que la cuota limite una revision larga antes de cubrir el lote.
+- Politica de capacidad semantica: usar `gemini-2.5-flash` como auditor preferido. Si no sostiene dos pruebas largas o devuelve `429`, ejecutar el QA agrupado con `gemini-2.5-flash-lite`, manteniendo muestra, JSON estructurado y umbrales; dejar Flash para una revision selectiva posterior de casos sensibles o `REVIEW` cuando su cuota vuelva.
 
 ## Verificacion minima antes de reportar cambios
 
@@ -241,7 +242,7 @@
 - Guardrail propio: el chat usa `validate_rag_chat_payload()`, separado del validador del simulador. Si el usuario pide N opciones, la respuesta solo se acepta con N elementos completos.
 - Fuentes visibles: cada mensaje del asesor incluye una lista `Fuentes RAG utilizadas`; el panel lateral conserva extracto, texto, ID, riesgo, fiabilidad y score. Si no hay fuente, se muestra de forma explicita.
 - Responsive: escritorio usa tres columnas con scroll interno estable; tableta mueve evidencia a una banda inferior; movil compacta configuracion, mantiene visible el estado Gemini y evita desbordamiento horizontal.
-- QA real: 9/9 preguntas diversas generadas con Gemini y con seis citas por respuesta; las consultas de cinco abridores y de `pickup lines` devolvieron exactamente cinco. Frontend escritorio y movil: cero errores, fuentes visibles, modo IA y cero overflow horizontal. Baseline: 124/124 backend y 81/81 no-backend; luego se agregaron y aprobaron cuatro casos de roll play. La coleccion vigente contiene 209 pruebas.
+- QA real: 9/9 preguntas diversas generadas con Gemini y con seis citas por respuesta; las consultas de cinco abridores y de `pickup lines` devolvieron exactamente cinco. Frontend escritorio y movil: cero errores, fuentes visibles, modo IA y cero overflow horizontal. Baseline: 124/124 backend y 81/81 no-backend; luego se agregaron pruebas de roll play y mensajes cortos. La coleccion vigente contiene 213 pruebas.
 - Advertencia sobre el benchmark v3: las medias 8,7612 y 8,9352 corresponden al flujo offline con Gemini, preguntas estructuradas y conceptos esperados; no deben citarse como score del endpoint live. La validacion de produccion debe ejecutar preguntas libres contra `/api/rag-chat`.
 
 ## Roll play RAG - 2026-07-13
@@ -251,6 +252,18 @@
 - La recuperacion prioriza conversaciones auditadas y casos positivos. Excluye negativos y `advisor_training_v3_staged`, aunque el toggle hubiera quedado activo antes de cambiar de modo.
 - `validate_roleplay_payload()` bloquea consejo meta, coercion, generalizaciones, respuestas excesivamente largas y nombres internos inventados como Natalia o Maximus. Las fuentes RAG siguen visibles fuera del texto actuado.
 - Frontend: selector `Asesor`/`Roll play`, selector `Soy el chico`/`Soy la chica`, etiquetas Chico/Chica y subtitulo que muestra el papel opuesto. Cambiar modo o papel reinicia el historial para no mezclar personajes.
-- QA: ambos sentidos de papel y una continuidad de dos turnos usaron `gemini_roleplay_grounded` con seis citas. Responsive validado en 1280 px y 390 px sin overflow. Hay 209 pruebas recogidas; las cuatro nuevas pruebas de rol pasan. Reporte: `docs/rag_chat_roleplay_qa_20260713.json`.
+- QA: ambos sentidos de papel y una continuidad de dos turnos usaron `gemini_roleplay_grounded` con seis citas. Responsive validado en 1280 px y 390 px sin overflow. Hay 213 pruebas recogidas; las pruebas de rol pasan. Reporte: `docs/rag_chat_roleplay_qa_20260713.json`.
 - Evaluacion del usuario: la misma llamada Gemini devuelve `roleplay_score` (1-10) y `roleplay_feedback` (maximo dos frases) para cada respuesta real. Mide coherencia, naturalidad, especificidad, reciprocidad, avance y respeto de limites. Las ordenes de inicio usan score 0 y no muestran tarjeta para evitar una nota ficticia.
 - El frontend presenta la nota en una tarjeta separada del texto en personaje. Colores: 8-10 verde, 5-7 ambar y 1-4 rojo; las fuentes permanecen debajo. QA real: orden inicial sin nota y segundo turno con 9/10, feedback y seis citas; ancho movil 390 px sin overflow.
+- Longitud de mensajes: `roleplay` acepta cualquier mensaje no vacio, incluidos `.`, `ok`, `:)` y un emoji. El minimo de tres caracteres se conserva solo para `advisor`; el maximo general sigue en 3.000.
+- `short_roleplay_evaluation()` evita notas infladas: puntuacion o signos solos se limitan a 2/10; emoticonos, emojis y respuestas como `ok` se limitan a 4/10. Esta evaluacion local tambien se usa si Gemini omite o formatea mal el score, sin descartar su respuesta en personaje.
+
+## Despliegue de produccion - 2026-07-13
+
+- URL canonica: `https://date.facilpos.co/rag-chat`.
+- La aplicacion corre en el VPS `172.233.174.71` como contenedor `easy-date-rag`, con healthcheck y reinicio `unless-stopped`. Traefik termina TLS y enruta por `zeus-network`.
+- Cloudflare conserva un registro A proxied hacia el VPS. No iniciar ni volver a crear `cloudflared`: produccion no usa Tunnel ni depende del equipo local.
+- Cloudflare Access aplica la politica `Solo admins`, con codigo por correo para `mercadeo3@nuevainformatica.com`. Google SSO nativo no esta configurado porque requiere credenciales OAuth de Google.
+- Secretos: `/opt/easy-date-rag/.env`, permisos `600`; nunca copiar claves a Git, logs, imagenes o documentacion.
+- Datos: `/opt/easy-date-rag/app` debe ser escribible por ChromaDB; montarlo read-only produce `attempt to write a readonly database`.
+- Archivos reproducibles: `deploy/vps/Dockerfile`, `requirements-runtime.txt`, `compose.yml`, `date_facilpos.yml` y `README.md`.
