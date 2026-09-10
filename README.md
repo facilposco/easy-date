@@ -76,6 +76,6 @@ El RAG de Easy Date se divide en colecciones especializadas:
 
 ## 👨‍💻 Autor y Contacto
 
-Desarrollado y estructurado por **Omar Francisco Espinel Roncancio** bajo **Nueva Informática SAS / Fácil POS**.
+Desarrollado y estructurado por **facilpos.co**.
 
-Para dudas de arquitectura, integración o licencias, visita el código fuente o la documentación interna desplegada.
+Para dudas de arquitectura, integración o licencias, visita el código fuente o la documentación interna desplegada, la licencia es de codigo libre.
