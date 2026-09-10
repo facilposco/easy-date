@@ -10,7 +10,7 @@
 
 ## 🎯 Sobre el Proyecto
 
-**Easy Date** es una plataforma dual que combina un **juego interactivo de simulación** y una **base de conocimiento (guías de estudio)** basada en miles de interacciones reales. El objetivo es ayudar a los usuarios a practicar sus interacciones de texto en un entorno seguro antes de aplicarlas en el mundo real.
+**Easy Date** es una plataforma dual que combina un **juego interactivo de simulación** y una **base de conocimiento (guías de estudio)** basada en miles de interacciones reales y fine tuneado con los mejores libros de de text game, tambien cuenta con agentes ia entrenados para ser un simulador humano. El objetivo es ayudar a los usuarios a practicar sus interacciones de texto en un entorno seguro antes de aplicarlas en el mundo real.
 
 El núcleo del sistema es una arquitectura **RAG v2 Integral (Retrieval-Augmented Generation)** que separa cognitivamente dos agentes de Inteligencia Artificial:
 1. **Natalia (Persona):** Simula a la chica en el chat, emulando respuestas de mujeres reales extraídas de casos de éxito comprobados.
